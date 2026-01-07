@@ -1,0 +1,36 @@
+<form [formGroup]="dataSource.form" (ngSubmit)="submit()">
+    <table
+        mat-table
+        [dataSource]="dataSource"
+        matSort
+        [trackBy]="dataSource.trackBy"
+        class="mat-elevation-z2"
+        formArrayName="rows"
+        cdkDropList
+        [cdkDropListData]="dataSource"
+        (cdkDropListDropped)="dragDropRowService.listDropped($event)"
+        [cdkDropListDisabled]="!dragDropRowService.enable"
+        [cdkDropListAutoScrollStep]="dragDropRowService.autoScrollStep"
+        [cdkDropListSortPredicate]="dragDropRowService.sortPredicate"
+        [cdkDropListConnectedTo]="dragDropRowService.connectedTo"
+    >
+        @for (column of columns; track column.columnDef) {
+
+        <ng-container [cdkColumnDef]="column.columnDef" [sticky]="column.sticky || false" [stickyEnd]="column.stickyEnd || false">
+            <th mat-header-cell *matHeaderCellDef>
+                <ng-container klesDynamicField [field]="column | headerField" [group]="dataSource.form.controls.header"></ng-container>
+            </th>
+
+            <td mat-cell *cdkCellDef="let row; let index = index">
+                <ng-container klesDynamicField [field]="column | cellField" [group]="row"></ng-container>
+            </td>
+        </ng-container>
+        }
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns" cdkDrag [cdkDragData]="row"></tr>
+    </table>
+</form>
+
+<!-- "
+        -->
