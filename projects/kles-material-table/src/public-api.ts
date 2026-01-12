@@ -16,3 +16,6 @@ export * from './lib/kles-table.component';
 
 export * from './lib/components/fields/header-field.component';
 
+export * from './lib/kles-table.service';
+
+export * from './lib/token';

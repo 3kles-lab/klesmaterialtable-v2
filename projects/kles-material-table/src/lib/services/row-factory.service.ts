@@ -18,16 +18,15 @@ export class RowFormFactory {
     createRow(fields: IKlesFieldConfig[], record: any): FormGroup {
         const data = { _id: crypto.randomUUID(), ...record };
 
-        const group = new FormGroup<any>({
+        const controls: Record<string, any> = {
             _id: new FormControl(data._id),
-        });
+        };
 
-        fields.forEach((field) => {
-            const control = this.createControl(field, data?.[field.name] || undefined);
-            group.setControl(field.name, control);
-        });
+        for (const field of fields) {
+            controls[field.name] = this.createControl(field, data?.[field.name] ?? undefined);
+        }
 
-        return group;
+        return new FormGroup<any>(controls);
     }
 
     createRows(fields: IKlesFieldConfig[], records: any[]): FormGroup[] {

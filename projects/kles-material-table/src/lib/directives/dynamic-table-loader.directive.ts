@@ -3,11 +3,14 @@ import {
     DestroyableInjector,
     Directive,
     effect,
+    EventEmitter,
     Injector,
     input,
     OnDestroy,
     OnInit,
+    Output,
     Provider,
+    signal,
     StaticProvider,
     Type,
     ViewContainerRef,
@@ -17,7 +20,7 @@ import { isDestroyable } from '../utils';
 import { KlesTableConfig } from '../core/table/config.interface';
 import { LoaderService } from '../services/loader.service';
 import { KLES_DATA_SOURCE, KlesDataSource, KlesLazyDataSource } from '../components/table/datasource';
-import { COLUMNS, LOADER_CONFIG, ROW_DRAG_DROP } from '../core/table/token';
+
 import { PaginateTableComponent } from '../components/paginate-table/paginate-table.component';
 import { PaginatorStore } from '../services/store/paginator-store.service';
 import { SortService } from '../services/features/sort/sort.service';
@@ -26,6 +29,10 @@ import { FilterService } from '../services/features/filter/filter.service';
 import { FilterStore } from '../services/store/filter-store.service';
 import { DragDropLazyService, DragDropService } from '../services/features/dragdrop/dragdrop.service';
 import { KlesForm } from '../components/table/form';
+import { ITable } from '../core/table/table.interface';
+import { COLUMNS, LOADER_CONFIG, PAGINATOR_CONFIG, ROW_DRAG_DROP } from '../token';
+import { KlesColumnConfig } from '../core/table/column.interface';
+import { ColumnsService } from '../services/features/columns/columns.service';
 
 @Directive({
     selector: '[appDynamicTableLoader]',
@@ -33,6 +40,8 @@ import { KlesForm } from '../components/table/form';
 export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
     tableConfig = input.required<KlesTableConfig>();
     private componentRef: ComponentRef<any> | null = null;
+
+    @Output() created = new EventEmitter<ComponentRef<any>>();
 
     constructor(private viewContainerRef: ViewContainerRef) {
         effect(() => {
@@ -57,7 +66,7 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
 
         this.viewContainerRef.clear();
 
-        let component: Type<any> = TableComponent;
+        let component: Type<ITable> = TableComponent;
 
         if (this.tableConfig().paginator) {
             component = PaginateTableComponent;
@@ -76,43 +85,39 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
                 injector.destroy();
             }
         });
-
-        this.setInputs();
+        this.created.emit(this.componentRef);
     }
 
     private clearComponent() {
         if (this.componentRef) {
             this.componentRef.destroy();
             this.componentRef = null;
+            this.created.emit(null);
         }
     }
 
-    private setInputs(): void {
-        // this.componentRef.setInput(
-        //     'columns',
-        //     // this.tableConfig().columns.map((column) => ({
-        //     //     ...column,
-        //     //     headerCell: { ...column.headerCell, name: column.columnDef },
-        //     //     cell: { ...column.cell, name: column.columnDef },
-        //     //     footerCell: { ...column.footerCell, name: column.columnDef },
-        //     // })),
-        //     // this.tableConfig().columns
-        // );
-        // this.componentRef.setInput('lines', this.tableConfig().lines)
-        // if (this.tableConfig().paginator) {
-        //     this.componentRef.setInput('pageSizeOptions', this.tableConfig().pageSizeOptions || [5, 10, 20, 25, 50]);
-        //     this.componentRef.setInput('pageSize', this.tableConfig().pageSize || 10); //todo faire un service contenant les valeurs par défaut
-        // }
-    }
-
     private initInjector(): DestroyableInjector {
+        const storeProviders = [SortStore, FilterStore, ...(this.tableConfig().paginator ? [PaginatorStore] : [])];
+
         const providers: Array<Provider | StaticProvider> = [
             KlesForm,
-            LoaderService, //TODO mettre avec un provide pour le surchargement
+            LoaderService,
+            storeProviders,
+            {
+                provide: PAGINATOR_CONFIG,
+                useValue: {
+                    paginator: this.tableConfig().paginator || false,
+                    customMatPaginatorIntl: this.tableConfig().customMatPaginatorIntl,
+                    pageSize: this.tableConfig().pageSize,
+                    pageSizeOptions: this.tableConfig().pageSizeOptions,
+                },
+            },
+            ColumnsService,
             {
                 provide: COLUMNS,
-                useValue: this.tableConfig().columns,
+                useValue: signal<KlesColumnConfig[]>(this.tableConfig().columns || []),
             },
+
             {
                 provide: LOADER_CONFIG,
                 useValue: {
@@ -127,15 +132,9 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
             },
         ];
 
-        if (this.tableConfig().paginator) {
-            providers.push(PaginatorStore);
-        }
-
         if (this.tableConfig().lazy) {
             providers.push(
                 ...[
-                    SortStore,
-                    FilterStore,
                     {
                         provide: ROW_DRAG_DROP,
                         useFactory: () => new DragDropLazyService(this.tableConfig().dragDropRows),

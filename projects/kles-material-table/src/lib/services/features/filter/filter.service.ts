@@ -5,8 +5,8 @@ import * as _ from 'lodash';
 
 @Injectable()
 export class FilterService {
-    public prepareFilterData(data: FormGroup): string {
-        return JSON.stringify(data.getRawValue());
+    public prepareFilterData(data: FormGroup): any {
+        return data.getRawValue();
     }
 
     public createFilter(columns: KlesColumnConfig[]) {

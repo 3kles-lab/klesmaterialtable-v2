@@ -1,0 +1,38 @@
+:host {
+    overflow: auto;
+    display: block;
+    position: relative;
+    height: 100%;
+}
+
+table {
+    width: 100%;
+}
+
+:host(.loading) {
+    min-height: 220px;
+    overflow: hidden;
+}
+
+th,
+td {
+    text-wrap: pretty;
+    white-space: normal;
+}
+
+td {
+    word-break: break-word;
+}
+
+.table-overlay {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: var(--header-h, 56px);
+    bottom: 0;
+    display: grid;
+    place-items: center;
+    background: rgba(139, 147, 154, 0.15);
+    z-index: 5;
+    pointer-events: none;
+}

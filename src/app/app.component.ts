@@ -1,8 +1,18 @@
-import { AfterViewInit, Component, OnInit, signal, Signal } from '@angular/core';
+import { AfterViewInit, Component, OnInit, signal, Signal, ViewChild } from '@angular/core';
 import { MaterialModule } from './modules/material.module';
-import { KlesFormDynamicHeaderFilterComponent, KlesMaterialTableModule, KlesTableConfig, linesLazyLoader, linesLoader } from 'kles-material-table';
+import {
+    KlesFormDynamicHeaderFilterComponent,
+    KlesMaterialTableModule,
+    KlesTableComponent,
+    KlesTableConfig,
+    KlesTableService,
+    linesLazyLoader,
+    linesLoader,
+} from 'kles-material-table';
 import { BehaviorSubject, delay, Observable, of } from 'rxjs';
 import { KlesFormInputComponent, KlesFormTextComponent } from '@3kles/kles-material-dynamicforms';
+import { FormControlStatus, FormGroup } from '@angular/forms';
+
 // import { ResourceLineLoaderParams } from 'projects/kles-material-table/src/lib/interfaces/resource-loader.interface';
 
 @Component({
@@ -16,11 +26,15 @@ import { KlesFormInputComponent, KlesFormTextComponent } from '@3kles/kles-mater
 export class AppComponent implements OnInit, AfterViewInit {
     toto = new BehaviorSubject({ foo: 123, toto: 'aaaa' });
 
-    data = Array.from(Array(50).keys()).map((key) => {
+    data = Array.from(Array(500).keys()).map((key) => {
         return {
-            // _id: `${key}`,
-            name: `aa${key}`,
+            _id: `${key}`,
+            name: key,
             test: `${key}`,
+            aa: 'bbb',
+            c: '1565',
+            d: '87887',
+            e: 'ceci est une phrase',
         };
     });
 
@@ -30,10 +44,18 @@ export class AppComponent implements OnInit, AfterViewInit {
                 columnDef: '_id',
                 sortable: true,
                 filterable: true,
+                width: '90px',
                 headerCell: {
                     label: '_id',
                     component: KlesFormDynamicHeaderFilterComponent,
                     filterComponent: KlesFormInputComponent,
+                    style: {
+                        ngStyle: {
+                            background: 'red',
+                            'font-weight': 1000,
+                            color: 'green',
+                        },
+                    },
                 },
                 cell: {
                     component: KlesFormTextComponent,
@@ -43,8 +65,86 @@ export class AppComponent implements OnInit, AfterViewInit {
                 columnDef: 'name',
                 sortable: true,
                 filterable: true,
+                visible: true,
+                // maxWidth:'200px',
+                // minWidth: '200px',
+                width: '20px',
                 headerCell: {
                     label: 'Name',
+                    component: KlesFormDynamicHeaderFilterComponent,
+                    filterComponent: KlesFormInputComponent,
+                    style: {
+                        ngStyle: (value: string, status: FormControlStatus, row: Record<string, any>, rowStatus: FormControlStatus) => {
+                            return {
+                                background: 'white',
+                            };
+                        },
+                    },
+                },
+                cell: {
+                    component: KlesFormTextComponent,
+                    style: {
+                        ngStyle: (value: string, status: FormControlStatus, row: Record<string, any>, rowStatus: FormControlStatus) => {
+                            return {
+                                background: row.aa === '1' ? 'blue' : 'red',
+                            };
+                        },
+                    },
+                },
+            },
+            {
+                columnDef: 'aa',
+                sortable: true,
+                // width: '800px',
+                filterable: true,
+                visible: true,
+                headerCell: {
+                    label: 'aa',
+                    component: KlesFormDynamicHeaderFilterComponent,
+                    filterComponent: KlesFormInputComponent,
+                },
+                cell: {
+                    component: KlesFormInputComponent,
+                },
+            },
+            {
+                columnDef: 'c',
+                sortable: true,
+
+                filterable: true,
+                visible: true,
+                headerCell: {
+                    label: 'C',
+                    component: KlesFormDynamicHeaderFilterComponent,
+                    filterComponent: KlesFormInputComponent,
+                },
+                cell: {
+                    component: KlesFormTextComponent,
+                },
+            },
+            {
+                columnDef: 'd',
+                sortable: true,
+
+                filterable: true,
+                visible: true,
+                headerCell: {
+                    label: 'D',
+                    component: KlesFormDynamicHeaderFilterComponent,
+                    filterComponent: KlesFormInputComponent,
+                },
+                cell: {
+                    component: KlesFormTextComponent,
+                },
+            },
+            {
+                columnDef: 'e',
+                sortable: true,
+
+                filterable: true,
+                visible: true,
+                headerCell: {
+                    label: 'E',
                     component: KlesFormDynamicHeaderFilterComponent,
                     filterComponent: KlesFormInputComponent,
                 },
@@ -55,6 +155,8 @@ export class AppComponent implements OnInit, AfterViewInit {
             {
                 columnDef: 'test',
                 sortable: true,
+                // width: '800px',
+                // stickyEnd:true,
                 headerCell: {
                     label: 'Test',
                     component: KlesFormDynamicHeaderFilterComponent,
@@ -70,7 +172,7 @@ export class AppComponent implements OnInit, AfterViewInit {
             loader: (params) => {
                 return of({
                     items: this.data,
-                });
+                }).pipe(delay(1000));
             },
         }),
         dragDropRows: {
@@ -123,9 +225,22 @@ export class AppComponent implements OnInit, AfterViewInit {
         },
     };
 
+    @ViewChild('table') klesTable: KlesTableComponent;
+    @ViewChild('lazyTable') klesLazyTable: KlesTableComponent;
+
     constructor() {}
 
     ngOnInit() {}
 
     ngAfterViewInit(): void {}
+
+    add() {
+        console.log('add');
+
+        this.klesTable.tableService.updateRecord('2', { aa: '1' });
+
+        // this.klesTable.tableService.addRecord({ name: 'blabla', toto: 'dfsssdf' }, { index: 1 });
+        this.klesTable.tableService.toggleColumnVisibility('name');
+        // this.klesLazyTable.tableService.
+    }
 }

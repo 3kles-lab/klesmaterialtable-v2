@@ -1,6 +1,9 @@
-<kles-dynamic-table [tableConfig]="config"></kles-dynamic-table>
-<br>
-Lazy
-<kles-dynamic-table [tableConfig]="lazyConfig"></kles-dynamic-table>
+<button matButton (click)="add()">add</button>
+<div style="height: 500px">
+    <kles-dynamic-table #table [tableConfig]="config"></kles-dynamic-table>
+</div>
 
-
+<div>Lazy</div>
+<div style="height: 800px">
+    <kles-dynamic-table #lazyTable [tableConfig]="lazyConfig"></kles-dynamic-table>
+</div>

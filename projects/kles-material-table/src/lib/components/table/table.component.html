@@ -1,4 +1,4 @@
-<form [formGroup]="dataSource.form" (ngSubmit)="submit()">
+<form [formGroup]="dataSource.form" (ngSubmit)="submit()" #wrap>
     <table
         mat-table
         [dataSource]="dataSource"
@@ -14,23 +14,54 @@
         [cdkDropListSortPredicate]="dragDropRowService.sortPredicate"
         [cdkDropListConnectedTo]="dragDropRowService.connectedTo"
     >
-        @for (column of columns; track column.columnDef) {
+        <colgroup>
+            @for (column of columnsService.columns(); track column.columnDef) {
+            <col [style.width]="column.width ?? null" [style.minWidth]="column.minWidth ?? null" [style.maxWidth]="column.maxWidth ?? null" />
+            }
+        </colgroup>
 
-        <ng-container [cdkColumnDef]="column.columnDef" [sticky]="column.sticky || false" [stickyEnd]="column.stickyEnd || false">
-            <th mat-header-cell *matHeaderCellDef>
+        @for (column of columnsService.columns(); track column.columnDef) {
+
+        <ng-container [cdkColumnDef]="column.columnDef" [sticky]="column.sticky ?? false" [stickyEnd]="column.stickyEnd ?? false">
+            <th
+                mat-header-cell
+                *matHeaderCellDef
+                [ngStyle]="
+                    column.headerCell?.style?.ngStyle
+                        | resolveNgStyle
+                            : dataSource.form.get(['header', column.columnDef])?.value
+                            : dataSource.form.get(['header', column.columnDef])?.status
+                            : dataSource.form.controls.header.value
+                            : dataSource.form.controls.header.status
+                "
+            >
                 <ng-container klesDynamicField [field]="column | headerField" [group]="dataSource.form.controls.header"></ng-container>
             </th>
 
-            <td mat-cell *cdkCellDef="let row; let index = index">
+            <td
+                mat-cell
+                *cdkCellDef="let row; let index = index"
+                [ngStyle]="
+                    column.cell?.style?.ngStyle
+                        | resolveNgStyle : row.controls[column.columnDef].value : row.controls[column.columnDef].status : row.value : row.status
+                "
+            >
                 <ng-container klesDynamicField [field]="column | cellField" [group]="row"></ng-container>
             </td>
         </ng-container>
         }
 
-        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns" cdkDrag [cdkDragData]="row"></tr>
+        <tr mat-header-row *matHeaderRowDef="columnsService.displayedColumns(); sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: columnsService.displayedColumns()" cdkDrag [cdkDragData]="row"></tr>
+
+        <!-- <tr *matNoDataRow>
+            no data
+        </tr> -->
     </table>
 </form>
 
-<!-- "
-        -->
+@if(dataSource.loading() ){
+<div class="table-overlay" [style.--header-h.px]="headerHeightPx">
+    <mat-spinner></mat-spinner>
+</div>
+}

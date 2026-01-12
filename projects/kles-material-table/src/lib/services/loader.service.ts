@@ -3,9 +3,10 @@ import { PaginatorStore } from './store/paginator-store.service';
 import { SortStore } from './store/sort-store.service';
 import { FilterStore } from './store/filter-store.service';
 import { auditTime, catchError, combineLatest, concat, map, Observable, of, startWith, Subject, switchMap } from 'rxjs';
-import { LOADER_CONFIG } from '../core/table/token';
+
 import { LinesLazyLoader, LinesLoader } from '../core/table/loader.interface';
 import { ILoader } from '../core/table/config.interface';
+import { LOADER_CONFIG } from '../token';
 
 @Injectable()
 export class LoaderService<T, R> {

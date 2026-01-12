@@ -1,7 +1,7 @@
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { IKlesDataSource } from '../../core/datasource/datasource.interface';
 import { MatSort, SortDirection } from '@angular/material/sort';
-import { DestroyRef, Inject, inject, Injectable, InjectionToken, Optional } from '@angular/core';
+import { DestroyRef, inject, Injectable, InjectionToken, Optional, signal } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { LoaderService } from '../../services/loader.service';
@@ -12,16 +12,15 @@ import { FormGroup } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RowFormFactory } from '../../services/row-factory.service';
 import { KlesForm } from './form';
-import { COLUMNS } from '../../core/table/token';
-import { KlesColumnConfig } from '../../core/table/column.interface';
 import * as _ from 'lodash';
 import { SortService } from '../../services/features/sort/sort.service';
 import { FilterService } from '../../services/features/filter/filter.service';
+import { ColumnsService } from '../../services/features/columns/columns.service';
 
 @Injectable()
 export class KlesDataSource extends MatTableDataSource<FormGroup, MatPaginator> implements IKlesDataSource {
-    _loading$ = new BehaviorSubject(false);
-    loading$ = this._loading$.asObservable();
+    _loading = signal(false);
+    loading = this._loading.asReadonly();
 
     form: FormGroup;
 
@@ -29,19 +28,20 @@ export class KlesDataSource extends MatTableDataSource<FormGroup, MatPaginator> 
     private readonly destroyRef = inject(DestroyRef);
 
     constructor(
-        @Inject(COLUMNS) private columns: KlesColumnConfig[],
+        private columnsService: ColumnsService,
         private fm: KlesForm,
         private loaderService: LoaderService<any, any>,
         @Optional() private paginatorStore: PaginatorStore | null,
+        @Optional() private sortStore: SortStore | null,
+        @Optional() private filterStore: FilterStore | null,
         private rowFactory: RowFormFactory,
         private sortService: SortService,
         private filterService: FilterService,
     ) {
         super([]);
-
         this.form = this.fm.form;
 
-        columns.forEach((column) => {
+        this.columnsService.columns().forEach((column) => {
             const { pipeTransform, ...tmpCell } = column.headerCell;
             let colCellHeader = _.cloneDeep(tmpCell);
             colCellHeader = { pipeTransform, ...colCellHeader };
@@ -57,14 +57,16 @@ export class KlesDataSource extends MatTableDataSource<FormGroup, MatPaginator> 
                 this.data = this.fm.rows;
             });
 
-        this.filterPredicate = this.filterService.createFilter(columns);
+        this.filterPredicate = this.filterService.createFilter(this.columnsService.columns());
         this.fm
             .getHeader()
             .valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(() => {
-                this.filter = this.filterService.prepareFilterData(this.fm.getHeader());
+                this.filter = JSON.stringify(this.filterService.prepareFilterData(this.fm.getHeader()));
+                this.filterStore.setFilters(this.filterService.prepareFilterData(this.fm.getHeader()));
             });
-        this.filter = this.filterService.prepareFilterData(this.fm.getHeader());
+        this.filter = JSON.stringify(this.filterService.prepareFilterData(this.fm.getHeader()));
+        this.filterStore.setFilters(this.filterService.prepareFilterData(this.fm.getHeader()));
 
         this.sortingDataAccessor = this.sortService.sortingDataAccessor;
 
@@ -73,12 +75,12 @@ export class KlesDataSource extends MatTableDataSource<FormGroup, MatPaginator> 
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((response) => {
                 if (response.loading) {
-                    this._loading$.next(true);
+                    this._loading.set(true);
                 } else {
-                    this._loading$.next(false);
+                    this._loading.set(false);
                     this.fm.setRows(
                         this.rowFactory.createRows(
-                            this.columns.map((col) => ({ ...col.cell, name: col.columnDef })),
+                            this.columnsService.columns().map((col) => ({ ...col.cell, name: col.columnDef })),
                             response.items,
                         ),
                     );
@@ -93,6 +95,7 @@ export class KlesDataSource extends MatTableDataSource<FormGroup, MatPaginator> 
     trackBy = (_: number, row: FormGroup) => row.get('_id')?.value ?? row;
 
     setPage(page: number, perPage: number): void {
+        this.paginatorStore?.setPage({ page, perPage });
         if (!this.paginator) {
             return;
         }
@@ -101,12 +104,14 @@ export class KlesDataSource extends MatTableDataSource<FormGroup, MatPaginator> 
     }
 
     setSort(active: string, direction: SortDirection): void {
+        this.sortStore?.setSort({ active, direction });
         if (!this.sort) return;
         this.sort.active = active;
         this.sort.direction = direction;
     }
 
     setFilters(filters: { [key: string]: any }): void {
+        this.filterStore?.setFilters(filters);
         this.fm.getHeader().patchValue(filters);
         if (this.paginator) this.paginator.firstPage();
     }
@@ -117,7 +122,6 @@ export class KlesDataSource extends MatTableDataSource<FormGroup, MatPaginator> 
 
     disconnect(): void {
         super.disconnect();
-        this._loading$.complete();
         this.subscription.unsubscribe();
     }
 
@@ -128,7 +132,7 @@ export class KlesDataSource extends MatTableDataSource<FormGroup, MatPaginator> 
         if (!active || direction == '') {
             return data;
         }
-        const column = this.columns.find((col) => col.columnDef === active);
+        const column = this.columnsService.columns().find((col) => col.columnDef === active);
 
         return data.sort((a, b) => {
             let valueA: string | number;
@@ -187,12 +191,74 @@ export class KlesDataSource extends MatTableDataSource<FormGroup, MatPaginator> 
             });
         }
     }
+
+    override get sort(): MatSort {
+        return super.sort;
+    }
+    override set sort(sort: MatSort) {
+        super.sort = sort;
+
+        if (super.sort) {
+            this.sort.sortChange.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
+                this.sortStore?.setSort(event);
+            });
+        }
+    }
+
+    public addRecord(record: any, options?: { index?: number; emitEvent?: boolean }): FormGroup {
+        const ctrl = this.rowFactory.createRow(
+            this.columnsService.columns().map((col) => ({ ...col.cell, name: col.columnDef })),
+            record,
+        );
+
+        if (options?.index != undefined) {
+            this.fm.getRows().insert(options?.index, ctrl, { emitEvent: options?.emitEvent });
+        } else {
+            this.fm.getRows().push(ctrl);
+        }
+
+        return ctrl;
+    }
+
+    public removeById(id: string, options?: { emitEvent?: boolean }): boolean {
+        const index = this.fm.getRows().controls.findIndex((ctrl) => ctrl.value._id === id);
+        return this.removeAt(index, options);
+    }
+
+    public removeAt(index: number, options?: { emitEvent?: boolean }): boolean {
+        if (index != -1) {
+            this.fm.getRows().removeAt(index, { emitEvent: options?.emitEvent });
+            return true;
+        }
+        return false;
+    }
+
+    public updateRecord(id: string, record: any, options?: { emitEvent?: boolean }): FormGroup {
+        const control = this.fm.rows.find((ctrl) => ctrl.value._id === id);
+
+        if (control) {
+            control.patchValue(record, { emitEvent: options?.emitEvent });
+            return control;
+        }
+    }
+
+    public clearRows(options?: { emitEvent?: boolean }): void {
+        this.fm.getRows().clear({ emitEvent: options?.emitEvent });
+    }
+
+    public changeColumnVisibility(columnDef: string, visible: boolean): void {
+        this.columnsService.setVisible(columnDef, visible);
+    }
+
+    public toggleColumnVisibility(columnDef: string): void {
+        this.columnsService.toggleVisible(columnDef);
+    }
 }
 
 @Injectable()
 export class KlesLazyDataSource implements IKlesDataSource {
-    private _loading$ = new BehaviorSubject(false);
-    loading$ = this._loading$.asObservable();
+    private _loading = signal(false);
+    loading = this._loading.asReadonly();
 
     private _paginator: MatPaginator;
     private _sort: MatSort;
@@ -205,7 +271,7 @@ export class KlesLazyDataSource implements IKlesDataSource {
     private _renderChangesSubscription: Subscription | null = null;
 
     constructor(
-        @Inject(COLUMNS) private columns: KlesColumnConfig[],
+        private columnsService: ColumnsService,
         private fm: KlesForm,
         private rowFactory: RowFormFactory,
         private loaderService: LoaderService<any, any>,
@@ -215,7 +281,7 @@ export class KlesLazyDataSource implements IKlesDataSource {
     ) {
         this.form = this.fm.form;
 
-        columns.forEach((column) => {
+        this.columnsService.columns().forEach((column) => {
             const { pipeTransform, ...tmpCell } = column.headerCell;
             let colCellHeader = _.cloneDeep(tmpCell);
             colCellHeader = { pipeTransform, ...colCellHeader };
@@ -243,12 +309,12 @@ export class KlesLazyDataSource implements IKlesDataSource {
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((response) => {
                 if (response.loading) {
-                    this._loading$.next(true);
+                    this._loading.set(true);
                 } else {
-                    this._loading$.next(false);
+                    this._loading.set(false);
                     this.fm.setRows(
                         this.rowFactory.createRows(
-                            this.columns.map((col) => ({ ...col.cell, name: col.columnDef })),
+                            this.columnsService.columns().map((col) => ({ ...col.cell, name: col.columnDef })),
                             response.items,
                         ),
                     );
@@ -323,9 +389,58 @@ export class KlesLazyDataSource implements IKlesDataSource {
     }
 
     disconnect(): void {
-        this._loading$.complete();
         this.subscription?.unsubscribe();
         this._renderChangesSubscription?.unsubscribe();
+    }
+
+    public addRecord(record: any, options?: { index?: number; emitEvent?: boolean }): FormGroup {
+        const ctrl = this.rowFactory.createRow(
+            this.columnsService.columns().map((col) => ({ ...col.cell, name: col.columnDef })),
+            record,
+        );
+
+        if (options?.index != undefined) {
+            this.fm.getRows().insert(options?.index, ctrl, { emitEvent: options?.emitEvent });
+        } else {
+            this.fm.getRows().push(ctrl);
+        }
+
+        return ctrl;
+    }
+
+    public removeById(id: string, options?: { emitEvent?: boolean }): boolean {
+        const index = this.fm.getRows().controls.findIndex((ctrl) => ctrl.value._id === id);
+        return this.removeAt(index, options);
+    }
+
+    public removeAt(index: number, options?: { emitEvent?: boolean }): boolean {
+        if (index != -1) {
+            this.fm.getRows().removeAt(index, { emitEvent: options?.emitEvent });
+            return true;
+        }
+        return false;
+    }
+
+    public updateRecord(id: string, record: any, options?: { emitEvent?: boolean }): FormGroup {
+        const control = this.fm.rows.find((ctrl) => ctrl.value._id === id);
+
+        if (control) {
+            control.patchValue(record, { emitEvent: options?.emitEvent });
+            return control;
+        }
+    }
+
+    public clearRows(options?: { emitEvent?: boolean }): void {
+        this.fm.getRows().clear({ emitEvent: options?.emitEvent });
+        this.setTotal(0);
+    }
+
+    public changeColumnVisibility(columnDef: string, visible: boolean): void {
+        this.columnsService.setVisible(columnDef, visible);
+    }
+
+    public toggleColumnVisibility(columnDef: string): void {
+        this.columnsService.toggleVisible(columnDef);
     }
 }
 

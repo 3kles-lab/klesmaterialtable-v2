@@ -1,10 +1,10 @@
 import { Inject, Injectable, Optional } from '@angular/core';
 import { CdkDrag, CdkDragDrop } from '@angular/cdk/drag-drop';
 import { IDragDropConfig } from '../../../core/table/config.interface';
-import { DRAG_DROP_CONFIG } from '../../../core/table/token';
 import { IKlesDataSource } from '../../../core/datasource/datasource.interface';
 import { FormArray } from '@angular/forms';
 import { PaginatorStore } from '../../store/paginator-store.service';
+import { DRAG_DROP_CONFIG } from '../../../token';
 
 export abstract class DragDropBase {
     constructor(protected config: IDragDropConfig) {}
