@@ -19,7 +19,7 @@ export class KlesTableManagerService {
 export class KlesTableService {
     constructor(private manager: KlesTableManagerService) {}
 
-    public addRecord(record: any, options?: { index?: number; emitEvent?: boolean }):FormGroup {
+    public addRecord(record: any, options?: { index?: number; emitEvent?: boolean }): FormGroup {
         return this.manager.table?.dataSource.addRecord(record, options);
     }
 
@@ -27,10 +27,10 @@ export class KlesTableService {
         return this.manager.table?.dataSource.updateRecord(id, record, options);
     }
 
-    public removeById(id: string, options?: { emitEvent?: boolean }): boolean {
+    public removeRecordById(id: string, options?: { emitEvent?: boolean }): boolean {
         return this.manager.table?.dataSource.removeById(id, options) || false;
     }
-    public removeAt(index: number, options?: { emitEvent?: boolean }): boolean {
+    public removeRecordAt(index: number, options?: { emitEvent?: boolean }): boolean {
         return this.manager.table?.dataSource.removeAt(index, options) || false;
     }
     public clearRows(options?: { emitEvent?: boolean }): void {
@@ -43,6 +43,14 @@ export class KlesTableService {
 
     public toggleColumnVisibility(columnDef: string): void {
         this.manager.table?.dataSource.toggleColumnVisibility(columnDef);
+    }
+
+    public refresh() {
+        this.manager.table?.dataSource.refresh();
+    }
+
+    public scrollToTop() {
+        this.manager.table?.scrollbarService.toTop('smooth');
     }
 
     //TODO mettre toutes mes methodes pour interragir avec le tableau

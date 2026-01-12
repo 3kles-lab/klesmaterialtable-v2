@@ -16,6 +16,7 @@ import * as _ from 'lodash';
 import { SortService } from '../../services/features/sort/sort.service';
 import { FilterService } from '../../services/features/filter/filter.service';
 import { ColumnsService } from '../../services/features/columns/columns.service';
+import { ScrollbarService } from '../../services/features/scrollbar/scrollbar.service';
 
 @Injectable()
 export class KlesDataSource extends MatTableDataSource<FormGroup, MatPaginator> implements IKlesDataSource {
@@ -37,6 +38,7 @@ export class KlesDataSource extends MatTableDataSource<FormGroup, MatPaginator> 
         private rowFactory: RowFormFactory,
         private sortService: SortService,
         private filterService: FilterService,
+        private scrollbarService: ScrollbarService,
     ) {
         super([]);
         this.form = this.fm.form;
@@ -117,6 +119,7 @@ export class KlesDataSource extends MatTableDataSource<FormGroup, MatPaginator> 
     }
 
     refresh(): void {
+        this.scrollbarService.toTop();
         this.loaderService.refresh();
     }
 
@@ -281,6 +284,7 @@ export class KlesLazyDataSource implements IKlesDataSource {
         @Optional() private paginatorStore: PaginatorStore | null,
         @Optional() private sortStore: SortStore | null,
         @Optional() private filterStore: FilterStore | null,
+        private scrollbarService: ScrollbarService,
     ) {
         this.form = this.fm.form;
 
@@ -388,6 +392,7 @@ export class KlesLazyDataSource implements IKlesDataSource {
     }
 
     refresh(): void {
+        this.scrollbarService.toTop();
         this.loaderService.refresh();
     }
 

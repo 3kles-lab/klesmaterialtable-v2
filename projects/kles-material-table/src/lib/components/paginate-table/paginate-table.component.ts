@@ -6,6 +6,7 @@ import { PaginatorStore } from '../../services/store/paginator-store.service';
 import { ITable } from '../../core/table/table.interface';
 import { IKlesDataSource } from '../../core/datasource/datasource.interface';
 import { KLES_DATA_SOURCE } from '../table/datasource';
+import { ScrollbarService } from '../../services/features/scrollbar/scrollbar.service';
 
 @Component({
     selector: 'kles-paginate-table',
@@ -17,9 +18,12 @@ import { KLES_DATA_SOURCE } from '../table/datasource';
 export class PaginateTableComponent implements OnInit, ITable {
     @ViewChild(MatPaginator, { static: true }) private paginator: MatPaginator;
     @ViewChild(TableComponent, { static: true }) table: TableComponent;
-    @ViewChild(TableComponent, { read: ElementRef }) tableRef!: ElementRef<HTMLElement>;
 
-    constructor(private paginatorStore: PaginatorStore, @Inject(KLES_DATA_SOURCE) public dataSource: IKlesDataSource) {}
+    constructor(
+        private paginatorStore: PaginatorStore,
+        @Inject(KLES_DATA_SOURCE) public dataSource: IKlesDataSource,
+        public scrollbarService: ScrollbarService,
+    ) {}
 
     ngOnInit(): void {
         this.paginator.pageIndex = this.paginatorStore.snapshot().page;
@@ -29,6 +33,6 @@ export class PaginateTableComponent implements OnInit, ITable {
     }
 
     onPage(e: PageEvent) {
-        this.tableRef?.nativeElement?.scrollTo({ top: 0, behavior: 'instant' });
+        this.scrollbarService.toTop();
     }
 }

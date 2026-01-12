@@ -30,6 +30,20 @@ td .cell {
     justify-content: var(--align, center);
 }
 
+th[appResizableColumn] {
+    position: relative;
+}
+
+th[appResizableColumn] .resize-handle {
+    position: absolute;
+    top: 0;
+    right: -4px;
+    width: 8px;
+    height: 100%;
+    cursor: col-resize;
+    user-select: none;
+}
+
 .table-overlay {
     position: absolute;
     left: 0;

@@ -45,22 +45,24 @@ export class AppComponent implements OnInit, AfterViewInit {
                 columnDef: '_id',
                 sortable: true,
                 filterable: true,
-                width: '90px',
-                align: AlignCell.RIGHT,
+                width: '500px',
+                minWidth: '250px',
+                maxWidth: '500px',
                 headerCell: {
                     label: '_id',
                     component: KlesFormDynamicHeaderFilterComponent,
-                    filterComponent: KlesFormInputComponent,
-                    style: {
-                        ngStyle: {
-                            background: 'red',
-                            'font-weight': 1000,
-                            color: 'green',
-                        },
-                    },
                 },
                 cell: {
                     component: KlesFormTextComponent,
+                    style: {
+                        ngStyle: (value: string, status: FormControlStatus, row: Record<string, any>, rowStatus: FormControlStatus) => {
+                            return {
+                                background: row.name === 'remy' ? 'blue' : 'green',
+                                'font-weight': 1000,
+                                color: 'white',
+                            };
+                        },
+                    },
                 },
             },
             {
@@ -68,28 +70,29 @@ export class AppComponent implements OnInit, AfterViewInit {
                 sortable: true,
                 filterable: true,
                 visible: true,
-                align: AlignCell.LEFT,
-                maxWidth: '350px',
-                minWidth: '350px',
-                // width: '350px',
+                // align: AlignCell.LEFT,
+                // maxWidth: '350px',
+                // minWidth: '350px',
+                // width: '950px',
+                resizable: true,
                 headerCell: {
                     label: 'Name',
                     component: KlesFormDynamicHeaderFilterComponent,
                     filterComponent: KlesFormInputComponent,
-                    style: {
-                        ngStyle: (value: string, status: FormControlStatus, row: Record<string, any>, rowStatus: FormControlStatus) => {
-                            return {
-                                background: 'white',
-                            };
-                        },
-                    },
+                    // style: {
+                    //     ngStyle: (value: string, status: FormControlStatus, row: Record<string, any>, rowStatus: FormControlStatus) => {
+                    //         return {
+                    //             background: 'white',
+                    //         };
+                    //     },
+                    // },
                 },
                 cell: {
                     component: KlesFormTextComponent,
                     style: {
-                        ngStyle: (value: string, status: FormControlStatus, row: Record<string, any>, rowStatus: FormControlStatus) => {
+                        ngStyle: (value: number, status: FormControlStatus, row: Record<string, any>, rowStatus: FormControlStatus) => {
                             return {
-                                background: row.aa === '1' ? 'blue' : 'red',
+                                background: value === 1 ? 'blue' : 'red',
                             };
                         },
                     },
@@ -116,6 +119,8 @@ export class AppComponent implements OnInit, AfterViewInit {
 
                 filterable: true,
                 visible: true,
+                width: '800px',
+
                 headerCell: {
                     label: 'C',
                     component: KlesFormDynamicHeaderFilterComponent,
@@ -185,7 +190,6 @@ export class AppComponent implements OnInit, AfterViewInit {
         //     active: 'name',
         //     direction: 'desc',
         // },
-        
     };
 
     lazyConfig: KlesTableConfig = {
@@ -214,6 +218,7 @@ export class AppComponent implements OnInit, AfterViewInit {
             },
         ],
         lazy: true,
+        // infinite:true,
         paginator: true,
         lines: linesLazyLoader({
             params: () => this.toto,
@@ -245,10 +250,9 @@ export class AppComponent implements OnInit, AfterViewInit {
     add() {
         console.log('add');
 
-        this.klesTable.tableService.updateRecord('2', { aa: '1' });
+        this.klesTable.tableService.scrollToTop()
 
         // this.klesTable.tableService.addRecord({ name: 'blabla', toto: 'dfsssdf' }, { index: 1 });
-        this.klesTable.tableService.toggleColumnVisibility('name');
-        // this.klesLazyTable.tableService.
+        // this.klesTable.tableService.toggleColumnVisibility('name');
     }
 }

@@ -34,6 +34,7 @@ import { COLUMNS, LOADER_CONFIG, PAGINATOR_CONFIG, ROW_DRAG_DROP, SORT_CONFIG } 
 import { KlesColumnConfig } from '../core/table/column.interface';
 import { ColumnsService } from '../services/features/columns/columns.service';
 import { MatPaginatorIntl } from '@angular/material/paginator';
+import { ScrollbarService } from '../services/features/scrollbar/scrollbar.service';
 
 @Directive({
     selector: '[appDynamicTableLoader]',
@@ -80,6 +81,8 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
         this.componentRef = this.viewContainerRef.createComponent(component, {
             injector,
         });
+        
+        // this.componentRef.location.nativeElement
 
         this.componentRef.onDestroy(() => {
             if (isDestroyable(injector)) {
@@ -128,6 +131,7 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
             LoaderService,
             storeProviders,
             configProviders,
+            ScrollbarService,
             ColumnsService,
             {
                 provide: COLUMNS,

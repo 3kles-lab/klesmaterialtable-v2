@@ -22,6 +22,8 @@ import { ROW_DRAG_DROP } from '../../token';
 import { ColumnsService } from '../../services/features/columns/columns.service';
 import { ResolveNgStylePipe } from '../../pipes/ng-style.pipe';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { ResizableColumnDirective } from '../../directives/resizable-column.directive';
+import { ScrollbarService } from '../../services/features/scrollbar/scrollbar.service';
 
 @Component({
     selector: 'kles-table',
@@ -44,12 +46,13 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
         DragDropModule,
         ResolveNgStylePipe,
         MatProgressSpinnerModule,
+        ResizableColumnDirective,
+        MatIconModule,
     ],
 })
 export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy {
     @ViewChild(MatTable) table!: MatTable<FormGroup>;
     @ViewChild(MatSort, { static: true }) sort: MatSort;
-    @ViewChild('wrap', { static: true }) wrap!: ElementRef<HTMLElement>;
 
     headerHeightPx = 56;
     private ro?: ResizeObserver;
@@ -58,7 +61,11 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
         @Inject(KLES_DATA_SOURCE) public dataSource: IKlesDataSource,
         public columnsService: ColumnsService,
         @Inject(ROW_DRAG_DROP) public dragDropRowService: DragDropService,
-    ) {}
+        private host: ElementRef<HTMLElement>,
+        public scrollbarService: ScrollbarService,
+    ) {
+        this.scrollbarService.register(this.host.nativeElement);
+    }
 
     @HostBinding('class.loading')
     get isLoadingClass() {
@@ -75,6 +82,7 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
 
     ngOnDestroy(): void {
         this.ro?.disconnect();
+         this.scrollbarService.unregister();
     }
 
     submit() {
@@ -83,7 +91,7 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
     }
 
     private calculHeaderHeight() {
-        const header = this.wrap.nativeElement.querySelector('.mat-mdc-header-row') as HTMLElement | null;
+        const header = this.host.nativeElement.querySelector('.mat-mdc-header-row') as HTMLElement | null;
         if (!header) return;
 
         const update = () => (this.headerHeightPx = Math.ceil(header.getBoundingClientRect().height));
