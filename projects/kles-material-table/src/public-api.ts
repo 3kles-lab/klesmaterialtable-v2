@@ -19,3 +19,5 @@ export * from './lib/components/fields/header-field.component';
 export * from './lib/kles-table.service';
 
 export * from './lib/token';
+
+export * from './lib/enums/align.enum';

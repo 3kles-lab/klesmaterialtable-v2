@@ -49,10 +49,9 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy {
     @ViewChild(MatTable) table!: MatTable<FormGroup>;
     @ViewChild(MatSort, { static: true }) sort: MatSort;
-
     @ViewChild('wrap', { static: true }) wrap!: ElementRef<HTMLElement>;
 
-    headerHeightPx = 56; // fallback
+    headerHeightPx = 56;
     private ro?: ResizeObserver;
 
     constructor(
@@ -71,14 +70,7 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
     }
 
     ngAfterViewInit(): void {
-        const header = this.wrap.nativeElement.querySelector('.mat-mdc-header-row') as HTMLElement | null;
-        if (!header) return;
-
-        const update = () => (this.headerHeightPx = Math.ceil(header.getBoundingClientRect().height));
-
-        update();
-        this.ro = new ResizeObserver(update);
-        this.ro.observe(header);
+        this.calculHeaderHeight();
     }
 
     ngOnDestroy(): void {
@@ -88,5 +80,16 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
     submit() {
         if (this.dataSource.form.invalid) return;
         console.log(this.dataSource.form.value.rows);
+    }
+
+    private calculHeaderHeight() {
+        const header = this.wrap.nativeElement.querySelector('.mat-mdc-header-row') as HTMLElement | null;
+        if (!header) return;
+
+        const update = () => (this.headerHeightPx = Math.ceil(header.getBoundingClientRect().height));
+
+        update();
+        this.ro = new ResizeObserver(update);
+        this.ro.observe(header);
     }
 }

@@ -13,11 +13,11 @@ export interface KlesColumnConfig {
     ngClass?: any;
     filterable?: boolean;
     sortable?: boolean;
-    resizable?: boolean;
+    resizable?: boolean; //TODO
     headerCell: IKlesHeaderFieldConfig;
     cell: IKlesCellFieldConfig;
-    footerCell?: IKlesCellFieldConfig;
-    canUnfold?: boolean;
+    footerCell?: IKlesCellFieldConfig; //TODO
+    canUnfold?: boolean; //TODO
     align?: AlignCell;
     width?: string;
     minWidth?: string;

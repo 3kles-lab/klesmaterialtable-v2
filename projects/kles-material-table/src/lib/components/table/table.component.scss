@@ -5,13 +5,13 @@
     height: 100%;
 }
 
-table {
-    width: 100%;
-}
-
 :host(.loading) {
     min-height: 220px;
     overflow: hidden;
+}
+
+table {
+    width: 100%;
 }
 
 th,
@@ -22,6 +22,12 @@ td {
 
 td {
     word-break: break-word;
+}
+
+td .cell {
+    display: flex;
+    flex-direction: column;
+    justify-content: var(--align, center);
 }
 
 .table-overlay {

@@ -30,9 +30,10 @@ import { FilterStore } from '../services/store/filter-store.service';
 import { DragDropLazyService, DragDropService } from '../services/features/dragdrop/dragdrop.service';
 import { KlesForm } from '../components/table/form';
 import { ITable } from '../core/table/table.interface';
-import { COLUMNS, LOADER_CONFIG, PAGINATOR_CONFIG, ROW_DRAG_DROP } from '../token';
+import { COLUMNS, LOADER_CONFIG, PAGINATOR_CONFIG, ROW_DRAG_DROP, SORT_CONFIG } from '../token';
 import { KlesColumnConfig } from '../core/table/column.interface';
 import { ColumnsService } from '../services/features/columns/columns.service';
+import { MatPaginatorIntl } from '@angular/material/paginator';
 
 @Directive({
     selector: '[appDynamicTableLoader]',
@@ -98,11 +99,11 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
 
     private initInjector(): DestroyableInjector {
         const storeProviders = [SortStore, FilterStore, ...(this.tableConfig().paginator ? [PaginatorStore] : [])];
-
-        const providers: Array<Provider | StaticProvider> = [
-            KlesForm,
-            LoaderService,
-            storeProviders,
+        const configProviders = [
+            {
+                provide: SORT_CONFIG,
+                useValue: this.tableConfig().sortConfig
+            },
             {
                 provide: PAGINATOR_CONFIG,
                 useValue: {
@@ -112,6 +113,21 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
                     pageSizeOptions: this.tableConfig().pageSizeOptions,
                 },
             },
+            ...(this.tableConfig().customMatPaginatorIntl
+                ? [
+                      {
+                          provide: MatPaginatorIntl,
+                          useClass: this.tableConfig().customMatPaginatorIntl,
+                      },
+                  ]
+                : []),
+        ];
+
+        const providers: Array<Provider | StaticProvider> = [
+            KlesForm,
+            LoaderService,
+            storeProviders,
+            configProviders,
             ColumnsService,
             {
                 provide: COLUMNS,

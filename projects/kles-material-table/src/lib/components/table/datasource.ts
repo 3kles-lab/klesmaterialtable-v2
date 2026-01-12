@@ -19,7 +19,7 @@ import { ColumnsService } from '../../services/features/columns/columns.service'
 
 @Injectable()
 export class KlesDataSource extends MatTableDataSource<FormGroup, MatPaginator> implements IKlesDataSource {
-    _loading = signal(false);
+    private _loading = signal(false);
     loading = this._loading.asReadonly();
 
     form: FormGroup;
@@ -198,7 +198,10 @@ export class KlesDataSource extends MatTableDataSource<FormGroup, MatPaginator> 
     override set sort(sort: MatSort) {
         super.sort = sort;
 
-        if (super.sort) {
+        if (this.sort) {
+            this.sort.active = this.sortStore?.snapshot()?.active;
+            this.sort.direction = this.sortStore?.snapshot()?.direction;
+
             this.sort.sortChange.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
                 this.sortStore?.setSort(event);
             });
@@ -335,10 +338,14 @@ export class KlesLazyDataSource implements IKlesDataSource {
     }
     set sort(sort: MatSort) {
         this._sort = sort;
+        if (this._sort) {
+            this._sort.active = this.sortStore?.snapshot()?.active;
+            this._sort.direction = this.sortStore?.snapshot()?.direction;
 
-        this._sort.sortChange.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
-            this.setSort(event.active, event.direction);
-        });
+            this._sort.sortChange.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
+                this.setSort(event.active, event.direction);
+            });
+        }
     }
 
     get paginator(): MatPaginator {

@@ -1,6 +1,7 @@
 import { AfterViewInit, Component, OnInit, signal, Signal, ViewChild } from '@angular/core';
 import { MaterialModule } from './modules/material.module';
 import {
+    AlignCell,
     KlesFormDynamicHeaderFilterComponent,
     KlesMaterialTableModule,
     KlesTableComponent,
@@ -45,6 +46,7 @@ export class AppComponent implements OnInit, AfterViewInit {
                 sortable: true,
                 filterable: true,
                 width: '90px',
+                align: AlignCell.RIGHT,
                 headerCell: {
                     label: '_id',
                     component: KlesFormDynamicHeaderFilterComponent,
@@ -66,9 +68,10 @@ export class AppComponent implements OnInit, AfterViewInit {
                 sortable: true,
                 filterable: true,
                 visible: true,
-                // maxWidth:'200px',
-                // minWidth: '200px',
-                width: '20px',
+                align: AlignCell.LEFT,
+                maxWidth: '350px',
+                minWidth: '350px',
+                // width: '350px',
                 headerCell: {
                     label: 'Name',
                     component: KlesFormDynamicHeaderFilterComponent,
@@ -178,6 +181,11 @@ export class AppComponent implements OnInit, AfterViewInit {
         dragDropRows: {
             enable: true,
         },
+        // sortConfig: {
+        //     active: 'name',
+        //     direction: 'desc',
+        // },
+        
     };
 
     lazyConfig: KlesTableConfig = {

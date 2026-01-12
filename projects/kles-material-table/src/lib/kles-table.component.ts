@@ -1,4 +1,4 @@
-import { Component, ComponentRef, Inject, input, OnInit } from '@angular/core';
+import { Component, ComponentRef, HostBinding, Inject, input, OnInit } from '@angular/core';
 import { DynamicTableLoaderDirective } from './directives/dynamic-table-loader.directive';
 import { KlesTableConfig } from './core/table/config.interface';
 import { ITable } from './core/table/table.interface';
@@ -10,7 +10,7 @@ import { KlesTableManagerService, KlesTableService } from './kles-table.service'
     standalone: true,
     imports: [DynamicTableLoaderDirective],
     providers: [KlesTableManagerService, KlesTableService],
-    styleUrl: './kles-table.component.scss'
+    styleUrl: './kles-table.component.scss',
 })
 export class KlesTableComponent implements OnInit {
     tableConfig = input.required<KlesTableConfig>();
@@ -21,5 +21,10 @@ export class KlesTableComponent implements OnInit {
 
     protected onCreated(ref: ComponentRef<ITable>) {
         this.managerService.table = ref?.instance;
+    }
+
+    @HostBinding('attr.id')
+    get hostId() {
+        return this.tableConfig()?.id ?? null;
     }
 }

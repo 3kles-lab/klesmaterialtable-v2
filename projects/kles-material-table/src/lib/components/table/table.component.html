@@ -1,4 +1,5 @@
 <form [formGroup]="dataSource.form" (ngSubmit)="submit()" #wrap>
+    <!-- [fixedLayout]="true" -->
     <table
         mat-table
         [dataSource]="dataSource"
@@ -46,7 +47,9 @@
                         | resolveNgStyle : row.controls[column.columnDef].value : row.controls[column.columnDef].status : row.value : row.status
                 "
             >
-                <ng-container klesDynamicField [field]="column | cellField" [group]="row"></ng-container>
+                <div class="cell" [style.--align]="column.align">
+                    <ng-container klesDynamicField [field]="column | cellField" [group]="row"></ng-container>
+                </div>
             </td>
         </ng-container>
         }
@@ -54,9 +57,9 @@
         <tr mat-header-row *matHeaderRowDef="columnsService.displayedColumns(); sticky: true"></tr>
         <tr mat-row *matRowDef="let row; columns: columnsService.displayedColumns()" cdkDrag [cdkDragData]="row"></tr>
 
-        <!-- <tr *matNoDataRow>
-            no data
-        </tr> -->
+        <tr *matNoDataRow>
+            @if(!(dataSource.loading()) ){ no data TODO }
+        </tr>
     </table>
 </form>
 

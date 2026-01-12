@@ -2,17 +2,17 @@ import { Type } from '@angular/core';
 import { AsyncValidatorFn, FormGroup, ValidatorFn } from '@angular/forms';
 import { MatPaginatorIntl } from '@angular/material/paginator';
 import { Sort } from '@angular/material/sort';
-import { LinesLazyLoader, LinesLoader } from './loader.interface';
 import { KlesColumnConfig } from './column.interface';
+import { LinesLazyLoader, LinesLoader } from './loader.interface';
 
 export interface IDefaultTableConfig {
     id?: string;
     columns: KlesColumnConfig[];
-    lineValidations?: ValidatorFn[];
-    lineAsyncValidations?: AsyncValidatorFn[];
-    footer?: boolean;
+    lineValidations?: ValidatorFn[]; //TODO
+    lineAsyncValidations?: AsyncValidatorFn[]; //TODO
+    footer?: boolean; //TODO
     sortConfig?: Sort;
-    selectionMode?: boolean;
+    selectionMode?: boolean; //TODO
 }
 
 export interface IPaginatorConfig {
@@ -23,7 +23,7 @@ export interface IPaginatorConfig {
 }
 
 export interface IInfiniteScrollConfig {
-    infinite?: boolean;
+    infinite?: boolean; //TODO
 }
 
 export interface IDragDropConfig {
@@ -31,12 +31,14 @@ export interface IDragDropConfig {
     options?: {
         autoScrollStep?: number;
         connectedTo?: string[];
-        dragDisabled?: (row: FormGroup) => boolean;
+        dragDisabled?: (row: FormGroup) => boolean; //TODO
         dragPreview?: {
+            //TODO
             matchSize?: boolean;
             component: Type<any>;
         };
         dragPlaceholder?: {
+            //TODO
             component: Type<any>;
         };
     };
@@ -44,7 +46,7 @@ export interface IDragDropConfig {
 
 export type IDragDrop = {
     dragDropRows?: IDragDropConfig;
-    drapDropColumns?: IDragDropConfig;
+    drapDropColumns?: IDragDropConfig; //TODO
 };
 
 export type ILoader<T, R> = { lazy: true; lines: LinesLazyLoader<T, R> } | { lazy?: false | undefined; lines: LinesLoader<T, R> };
