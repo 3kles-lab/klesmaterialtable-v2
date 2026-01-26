@@ -7,8 +7,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatTable, MatTableModule } from '@angular/material/table';
 
-import { IKlesDataSource } from '../../core/datasource/datasource.interface';
-import { KLES_DATA_SOURCE } from './datasource';
 import { ITable } from '../../core/table/table.interface';
 
 import { CdkTableModule } from '@angular/cdk/table';
@@ -16,14 +14,19 @@ import { KlesMaterialDynamicformsModule } from '@3kles/kles-material-dynamicform
 import { HeaderFieldPipe } from '../../pipes/header-field.pipe';
 import { CellFieldPipe } from '../../pipes/cell-field.pipe';
 import { MatSort, MatSortModule } from '@angular/material/sort';
-import { DragDropModule } from '@angular/cdk/drag-drop';
+import { CdkDrag, CdkDropList, DragDropModule } from '@angular/cdk/drag-drop';
 import { DragDropService } from '../../services/features/dragdrop/dragdrop.service';
-import { ROW_DRAG_DROP } from '../../token';
-import { ColumnsService } from '../../services/features/columns/columns.service';
+import { ROW_DRAG_DROP, TABLE_SERVICE } from '../../token';
 import { ResolveNgStylePipe } from '../../pipes/ng-style.pipe';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ResizableColumnDirective } from '../../directives/resizable-column.directive';
 import { ScrollbarService } from '../../services/features/scrollbar/scrollbar.service';
+import { ITableService } from '../../services/features/table/table.service';
+import { ScrollbarApi } from '../../core/api/scrollbar';
+import { KlesTableConnectorService } from '../../kles-table-connector.service';
+import { ColumnApi } from '../../core/api/column';
+import { ColumnsService } from '../../services/features/columns/columns.service';
+import { PaginationApi } from '../../core/api/pagination';
 
 @Component({
     selector: 'kles-table',
@@ -57,23 +60,63 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
     headerHeightPx = 56;
     private ro?: ResizeObserver;
 
+    dataSource: any;
+
     constructor(
-        @Inject(KLES_DATA_SOURCE) public dataSource: IKlesDataSource,
-        public columnsService: ColumnsService,
+        private connectorService: KlesTableConnectorService,
+        @Inject(TABLE_SERVICE) public tableService: ITableService,
         @Inject(ROW_DRAG_DROP) public dragDropRowService: DragDropService,
+        public columnsService: ColumnsService,
         private host: ElementRef<HTMLElement>,
-        public scrollbarService: ScrollbarService,
+        private scrollbarService: ScrollbarService,
     ) {
+        this.connectorService.connect(this);
         this.scrollbarService.register(this.host.nativeElement);
     }
 
     @HostBinding('class.loading')
     get isLoadingClass() {
-        return this.dataSource.loading();
+        return this.tableService.loading();
+    }
+
+    get scrollbar(): ScrollbarApi {
+        return {
+            getTop: () => this.scrollbarService.getTop(),
+            to: (top, left, sb) => this.scrollbarService.to(top, left, sb),
+            toTop: (sb) => this.scrollbarService.toTop(sb),
+            toLeft: (sb) => this.scrollbarService.toLeft(sb),
+            toBottom: (sb) => this.scrollbarService.toBottom(sb),
+            toRight: (sb) => this.scrollbarService.toRight(sb),
+        };
+    }
+
+    get column(): ColumnApi {
+        return {
+            setVisible: (columnDef, visible) => this.columnsService.setVisible(columnDef, visible),
+            toggleVisible: (columnDef) => this.columnsService.toggleVisible(columnDef),
+            changeWidth: (columnDef, options) => this.columnsService.changeWidth(columnDef, options),
+            setResizable: (columnDef, resizable) => this.columnsService.setResizable(columnDef, resizable),
+            toggleResizable: (columnDef) => this.columnsService.toggleResizable(columnDef),
+            setSticky: (columnDef, options) => this.columnsService.setSticky(columnDef, options),
+            columns: () => this.columnsService.columns(),
+        };
+    }
+
+    get pagination(): PaginationApi {
+        return {
+            setPageIndex: (index) => this.tableService.setPageIndex(index),
+            setPageSize: (size) => this.tableService.setPageSize(size),
+            firstPage: () => this.tableService.firstPage(),
+            lastPage: () => this.tableService.lastPage(),
+        };
+    }
+
+    refresh() {
+        this.tableService.refresh();
     }
 
     ngOnInit(): void {
-        this.dataSource.sort = this.sort;
+        this.tableService.sort = this.sort;
     }
 
     ngAfterViewInit(): void {
@@ -82,7 +125,7 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
 
     ngOnDestroy(): void {
         this.ro?.disconnect();
-         this.scrollbarService.unregister();
+        this.scrollbarService.unregister();
     }
 
     submit() {

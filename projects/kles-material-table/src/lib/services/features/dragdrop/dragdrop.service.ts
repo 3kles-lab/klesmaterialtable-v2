@@ -1,10 +1,9 @@
 import { Inject, Injectable, Optional } from '@angular/core';
 import { CdkDrag, CdkDragDrop } from '@angular/cdk/drag-drop';
 import { IDragDropConfig } from '../../../core/table/config.interface';
-import { IKlesDataSource } from '../../../core/datasource/datasource.interface';
-import { FormArray } from '@angular/forms';
 import { PaginatorStore } from '../../store/paginator-store.service';
 import { DRAG_DROP_CONFIG } from '../../../token';
+import { FormArray, FormGroup } from '@angular/forms';
 
 export abstract class DragDropBase {
     constructor(protected config: IDragDropConfig) {}
@@ -14,7 +13,7 @@ export abstract class DragDropBase {
     }
 
     get autoScrollStep() {
-        return this.config?.options?.autoScrollStep;
+        return this.config?.options?.autoScrollStep ?? true;
     }
 
     get connectedTo() {
@@ -35,7 +34,7 @@ export abstract class DragDropBase {
         return this.config.options?.dragPreview?.matchSize || true;
     }
 
-    abstract listDropped(event: CdkDragDrop<IKlesDataSource>): void;
+    abstract listDropped(event: CdkDragDrop<FormArray<FormGroup>>): void;
 }
 
 @Injectable()
@@ -44,12 +43,11 @@ export class DragDropService extends DragDropBase {
         super(config);
     }
 
-    listDropped(event: CdkDragDrop<IKlesDataSource>) {
+    listDropped(event: CdkDragDrop<FormArray<FormGroup>>) {
         if (event.previousContainer === event.container) {
-            const faRows = event.container.data.form.get('rows') as FormArray;
-            const previousIndex = faRows.controls.findIndex((c) => c.value._id === event.item.data.value._id);
-
+            const faRows = event.container.data;
             const currentIndex = event.currentIndex + (this.paginatorStore?.snapshot().page * this.paginatorStore?.snapshot().perPage || 0);
+            const previousIndex = event.previousIndex + (this.paginatorStore?.snapshot().page * this.paginatorStore?.snapshot().perPage || 0);
 
             if (previousIndex >= 0) {
                 const ctrl = faRows.at(previousIndex);
@@ -69,7 +67,7 @@ export class DragDropLazyService extends DragDropBase {
         super(config);
     }
 
-    listDropped(event: CdkDragDrop<IKlesDataSource>) {
+    listDropped(event: CdkDragDrop<FormArray<FormGroup>>) {
         console.log('lazy');
         // TODO appeler un observable + refresh tableau
     }

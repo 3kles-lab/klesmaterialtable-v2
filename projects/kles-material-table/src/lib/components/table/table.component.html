@@ -1,14 +1,14 @@
-<form [formGroup]="dataSource.form" (ngSubmit)="submit()">
+<form [formGroup]="tableService.form" (ngSubmit)="submit()">
     <!-- [fixedLayout]="true" -->
     <table
         mat-table
-        [dataSource]="dataSource"
+        [dataSource]="tableService.dataSource"
         matSort
-        [trackBy]="dataSource.trackBy"
+        [trackBy]="tableService.trackBy"
         class="mat-elevation-z2"
         formArrayName="rows"
         cdkDropList
-        [cdkDropListData]="dataSource"
+        [cdkDropListData]="tableService.form.controls.rows"
         (cdkDropListDropped)="dragDropRowService.listDropped($event)"
         [cdkDropListDisabled]="!dragDropRowService.enable"
         [cdkDropListAutoScrollStep]="dragDropRowService.autoScrollStep"
@@ -31,13 +31,13 @@
                 [ngStyle]="
                     column.headerCell?.style?.ngStyle
                         | resolveNgStyle
-                            : dataSource.form.get(['header', column.columnDef])?.value
-                            : dataSource.form.get(['header', column.columnDef])?.status
-                            : dataSource.form.controls.header.value
-                            : dataSource.form.controls.header.status
+                            : tableService.form.get(['header', column.columnDef])?.value
+                            : tableService.form.get(['header', column.columnDef])?.status
+                            : tableService.form.controls.header.value
+                            : tableService.form.controls.header.status
                 "
             >
-                <ng-container klesDynamicField [field]="column | headerField" [group]="dataSource.form.controls.header"></ng-container>
+                <ng-container klesDynamicField [field]="column | headerField" [group]="tableService.form.controls.header"></ng-container>
             </th>
 
             <td
@@ -59,12 +59,12 @@
         <tr mat-row *matRowDef="let row; columns: columnsService.displayedColumns()" cdkDrag [cdkDragData]="row"></tr>
 
         <tr *matNoDataRow>
-            @if(!(dataSource.loading()) ){ no data TODO }
+            @if(!(tableService.loading()) ){ no data TODO }
         </tr>
     </table>
 </form>
 
-@if(dataSource.loading() ){
+@if(tableService.loading() ){
 <div class="table-overlay" [style.--header-h.px]="headerHeightPx">
     <mat-spinner></mat-spinner>
 </div>

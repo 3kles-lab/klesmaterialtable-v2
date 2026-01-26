@@ -1,30 +1,48 @@
-import { Component, ComponentRef, HostBinding, Inject, input, OnInit } from '@angular/core';
+import { Component, HostBinding, input, OnInit } from '@angular/core';
 import { DynamicTableLoaderDirective } from './directives/dynamic-table-loader.directive';
 import { KlesTableConfig } from './core/table/config.interface';
-import { ITable } from './core/table/table.interface';
-import { KlesTableManagerService, KlesTableService } from './kles-table.service';
+import { KlesTableConnectorService } from './kles-table-connector.service';
+import { KlesTableApi } from './core/api/table';
+import { ScrollbarApi } from './core/api/scrollbar';
+import { RecordApi } from './core/api/record';
+import { ColumnApi } from './core/api/column';
+import { PaginationApi } from './core/api/pagination';
 
 @Component({
     selector: 'kles-dynamic-table',
     templateUrl: './kles-table.component.html',
     standalone: true,
     imports: [DynamicTableLoaderDirective],
-    providers: [KlesTableManagerService, KlesTableService],
+    providers: [KlesTableConnectorService],
     styleUrl: './kles-table.component.scss',
 })
-export class KlesTableComponent implements OnInit {
+export class KlesTableComponent implements OnInit, KlesTableApi {
     tableConfig = input.required<KlesTableConfig>();
 
-    constructor(public tableService: KlesTableService, private managerService: KlesTableManagerService) {}
+    constructor(private connectorService: KlesTableConnectorService) {}
 
     ngOnInit(): void {}
-
-    protected onCreated(ref: ComponentRef<ITable>) {
-        this.managerService.table = ref?.instance;
-    }
 
     @HostBinding('attr.id')
     get hostId() {
         return this.tableConfig()?.id ?? null;
+    }
+
+    refresh(): void {
+        this.connectorService.refresh();
+    }
+
+    get scrollbar(): ScrollbarApi {
+        return this.connectorService.scrollbar;
+    }
+    get record(): RecordApi {
+        return this.connectorService.record;
+    }
+    get column(): ColumnApi {
+        return this.connectorService.column;
+    }
+
+    get pagination(): PaginationApi {
+        return this.connectorService.pagination;
     }
 }

@@ -1,11 +1,11 @@
-import { computed, Directive, ElementRef, HostBinding, input, NgZone, Renderer2 } from '@angular/core';
+import { computed, Directive, effect, ElementRef, HostBinding, input, NgZone, OnChanges, OnInit, Renderer2, SimpleChanges } from '@angular/core';
 import { KlesColumnConfig } from '../core/table/column.interface';
 
 @Directive({
     selector: 'th[appResizableColumn]',
     standalone: true,
 })
-export class ResizableColumnDirective {
+export class ResizableColumnDirective implements OnInit, OnChanges {
     column = input.required<KlesColumnConfig>({ alias: 'appResizableColumn' });
 
     private minWidth = computed(() => {
@@ -20,6 +20,8 @@ export class ResizableColumnDirective {
     private cleanupMove?: () => void;
     private cleanupUp?: () => void;
 
+    private child: any;
+
     @HostBinding('attr.appResizableColumn')
     get appResizableColumnAttr() {
         return this.column().columnDef;
@@ -29,11 +31,19 @@ export class ResizableColumnDirective {
 
     ngOnInit() {
         if (this.column().resizable) {
-            const handle = this.renderer.createElement('span');
-            this.renderer.addClass(handle, 'resize-handle');
-            this.renderer.appendChild(this.el.nativeElement, handle);
-            this.renderer.listen(handle, 'mousedown', (e: MouseEvent) => this.onDown(e));
-            this.renderer.listen(handle, 'touchstart', (e: TouchEvent) => this.onTouchDown(e));
+            this.apply();
+        }
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if (!changes.column.isFirstChange()) {
+            if (changes.column.previousValue.resizable !== changes.column.currentValue.resizable) {
+                if (changes.column.currentValue.resizable) {
+                    this.apply();
+                } else {
+                    this.remove();
+                }
+            }
         }
     }
 
@@ -96,6 +106,23 @@ export class ResizableColumnDirective {
 
             // mode flex
             cell.style.flex = `0 0 ${px}px`;
+        }
+    }
+
+    private apply() {
+        this.remove();
+
+        this.child = this.renderer.createElement('span');
+        this.renderer.addClass(this.child, 'resize-handle');
+        this.renderer.appendChild(this.el.nativeElement, this.child);
+        this.renderer.listen(this.child, 'mousedown', (e: MouseEvent) => this.onDown(e));
+        this.renderer.listen(this.child, 'touchstart', (e: TouchEvent) => this.onTouchDown(e));
+    }
+
+    private remove() {
+        if (this.child) {
+            this.renderer.removeChild(this.el.nativeElement, this.child);
+            this.child = undefined;
         }
     }
 

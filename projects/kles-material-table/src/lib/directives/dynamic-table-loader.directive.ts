@@ -18,9 +18,6 @@ import {
 import { TableComponent } from '../components/table/table.component';
 import { isDestroyable } from '../utils';
 import { KlesTableConfig } from '../core/table/config.interface';
-import { LoaderService } from '../services/loader.service';
-import { KLES_DATA_SOURCE, KlesDataSource, KlesLazyDataSource } from '../components/table/datasource';
-
 import { PaginateTableComponent } from '../components/paginate-table/paginate-table.component';
 import { PaginatorStore } from '../services/store/paginator-store.service';
 import { SortService } from '../services/features/sort/sort.service';
@@ -28,13 +25,17 @@ import { SortStore } from '../services/store/sort-store.service';
 import { FilterService } from '../services/features/filter/filter.service';
 import { FilterStore } from '../services/store/filter-store.service';
 import { DragDropLazyService, DragDropService } from '../services/features/dragdrop/dragdrop.service';
-import { KlesForm } from '../components/table/form';
 import { ITable } from '../core/table/table.interface';
-import { COLUMNS, LOADER_CONFIG, PAGINATOR_CONFIG, ROW_DRAG_DROP, SORT_CONFIG } from '../token';
+import { COLUMNS, LOADER_CONFIG, PAGINATOR_CONFIG, ROW_DRAG_DROP, SELECTION_KEY, SORT_CONFIG, TABLE_SERVICE } from '../token';
 import { KlesColumnConfig } from '../core/table/column.interface';
 import { ColumnsService } from '../services/features/columns/columns.service';
 import { MatPaginatorIntl } from '@angular/material/paginator';
 import { ScrollbarService } from '../services/features/scrollbar/scrollbar.service';
+import { InfiniteScrollTableComponent } from '../components/infinite-scroll-table/infinite-scroll-table.component';
+import { SelectionService } from '../services/features/selection/selection.service';
+import { TableLazyService, TableService } from '../services/features/table/table.service';
+import { KlesForm } from '../services/features/table/form';
+import { LoaderLazyService, LoaderService } from '../services/features/loader/loader.service';
 
 @Directive({
     selector: '[appDynamicTableLoader]',
@@ -42,8 +43,6 @@ import { ScrollbarService } from '../services/features/scrollbar/scrollbar.servi
 export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
     tableConfig = input.required<KlesTableConfig>();
     private componentRef: ComponentRef<any> | null = null;
-
-    @Output() created = new EventEmitter<ComponentRef<any>>();
 
     constructor(private viewContainerRef: ViewContainerRef) {
         effect(() => {
@@ -68,12 +67,12 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
 
         this.viewContainerRef.clear();
 
-        let component: Type<ITable> = TableComponent;
+        let component: Type<any> = TableComponent;
 
         if (this.tableConfig().paginator) {
             component = PaginateTableComponent;
         } else if (this.tableConfig().infinite) {
-            // component = InfinitScrollTable
+            component = InfiniteScrollTableComponent;
         }
 
         const injector = this.initInjector();
@@ -81,22 +80,18 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
         this.componentRef = this.viewContainerRef.createComponent(component, {
             injector,
         });
-        
-        // this.componentRef.location.nativeElement
 
         this.componentRef.onDestroy(() => {
             if (isDestroyable(injector)) {
                 injector.destroy();
             }
         });
-        this.created.emit(this.componentRef);
     }
 
     private clearComponent() {
         if (this.componentRef) {
             this.componentRef.destroy();
             this.componentRef = null;
-            this.created.emit(null);
         }
     }
 
@@ -104,8 +99,23 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
         const storeProviders = [SortStore, FilterStore, ...(this.tableConfig().paginator ? [PaginatorStore] : [])];
         const configProviders = [
             {
+                provide: COLUMNS,
+                useValue: signal<KlesColumnConfig[]>(this.tableConfig().columns || []),
+            },
+            {
+                provide: LOADER_CONFIG,
+                useValue: {
+                    lazy: this.tableConfig().lazy,
+                    lines: this.tableConfig().lines,
+                },
+            },
+            {
+                provide: SELECTION_KEY,
+                useValue: '#select',
+            },
+            {
                 provide: SORT_CONFIG,
-                useValue: this.tableConfig().sortConfig
+                useValue: this.tableConfig().sortConfig,
             },
             {
                 provide: PAGINATOR_CONFIG,
@@ -126,62 +136,40 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
                 : []),
         ];
 
-        const providers: Array<Provider | StaticProvider> = [
+        const featureProviders = [
             KlesForm,
-            LoaderService,
-            storeProviders,
-            configProviders,
-            ScrollbarService,
             ColumnsService,
-            {
-                provide: COLUMNS,
-                useValue: signal<KlesColumnConfig[]>(this.tableConfig().columns || []),
-            },
-
-            {
-                provide: LOADER_CONFIG,
-                useValue: {
-                    lazy: this.tableConfig().lazy,
-                    lines: this.tableConfig().lines,
-                },
-            },
-            {
-                provide: ROW_DRAG_DROP,
-                useFactory: (paginatorstore: PaginatorStore | null) => new DragDropService(this.tableConfig().dragDropRows, paginatorstore),
-                deps: [],
-            },
+            ScrollbarService,
+            SelectionService,
+            ...(this.tableConfig().lazy
+                ? [
+                      LoaderLazyService,
+                      {
+                          provide: TABLE_SERVICE,
+                          useClass: TableLazyService,
+                      },
+                      {
+                          provide: ROW_DRAG_DROP,
+                          useFactory: () => new DragDropLazyService(this.tableConfig().dragDropRows),
+                      },
+                  ]
+                : [
+                      LoaderService,
+                      {
+                          provide: TABLE_SERVICE,
+                          useClass: TableService,
+                      },
+                      SortService,
+                      FilterService,
+                      {
+                          provide: ROW_DRAG_DROP,
+                          useFactory: (paginatorstore: PaginatorStore | null) => new DragDropService(this.tableConfig().dragDropRows, paginatorstore),
+                          deps: [...(this.tableConfig().paginator ? [PaginatorStore] : [])],
+                      },
+                  ]),
         ];
 
-        if (this.tableConfig().lazy) {
-            providers.push(
-                ...[
-                    {
-                        provide: ROW_DRAG_DROP,
-                        useFactory: () => new DragDropLazyService(this.tableConfig().dragDropRows),
-                    },
-                    {
-                        provide: KLES_DATA_SOURCE,
-                        useClass: KlesLazyDataSource,
-                    },
-                ],
-            );
-        } else {
-            providers.push(
-                ...[
-                    SortService,
-                    FilterService,
-                    {
-                        provide: ROW_DRAG_DROP,
-                        useFactory: (paginatorstore: PaginatorStore | null) => new DragDropService(this.tableConfig().dragDropRows, paginatorstore),
-                        deps: [...(this.tableConfig().paginator ? [PaginatorStore] : [])],
-                    },
-                    {
-                        provide: KLES_DATA_SOURCE,
-                        useClass: KlesDataSource,
-                    },
-                ],
-            );
-        }
+        const providers: Array<Provider | StaticProvider> = [storeProviders, configProviders, featureProviders];
 
         return Injector.create({
             parent: this.viewContainerRef.injector,

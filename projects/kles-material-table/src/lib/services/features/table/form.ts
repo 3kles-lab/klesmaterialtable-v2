@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { FormArray, FormGroup } from '@angular/forms';
+import { AbstractControl, FormArray, FormGroup } from '@angular/forms';
 
 @Injectable()
 export class KlesForm {
@@ -24,6 +24,10 @@ export class KlesForm {
     public setRows(rows: FormGroup[]) {
         this.getRows().clear();
         rows.forEach((r) => this.getRows().push(r));
+    }
+
+    public setHeader(name: string, header: AbstractControl, options?: { emitEvent?: false }): void {
+        this.getHeader().setControl(name, header, options);
     }
 
     get rows(): FormGroup[] {

@@ -15,12 +15,52 @@ export class ColumnsService {
     }
 
     public setVisible(columnDef: string, visible: boolean): void {
-        this._columns.update((columns) => columns.map((col) => (col.columnDef === columnDef ? { ...col, visible } : col)));
+        this.updateColumn(columnDef, { visible });
     }
 
     public toggleVisible(columnDef: string): void {
+        const visible = this._columns().find((col) => col.columnDef === columnDef)?.visible;
+        this.updateColumn(columnDef, { visible: visible === undefined ? false : !visible });
+    }
+
+    public changeWidth(columnDef: string, options: { width?: string; maxWidth?: string; minWidth?: string }) {
+        this.updateColumn(columnDef, {
+            ...(options.width && { width: options.width }),
+            ...(options.maxWidth && { maxWidth: options.maxWidth }),
+            ...(options.minWidth && { minWidth: options.minWidth }),
+        });
+    }
+
+    public setResizable(columnDef: string, resizable: boolean) {
+        this.updateColumn(columnDef, { resizable });
+    }
+
+    public toggleResizable(columnDef: string): void {
+        const resizable = this._columns().find((col) => col.columnDef === columnDef)?.resizable;
+        this.updateColumn(columnDef, { resizable: resizable === undefined ? true : !resizable });
+    }
+
+    public setSticky(columnDef: string, options: { sticky?: boolean; stickyEnd?: boolean }) {
+        this.updateColumn(columnDef, {
+            ...(options.sticky && { sticky: options.sticky }),
+            ...(options.stickyEnd && { stickyEnd: options.stickyEnd }),
+        });
+    }
+
+    public setColumnPosition(columnDef: string, position: number){
+        //TODO
+    }
+
+    private updateColumn(columnDef: string, config: Partial<KlesColumnConfig>): void {
         this._columns.update((columns) =>
-            columns.map((col) => (col.columnDef === columnDef ? { ...col, visible: col.visible === undefined ? false : !col.visible } : col)),
+            columns.map((col) =>
+                col.columnDef === columnDef
+                    ? {
+                          ...col,
+                          ...config,
+                      }
+                    : col,
+            ),
         );
     }
 

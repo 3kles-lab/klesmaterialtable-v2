@@ -1,8 +1,10 @@
-import { ScrollbarService } from "../../services/features/scrollbar/scrollbar.service";
-import { IKlesDataSource } from "../datasource/datasource.interface";
+import { ColumnApi } from '../api/column';
+import { PaginationApi } from '../api/pagination';
+import { ScrollbarApi } from '../api/scrollbar';
 
 export interface ITable {
-    dataSource: IKlesDataSource;
-    scrollbarService: ScrollbarService
-    
+    scrollbar: ScrollbarApi;
+    column: ColumnApi;
+    pagination?: PaginationApi | undefined
+    refresh();
 }

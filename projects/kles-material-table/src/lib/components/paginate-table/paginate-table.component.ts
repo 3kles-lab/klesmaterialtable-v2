@@ -1,12 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, Inject, OnInit, ViewChild } from '@angular/core';
+import { Component, Inject, OnInit, ViewChild } from '@angular/core';
 import { TableComponent } from '../table/table.component';
 import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
-import { PaginatorStore } from '../../services/store/paginator-store.service';
-import { ITable } from '../../core/table/table.interface';
-import { IKlesDataSource } from '../../core/datasource/datasource.interface';
-import { KLES_DATA_SOURCE } from '../table/datasource';
-import { ScrollbarService } from '../../services/features/scrollbar/scrollbar.service';
+import { TABLE_SERVICE } from '../../token';
+import { ITableService } from '../../services/features/table/table.service';
 
 @Component({
     selector: 'kles-paginate-table',
@@ -15,24 +12,17 @@ import { ScrollbarService } from '../../services/features/scrollbar/scrollbar.se
     standalone: true,
     imports: [CommonModule, TableComponent, MatPaginatorModule],
 })
-export class PaginateTableComponent implements OnInit, ITable {
+export class PaginateTableComponent implements OnInit {
     @ViewChild(MatPaginator, { static: true }) private paginator: MatPaginator;
     @ViewChild(TableComponent, { static: true }) table: TableComponent;
 
-    constructor(
-        private paginatorStore: PaginatorStore,
-        @Inject(KLES_DATA_SOURCE) public dataSource: IKlesDataSource,
-        public scrollbarService: ScrollbarService,
-    ) {}
+    constructor(@Inject(TABLE_SERVICE) public tableService: ITableService) {}
 
     ngOnInit(): void {
-        this.paginator.pageIndex = this.paginatorStore.snapshot().page;
-        this.paginator.pageSize = this.paginatorStore.snapshot().perPage;
-        this.paginator.pageSizeOptions = this.paginatorStore.pageSizeOptions;
-        this.table.dataSource.paginator = this.paginator;
+        this.tableService.paginator = this.paginator;
     }
 
     onPage(e: PageEvent) {
-        this.scrollbarService.toTop();
+        this.table?.scrollbar.toTop('instant');
     }
 }

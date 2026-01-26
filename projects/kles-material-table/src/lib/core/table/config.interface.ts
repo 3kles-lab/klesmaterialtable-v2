@@ -49,8 +49,8 @@ export type IDragDrop = {
     drapDropColumns?: IDragDropConfig; //TODO
 };
 
-export type ILoader<T, R> = { lazy: true; lines: LinesLazyLoader<T, R> } | { lazy?: false | undefined; lines: LinesLoader<T, R> };
+export type ILoaderConfig<T, R> = { lazy: true; lines: LinesLazyLoader<T, R> } | { lazy?: false | undefined; lines: LinesLoader<T, R> };
 
 type Exclusive<T, U> = (T & { [K in keyof U]?: never }) | (U & { [K in keyof T]?: never });
 
-export type KlesTableConfig<T = any, R = any> = IDefaultTableConfig & Exclusive<IPaginatorConfig, IInfiniteScrollConfig> & ILoader<T, R> & IDragDrop;
+export type KlesTableConfig<T = any, R = any> = IDefaultTableConfig & Exclusive<IPaginatorConfig, IInfiniteScrollConfig> & ILoaderConfig<T, R> & IDragDrop;
