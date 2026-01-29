@@ -7,7 +7,7 @@ import { SortStore } from '../../store/sort-store.service';
 import { FilterStore } from '../../store/filter-store.service';
 import { LinesLazyLoader, LinesLoader } from '../../../core/table/loader.interface';
 
-interface ILoader<R> {
+export interface ILoader<R> {
     load(): Observable<{ total: number; items: R[]; loading: boolean; error?: any }>;
     refresh(): void;
 }

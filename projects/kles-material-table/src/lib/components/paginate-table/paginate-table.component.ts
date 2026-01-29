@@ -3,7 +3,8 @@ import { Component, Inject, OnInit, ViewChild } from '@angular/core';
 import { TableComponent } from '../table/table.component';
 import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { TABLE_SERVICE } from '../../token';
-import { ITableService } from '../../services/features/table/table.service';
+import { ITableService } from '../../services/features/table/abstract-table.service';
+
 
 @Component({
     selector: 'kles-paginate-table',

@@ -3,12 +3,10 @@ import {
     DestroyableInjector,
     Directive,
     effect,
-    EventEmitter,
     Injector,
     input,
     OnDestroy,
     OnInit,
-    Output,
     Provider,
     signal,
     StaticProvider,
@@ -25,14 +23,12 @@ import { SortStore } from '../services/store/sort-store.service';
 import { FilterService } from '../services/features/filter/filter.service';
 import { FilterStore } from '../services/store/filter-store.service';
 import { DragDropLazyService, DragDropService } from '../services/features/dragdrop/dragdrop.service';
-import { ITable } from '../core/table/table.interface';
 import { COLUMNS, LOADER_CONFIG, PAGINATOR_CONFIG, ROW_DRAG_DROP, SELECTION_KEY, SORT_CONFIG, TABLE_SERVICE } from '../token';
 import { KlesColumnConfig } from '../core/table/column.interface';
 import { ColumnsService } from '../services/features/columns/columns.service';
 import { MatPaginatorIntl } from '@angular/material/paginator';
 import { ScrollbarService } from '../services/features/scrollbar/scrollbar.service';
 import { InfiniteScrollTableComponent } from '../components/infinite-scroll-table/infinite-scroll-table.component';
-import { SelectionService } from '../services/features/selection/selection.service';
 import { TableLazyService, TableService } from '../services/features/table/table.service';
 import { KlesForm } from '../services/features/table/form';
 import { LoaderLazyService, LoaderService } from '../services/features/loader/loader.service';
@@ -140,7 +136,6 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
             KlesForm,
             ColumnsService,
             ScrollbarService,
-            SelectionService,
             ...(this.tableConfig().lazy
                 ? [
                       LoaderLazyService,

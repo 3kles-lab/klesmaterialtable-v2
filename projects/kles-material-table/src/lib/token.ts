@@ -3,7 +3,8 @@ import { KlesColumnConfig } from './core/table/column.interface';
 import { ILoaderConfig, IPaginatorConfig } from './core/table/config.interface';
 import { DragDropService } from './services/features/dragdrop/dragdrop.service';
 import { Sort } from '@angular/material/sort';
-import { ITableService } from './services/features/table/table.service';
+import { ITableService } from './services/features/table/abstract-table.service';
+
 
 export const LOADER_CONFIG = new InjectionToken<ILoaderConfig<any, any>>('LOADER_CONFIG');
 export const COLUMNS = new InjectionToken<WritableSignal<KlesColumnConfig[]>>('COLUMNS');

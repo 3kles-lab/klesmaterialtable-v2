@@ -21,12 +21,13 @@ import { ResolveNgStylePipe } from '../../pipes/ng-style.pipe';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ResizableColumnDirective } from '../../directives/resizable-column.directive';
 import { ScrollbarService } from '../../services/features/scrollbar/scrollbar.service';
-import { ITableService } from '../../services/features/table/table.service';
+
 import { ScrollbarApi } from '../../core/api/scrollbar';
 import { KlesTableConnectorService } from '../../kles-table-connector.service';
 import { ColumnApi } from '../../core/api/column';
 import { ColumnsService } from '../../services/features/columns/columns.service';
 import { PaginationApi } from '../../core/api/pagination';
+import { ITableService } from '../../services/features/table/abstract-table.service';
 
 @Component({
     selector: 'kles-table',

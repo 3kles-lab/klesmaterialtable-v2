@@ -5,6 +5,6 @@ import { ScrollbarApi } from '../api/scrollbar';
 export interface ITable {
     scrollbar: ScrollbarApi;
     column: ColumnApi;
-    pagination?: PaginationApi | undefined
+    pagination?: PaginationApi | undefined;
     refresh();
 }

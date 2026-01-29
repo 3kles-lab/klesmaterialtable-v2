@@ -9,7 +9,10 @@ export class KlesSelectionModel<T> implements IKlesSelectionModel<T> {
     private _stateChanged = new Subject<KlesSelectionModelState>();
     private _state: KlesSelectionModelState = KlesSelectionModelState.ENABLED;
 
-    constructor(private multiple: boolean = false, initialValues?: T[]) {
+    constructor(
+        private multiple: boolean = false,
+        initialValues?: T[],
+    ) {
         initialValues?.forEach((v) => {
             this._selection.add(v);
         });
@@ -31,7 +34,7 @@ export class KlesSelectionModel<T> implements IKlesSelectionModel<T> {
         return this._state;
     }
 
-    select(value: T | T[], options?: { emitEvent?: boolean }): Observable<{ count: number }> {
+    public select(value: T | T[], options?: { emitEvent?: boolean }): void {
         const added = [];
         if (this._state === KlesSelectionModelState.ENABLED) {
             if (Array.isArray(value)) {
@@ -59,31 +62,61 @@ export class KlesSelectionModel<T> implements IKlesSelectionModel<T> {
         if (options?.emitEvent) {
             this._changed.next({ added, removed: [], count: this._selection.size, state: this._state });
         }
-        return of({ count: 0 });
     }
 
-    deselect(value: T | T[], options?: { emitEvent?: boolean }): Observable<any> {
-        throw new Error('Method not implemented.');
+    public deselect(value: T | T[], options?: { emitEvent?: boolean }): void {
+        const removed = [];
+        if (this._state === KlesSelectionModelState.ENABLED) {
+            if (Array.isArray(value)) {
+                if (value.length > 1 && !this.multiple) {
+                    throw getMultipleValuesInSingleSelectionError();
+                }
+
+                value.forEach((v) => {
+                    if (this.isSelected(v)) {
+                        this._selection.delete(v);
+                        removed.push(v);
+                    }
+                });
+            } else {
+                if (this.isSelected(value)) {
+                    this._selection.delete(value);
+                    removed.push(value);
+                }
+            }
+        }
+
+        if (options?.emitEvent) {
+            this._changed.next({ added: [], removed, count: this._selection.size, state: this._state });
+        }
     }
 
-    isEmpty(): boolean {
+    public toggle(value: T, options?: { emitEvent?: boolean }): void {
+        if (this.isSelected(value)) {
+            this.deselect(value, options);
+        } else {
+            this.select(value, options);
+        }
+    }
+
+    public isEmpty(): boolean {
         return this._selection.size === 0;
     }
 
-    hasValue(): boolean {
+    public hasValue(): boolean {
         return this._selection.size > 0;
     }
 
-    disable(): void {
+    public disable(): void {
         this._state = KlesSelectionModelState.ENABLED;
         this._stateChanged.next(this._state);
     }
-    enable(): void {
+    public enable(): void {
         this._state = KlesSelectionModelState.DISABLED;
         this._stateChanged.next(this._state);
     }
 
-    private isSelected(value: T): boolean {
+    public isSelected(value: T): boolean {
         return this._selection.has(this.getValue(value));
     }
 

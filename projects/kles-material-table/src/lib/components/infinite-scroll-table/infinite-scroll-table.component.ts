@@ -3,8 +3,9 @@ import { ITable } from '../../core/table/table.interface';
 import { CommonModule } from '@angular/common';
 import { TableComponent } from '../table/table.component';
 import { ScrollingModule } from '@angular/cdk/scrolling';
-import { ITableService } from '../../services/features/table/table.service';
+
 import { TABLE_SERVICE } from '../../token';
+import { ITableService } from '../../services/features/table/abstract-table.service';
 
 @Component({
     selector: 'kles-infinite-scroll-table',

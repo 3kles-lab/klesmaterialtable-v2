@@ -4,7 +4,6 @@ import { KlesTableConfig } from './core/table/config.interface';
 import { KlesTableConnectorService } from './kles-table-connector.service';
 import { KlesTableApi } from './core/api/table';
 import { ScrollbarApi } from './core/api/scrollbar';
-import { RecordApi } from './core/api/record';
 import { ColumnApi } from './core/api/column';
 import { PaginationApi } from './core/api/pagination';
 
@@ -35,9 +34,7 @@ export class KlesTableComponent implements OnInit, KlesTableApi {
     get scrollbar(): ScrollbarApi {
         return this.connectorService.scrollbar;
     }
-    get record(): RecordApi {
-        return this.connectorService.record;
-    }
+
     get column(): ColumnApi {
         return this.connectorService.column;
     }
