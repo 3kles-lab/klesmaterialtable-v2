@@ -11,6 +11,7 @@ import { ISortService } from './services/features/sort/sort.service';
 import { ILinesLoader } from './services/features/lines/lines-loader.service';
 import { ILinesService } from './services/features/lines/lines.service';
 import { ITableService } from './services/features/table/table.service';
+import { IHeaderService } from './services/features/header/header.service';
 
 export const SELECTION_CONFIG = new InjectionToken<SelectionConfig<any>>('SELECTION_CONFIG');
 
@@ -25,6 +26,7 @@ export const DRAG_DROP_CONFIG = new InjectionToken<DragDropService>('DRAG_DROP_C
 export const PAGINATOR_CONFIG = new InjectionToken<IPaginatorConfig>('PAGINATOR_CONFIG');
 export const SORT_CONFIG = new InjectionToken<Sort>('SORT_CONFIG');
 
+export const HEADER_SERVICE = new InjectionToken<IHeaderService>('HEADER_SERVICE');
 export const LINESLOADER_SERVICE = new InjectionToken<ILinesLoader<any>>('LINESLOADER_SERVICE');
 export const LINES_SERVICE = new InjectionToken<ILinesService>('LINES_SERVICE');
 export const DATASOURCE_SERVICE = new InjectionToken<IDatasourceService>('DATASOURCE_SERVICE');

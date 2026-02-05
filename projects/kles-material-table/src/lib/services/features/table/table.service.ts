@@ -1,10 +1,10 @@
 import { Inject, Injectable } from '@angular/core';
 import { FormArray, FormGroup } from '@angular/forms';
 import { ColumnsService } from '../columns/columns.service';
-import { DATASOURCE_SERVICE, LINES_SERVICE, LINESLOADER_SERVICE, SELECTION_SERVICE } from '../../../token';
+import { DATASOURCE_SERVICE, HEADER_SERVICE, LINES_SERVICE, LINESLOADER_SERVICE, SELECTION_SERVICE } from '../../../token';
 import { KlesForm } from './form';
 import { IDatasourceService } from '../datasource/datasource.service';
-import { HeaderService } from '../header/header.service';
+import { HeaderService, IHeaderService } from '../header/header.service';
 import { ILinesService } from '../lines/lines.service';
 import { ILinesLoader } from '../lines/lines-loader.service';
 import { ISelectionService } from '../selection/selection.service';
@@ -33,7 +33,7 @@ export class TableService implements ITableService {
         @Inject(DATASOURCE_SERVICE) private datasourceService: IDatasourceService,
         @Inject(LINES_SERVICE) private linesService: ILinesService,
         private fm: KlesForm,
-        private headerService: HeaderService,
+        @Inject(HEADER_SERVICE) private headerService: IHeaderService,
         @Inject(SELECTION_SERVICE) private selectionService: ISelectionService,
     ) {
         this.columnsService.register();

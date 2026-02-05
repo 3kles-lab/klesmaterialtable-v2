@@ -26,6 +26,7 @@ import { DragDropLazyService, DragDropService } from '../services/features/dragd
 import {
     COLUMNS,
     DATASOURCE_SERVICE,
+    HEADER_SERVICE,
     LINES_SERVICE,
     LINESLOADER_SERVICE,
     LOADER_CONFIG,
@@ -47,7 +48,7 @@ import { KlesForm } from '../services/features/table/form';
 import { LinesLoaderLazyService, LinesLoaderService } from '../services/features/lines/lines-loader.service';
 import { SelectionLoaderService } from '../services/features/selection/selection-loader.service';
 import { LoadingService } from '../services/features/loading/loading.service';
-import { HeaderService } from '../services/features/header/header.service';
+import { HeaderLazyService, HeaderService } from '../services/features/header/header.service';
 import { DatasourceLazyService, DatasourceService } from '../services/features/datasource/datasource.service';
 import { PaginatorService } from '../services/features/paginator/paginator.service';
 import { SelectionLazyService, SelectionService } from '../services/features/selection/selection.service';
@@ -171,7 +172,7 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
             LoadingService,
             KlesForm,
             ColumnsService,
-            HeaderService,
+
             ScrollbarService,
             SelectionLoaderService,
             PaginatorService,
@@ -182,6 +183,10 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
 
             ...(this.tableConfig().lazy
                 ? [
+                      {
+                          provide: HEADER_SERVICE,
+                          useClass: HeaderLazyService,
+                      },
                       {
                           provide: LINESLOADER_SERVICE,
                           useClass: LinesLoaderLazyService,
@@ -208,6 +213,10 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
                       {
                           provide: LINESLOADER_SERVICE,
                           useClass: LinesLoaderService,
+                      },
+                      {
+                          provide: HEADER_SERVICE,
+                          useClass: HeaderService,
                       },
                       {
                           provide: LINES_SERVICE,
