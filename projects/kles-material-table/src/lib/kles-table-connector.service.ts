@@ -5,6 +5,7 @@ import { ColumnApi } from './core/api/column';
 import { PaginationApi } from './core/api/pagination';
 import { SortApi } from './core/api/sort';
 import { LoadingApi } from './core/api/loading';
+import { SelectionApi } from './core/api/selection';
 
 @Injectable()
 export class KlesTableConnectorService {
@@ -39,6 +40,10 @@ export class KlesTableConnectorService {
 
     get loading(): LoadingApi {
         return this.table.loading;
+    }
+
+    get selection(): SelectionApi {
+        return this.table.selection;
     }
 
     public refresh() {

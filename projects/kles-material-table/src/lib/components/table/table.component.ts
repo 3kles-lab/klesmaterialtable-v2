@@ -16,7 +16,7 @@ import { CellFieldPipe } from '../../pipes/cell-field.pipe';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { DragDropService } from '../../services/features/dragdrop/dragdrop.service';
-import { DATASOURCE_SERVICE, LINES_SERVICE, ROW_DRAG_DROP, SORT_SERVICE, TABLE_SERVICE } from '../../token';
+import { DATASOURCE_SERVICE, LINES_SERVICE, ROW_DRAG_DROP, SELECTION_SERVICE, SORT_SERVICE, TABLE_SERVICE } from '../../token';
 import { ResolveNgStylePipe } from '../../pipes/ng-style.pipe';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ResizableColumnDirective } from '../../directives/resizable-column.directive';
@@ -38,6 +38,7 @@ import { IKlesDataSource } from '../../core/datasource/datasource.interface';
 import { LoadingApi } from '../../core/api/loading';
 import { ITableService } from '../../services/features/table/table.service';
 import { ILinesService } from '../../services/features/lines/lines.service';
+import { ISelectionService } from '../../services/features/selection/selection.service';
 
 @Component({
     selector: 'kles-table',
@@ -78,7 +79,8 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
         @Inject(DATASOURCE_SERVICE) private datasourceService: IDatasourceService,
         @Inject(TABLE_SERVICE) public tableService: ITableService,
         @Inject(ROW_DRAG_DROP) public dragDropRowService: DragDropService,
-         @Inject(LINES_SERVICE) private linesService: ILinesService,
+        @Inject(LINES_SERVICE) private linesService: ILinesService,
+        @Inject(SELECTION_SERVICE) private selectionService: ISelectionService,
         public columnsService: ColumnsService,
         public loadingService: LoadingService,
         private paginatorService: PaginatorService,
@@ -136,12 +138,14 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
 
     get selection(): SelectionApi {
         return {
-            disable: () => {},
-            enable: () => {},
-            changed: () => {},
-            isEmpty: () => {},
-            isMultipleSelection: () => {},
-            selected: () => {},
+            disable: () => this.selectionService.disable(),
+            enable: () => this.selectionService.enable(),
+            count: this.selectionService.count(),
+            selectionModel: this.selectionService.selectionModel,
+            // changed: () => {},
+            // isEmpty: () => {},
+            // isMultipleSelection: () => {},
+            // selected: () => {},
         };
     }
 

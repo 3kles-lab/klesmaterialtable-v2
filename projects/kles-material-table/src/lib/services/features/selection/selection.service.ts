@@ -12,6 +12,7 @@ import { LoadingService } from '../loading/loading.service';
 import { DatasourceService } from '../datasource/datasource.service';
 import { ColumnsService } from '../columns/columns.service';
 import { IKlesSelectionModel } from '../../../core/selection/selection-model.interface';
+import { KlesSelectionModelState } from '../../../core/selection/selection-state.enum';
 
 export interface ISelectionService {
     key: string;
@@ -19,6 +20,8 @@ export interface ISelectionService {
     register(): void;
     selectionModel?: IKlesSelectionModel<FormGroup>;
     count(): Signal<number>;
+    disable(): void;
+    enable(): void;
 }
 
 @Injectable()
@@ -37,6 +40,8 @@ export abstract class AbstractSelectionService<T> implements ISelectionService {
 
     abstract register(): void;
     abstract count(): Signal<number>;
+    abstract disable(): void;
+    abstract enable(): void;
 }
 
 @Injectable()
@@ -65,6 +70,14 @@ export class SelectionService<T> extends AbstractSelectionService<T> {
 
     public count(): Signal<number> {
         return this.selectionModel.count;
+    }
+
+    public disable(): void {
+        this.selectionModel.disable();
+    }
+
+    public enable(): void {
+        this.selectionModel.enable();
     }
 
     private listenHeaderSelection(): void {
@@ -166,6 +179,20 @@ export class SelectionService<T> extends AbstractSelectionService<T> {
 
             this.fm.getRows().updateValueAndValidity({ emitEvent: false });
         });
+
+        this.selectionModel.stateChanged.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((state) => {
+            if (state === KlesSelectionModelState.ENABLED) {
+                this.fm.getHeader().controls[this.key].enable({ emitEvent: false });
+                this.fm.getRows().controls.forEach((group) => {
+                    group.controls[this.key].enable({ emitEvent: false });
+                });
+            } else {
+                this.fm.getHeader().controls[this.key].disable({ emitEvent: false });
+                this.fm.getRows().controls.forEach((group) => {
+                    group.controls[this.key].disable({ emitEvent: false });
+                });
+            }
+        });
     }
 }
 
@@ -190,6 +217,14 @@ export class SelectionLazyService<T> extends AbstractSelectionService<T> {
 
     public count(): Signal<number> {
         return this._count.asReadonly();
+    }
+
+    public disable(): void {
+        this.fm.getHeader().controls[this.key].disable({ emitEvent: false });
+    }
+
+    public enable(): void {
+        this.fm.getHeader().controls[this.key].enable({ emitEvent: false });
     }
 
     private listenHeaderSelection(): void {

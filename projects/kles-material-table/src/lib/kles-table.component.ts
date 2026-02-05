@@ -8,6 +8,7 @@ import { ColumnApi } from './core/api/column';
 import { PaginationApi } from './core/api/pagination';
 import { SortApi } from './core/api/sort';
 import { LoadingApi } from './core/api/loading';
+import { SelectionApi } from './core/api/selection';
 
 @Component({
     selector: 'kles-dynamic-table',
@@ -49,7 +50,11 @@ export class KlesTableComponent implements OnInit, KlesTableApi {
         return this.connectorService.sort;
     }
 
-    get loading(): LoadingApi{
+    get loading(): LoadingApi {
         return this.connectorService.loading;
+    }
+
+    get selection(): SelectionApi {
+        return this.connectorService.selection;
     }
 }

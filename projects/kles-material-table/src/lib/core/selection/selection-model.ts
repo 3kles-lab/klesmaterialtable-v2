@@ -41,6 +41,10 @@ export class KlesSelectionModel<T> implements IKlesSelectionModel<T> {
         return this._state;
     }
 
+    get stateChanged() {
+        return this._stateChanged.asObservable();
+    }
+
     public select(value: T | T[], options?: { emitEvent?: boolean }): void {
         const added = [];
         const removed = [];
@@ -116,11 +120,11 @@ export class KlesSelectionModel<T> implements IKlesSelectionModel<T> {
     }
 
     public disable(): void {
-        this._state = KlesSelectionModelState.ENABLED;
+        this._state = KlesSelectionModelState.DISABLED;
         this._stateChanged.next(this._state);
     }
     public enable(): void {
-        this._state = KlesSelectionModelState.DISABLED;
+        this._state = KlesSelectionModelState.ENABLED;
         this._stateChanged.next(this._state);
     }
 
