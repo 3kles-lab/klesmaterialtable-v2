@@ -135,6 +135,7 @@ export class LinesLazyService implements ILinesService {
                 );
                 this.paginatorService.setlength(response.total ?? 0);
                 this._total = response.total ?? 0;
+                this._loaded.next();
             });
     }
 }
