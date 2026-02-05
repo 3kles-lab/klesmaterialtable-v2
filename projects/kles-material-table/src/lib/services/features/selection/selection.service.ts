@@ -1,5 +1,5 @@
 import { DestroyRef, inject, Inject, Injectable, Optional, Signal, signal } from '@angular/core';
-import { DATASOURCE_SERVICE, SELECTION_CONFIG } from '../../../token';
+import { DATASOURCE_SERVICE, LINES_SERVICE, SELECTION_CONFIG } from '../../../token';
 import { SelectionConfig } from '../../../core/table/selection-config.interface';
 import { KlesSelectionModel } from '../../../core/selection/selection-model';
 import { FormGroup } from '@angular/forms';
@@ -13,6 +13,7 @@ import { DatasourceService } from '../datasource/datasource.service';
 import { ColumnsService } from '../columns/columns.service';
 import { IKlesSelectionModel } from '../../../core/selection/selection-model.interface';
 import { KlesSelectionModelState } from '../../../core/selection/selection-state.enum';
+import { ILinesService } from '../lines/lines.service';
 
 export interface ISelectionService {
     key: string;
@@ -22,6 +23,7 @@ export interface ISelectionService {
     count(): Signal<number>;
     disable(): void;
     enable(): void;
+    setSelection(): void;
 }
 
 @Injectable()
@@ -37,6 +39,8 @@ export abstract class AbstractSelectionService<T> implements ISelectionService {
     }
 
     public selectionModel: IKlesSelectionModel<FormGroup>;
+
+    public setSelection() {}
 
     abstract register(): void;
     abstract count(): Signal<number>;
@@ -57,6 +61,7 @@ export class SelectionService<T> extends AbstractSelectionService<T> {
         private loadingService: LoadingService,
         private columnsService: ColumnsService,
         @Inject(DATASOURCE_SERVICE) private datasourceService: DatasourceService,
+        @Inject(LINES_SERVICE) private linesService: ILinesService,
     ) {
         super(selectionConfig);
         this.selectionModel = new KlesSelectionModel<FormGroup>(selectionConfig.selectionMode);
@@ -64,6 +69,7 @@ export class SelectionService<T> extends AbstractSelectionService<T> {
 
     public register(): void {
         this.listenSelection();
+        this.setSelection();
         this.listenRowSelection();
         this.listenHeaderSelection();
     }
@@ -78,6 +84,26 @@ export class SelectionService<T> extends AbstractSelectionService<T> {
 
     public enable(): void {
         this.selectionModel.enable();
+    }
+
+    public setSelection() {
+        if (this.selectionConfig.isSelected != undefined) {
+            this.linesService
+                .loaded()
+                .pipe(takeUntilDestroyed(this.destroyRef))
+                .subscribe(() => {
+                    this.fm.getRows().controls.forEach((group) => {
+                        if (this.selectionConfig.isSelected(group)) {
+                            this.selectionModel.select(group, { emitEvent: false });
+                            group.controls[this.selectionLoaderService.key].patchValue(true, { emitEvent: false });
+                        } else {
+                            this.selectionModel.deselect(group, { emitEvent: false });
+                            group.controls[this.selectionLoaderService.key].patchValue(false, { emitEvent: false });
+                        }
+                    });
+                    this.updateIndeterminate();
+                });
+        }
     }
 
     private listenHeaderSelection(): void {
@@ -163,21 +189,8 @@ export class SelectionService<T> extends AbstractSelectionService<T> {
             changed.added.forEach((group: FormGroup) => {
                 group.controls[this.selectionLoaderService.key].patchValue(true, { emitEvent: false });
             });
-
-            if (this.selectionModel.hasValue()) {
-                if (this.datasourceService.datasource.filteredData.length === this.selectionModel.selected.count) {
-                    this.columnsService.setHeaderCellIndeterminate(this.selectionLoaderService.key, false);
-                    this.fm.getHeader().controls[this.selectionLoaderService.key]?.patchValue(true, { emitEvent: false });
-                } else {
-                    this.columnsService.setHeaderCellIndeterminate(this.selectionLoaderService.key, true);
-                    this.fm.getHeader().controls[this.selectionLoaderService.key]?.patchValue(false, { emitEvent: false });
-                }
-            } else {
-                this.columnsService.setHeaderCellIndeterminate(this.selectionLoaderService.key, false);
-                this.fm.getHeader().controls[this.selectionLoaderService.key]?.patchValue(false, { emitEvent: false });
-            }
-
             this.fm.getRows().updateValueAndValidity({ emitEvent: false });
+            this.updateIndeterminate();
         });
 
         this.selectionModel.stateChanged.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((state) => {
@@ -194,6 +207,21 @@ export class SelectionService<T> extends AbstractSelectionService<T> {
             }
         });
     }
+
+    private updateIndeterminate() {
+        if (this.selectionModel.hasValue()) {
+            if (this.datasourceService.datasource.filteredData.length === this.selectionModel.selected.count) {
+                this.columnsService.setHeaderCellIndeterminate(this.selectionLoaderService.key, false);
+                this.fm.getHeader().controls[this.selectionLoaderService.key]?.patchValue(true, { emitEvent: false });
+            } else {
+                this.columnsService.setHeaderCellIndeterminate(this.selectionLoaderService.key, true);
+                this.fm.getHeader().controls[this.selectionLoaderService.key]?.patchValue(false, { emitEvent: false });
+            }
+        } else {
+            this.columnsService.setHeaderCellIndeterminate(this.selectionLoaderService.key, false);
+            this.fm.getHeader().controls[this.selectionLoaderService.key]?.patchValue(false, { emitEvent: false });
+        }
+    }
 }
 
 @Injectable()
@@ -206,13 +234,17 @@ export class SelectionLazyService<T> extends AbstractSelectionService<T> {
         private fm: KlesForm,
         private selectionLoaderService: SelectionLoaderService<T>,
         private scrollbarService: ScrollbarService,
+        private columnsService: ColumnsService,
         private loadingService: LoadingService,
+        @Inject(DATASOURCE_SERVICE) private datasourceService: DatasourceService,
+        @Inject(LINES_SERVICE) private linesService: ILinesService,
     ) {
         super(selectionConfig);
     }
 
     public register(): void {
         this.listenHeaderSelection();
+        this.listenRowSelection();
     }
 
     public count(): Signal<number> {
@@ -252,6 +284,52 @@ export class SelectionLazyService<T> extends AbstractSelectionService<T> {
                     // if (response.footer) {
                     //     this.fm.getFooter().patchValue(response.footer, { emitEvent: false });
                     // }
+                }
+            });
+    }
+
+    private listenRowSelection(): void {
+        this.datasourceService.datasource
+            .connect()
+            .pipe(
+                takeUntilDestroyed(this.destroyRef),
+                auditTime(0),
+                switchMap((rows) => {
+                    return merge(
+                        ...rows
+                            .map((row) => {
+                                return row.controls[this.selectionLoaderService.key]?.valueChanges.pipe(
+                                    map((value) => {
+                                        return { row, selected: !!value };
+                                    }),
+                                );
+                            })
+                            .filter(Boolean),
+                    );
+                }),
+                concatMap(({ row, selected }) => {
+                    return this.selectionLoaderService.select(row, selected).pipe(
+                        map((response) => {
+                            return {
+                                row,
+                                response,
+                            };
+                        }),
+                    );
+                }),
+            )
+
+            .subscribe(({ row, response }) => {
+                if (response.loading) {
+                    //mettre la ligne avec un spinner
+                } else {
+                    this.columnsService.setHeaderCellIndeterminate(
+                        this.selectionLoaderService.key,
+                        response.count > 0 && this.linesService.total() > response.count,
+                    );
+                    //         if (footer) {
+                    //             this.fm.getFooter().patchValue(footer, { emitEvent: false });
+                    //         }
                 }
             });
     }

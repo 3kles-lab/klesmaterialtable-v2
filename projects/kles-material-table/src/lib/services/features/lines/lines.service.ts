@@ -1,4 +1,4 @@
-import { DestroyRef, inject, Inject, Injectable } from '@angular/core';
+import { DestroyRef, EventEmitter, inject, Inject, Injectable } from '@angular/core';
 import { LinesLoaderLazyService, LinesLoaderService } from './lines-loader.service';
 import { LINESLOADER_SERVICE } from '../../../token';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -13,12 +13,17 @@ import { auditTime, combineLatest, map, startWith, Subject, switchMap } from 'rx
 export interface ILinesService {
     register(): void;
     refresh(): void;
+    total(): number;
+    loaded(): EventEmitter<void>;
 }
 
 @Injectable()
 export class LinesService implements ILinesService {
     private readonly destroyRef = inject(DestroyRef);
     private _refresh$ = new Subject<void>();
+    private _loaded = new EventEmitter<void>();
+
+    private _total: number;
 
     constructor(
         @Inject(LINESLOADER_SERVICE) private loader: LinesLoaderService<any, any>,
@@ -33,9 +38,16 @@ export class LinesService implements ILinesService {
         this.load();
     }
 
+    public total() {
+        return this._total;
+    }
+
     public refresh() {
-        console.log('refresh');
         this._refresh$.next();
+    }
+
+    public loaded(): EventEmitter<void> {
+        return this._loaded;
     }
 
     private load() {
@@ -49,7 +61,6 @@ export class LinesService implements ILinesService {
                 }),
             )
             .subscribe((response) => {
-                console.log(response);
                 if (response.loading) {
                     this.scrollbarService.toTop('instant');
                     this.loadingService.start();
@@ -64,26 +75,9 @@ export class LinesService implements ILinesService {
                         response.items,
                     ),
                 );
+                this._total = response.items.length;
+                this._loaded.next();
             });
-        // this.loader
-        //     .load()
-        //     .pipe(takeUntilDestroyed(this.destroyRef))
-        //     .subscribe((response) => {
-        //         if (response.loading) {
-        //             this.scrollbarService.toTop('instant');
-        //             this.loadingService.start();
-        //             return;
-        //         }
-
-        //         this.loadingService.stop();
-
-        //         this.fm.setRows(
-        //             this.rowFactory.createRows(
-        //                 this.columnsService.columns().map((col) => ({ ...col.cell, name: col.columnDef })),
-        //                 response.items,
-        //             ),
-        //         );
-        //     });
     }
 }
 
@@ -91,6 +85,8 @@ export class LinesService implements ILinesService {
 export class LinesLazyService implements ILinesService {
     private readonly destroyRef = inject(DestroyRef);
     private _refresh$ = new Subject<void>();
+    private _total: number;
+    private _loaded = new EventEmitter<void>();
 
     constructor(
         @Inject(LINESLOADER_SERVICE) private loader: LinesLoaderLazyService<any, any>,
@@ -104,6 +100,14 @@ export class LinesLazyService implements ILinesService {
 
     public register() {
         this.load();
+    }
+
+    public total() {
+        return this._total;
+    }
+
+    public loaded(): EventEmitter<void> {
+        return this._loaded;
     }
 
     public refresh() {
@@ -130,6 +134,7 @@ export class LinesLazyService implements ILinesService {
                     ),
                 );
                 this.paginatorService.setlength(response.total ?? 0);
+                this._total = response.total ?? 0;
             });
     }
 }
