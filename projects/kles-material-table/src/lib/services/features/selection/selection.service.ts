@@ -23,7 +23,6 @@ export interface ISelectionService {
     count(): Signal<number>;
     disable(): void;
     enable(): void;
-    setSelection(): void;
 }
 
 @Injectable()
@@ -39,8 +38,6 @@ export abstract class AbstractSelectionService<T> implements ISelectionService {
     }
 
     public selectionModel: IKlesSelectionModel<FormGroup>;
-
-    public setSelection() {}
 
     abstract register(): void;
     abstract count(): Signal<number>;
@@ -86,7 +83,7 @@ export class SelectionService<T> extends AbstractSelectionService<T> {
         this.selectionModel.enable();
     }
 
-    public setSelection() {
+    private setSelection() {
         if (this.selectionConfig.isSelected != undefined) {
             this.linesService
                 .loaded()
@@ -94,10 +91,10 @@ export class SelectionService<T> extends AbstractSelectionService<T> {
                 .subscribe(() => {
                     this.fm.getRows().controls.forEach((group) => {
                         if (this.selectionConfig.isSelected(group)) {
-                            this.selectionModel.select(group, { emitEvent: false });
+                            this.selectionModel.select(group, { emitEvent: false }); // event false to avoid multiple send event
                             group.controls[this.selectionLoaderService.key].patchValue(true, { emitEvent: false });
                         } else {
-                            this.selectionModel.deselect(group, { emitEvent: false });
+                            this.selectionModel.deselect(group, { emitEvent: false }); // event false to avoid multiple send event
                             group.controls[this.selectionLoaderService.key].patchValue(false, { emitEvent: false });
                         }
                     });
