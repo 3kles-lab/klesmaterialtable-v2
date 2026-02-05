@@ -2,7 +2,7 @@
     <!-- [fixedLayout]="true" -->
     <table
         mat-table
-        [dataSource]="tableService.dataSource"
+        [dataSource]="dataSource"
         matSort
         [trackBy]="tableService.trackBy"
         class="mat-elevation-z2"
@@ -59,12 +59,12 @@
         <tr mat-row *matRowDef="let row; columns: columnsService.displayedColumns()" cdkDrag [cdkDragData]="row"></tr>
 
         <tr *matNoDataRow>
-            @if(!(tableService.loading()) ){ no data TODO }
+            @if(!(loadingService.loading()) ){ no data TODO }
         </tr>
     </table>
 </form>
 
-@if(tableService.loading() ){
+@if(loadingService.loading() ){
 <div class="table-overlay" [style.--header-h.px]="headerHeightPx">
     <mat-spinner></mat-spinner>
 </div>

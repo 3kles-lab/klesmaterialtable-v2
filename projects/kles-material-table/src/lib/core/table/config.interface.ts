@@ -1,9 +1,10 @@
 import { Type } from '@angular/core';
 import { AsyncValidatorFn, FormGroup, ValidatorFn } from '@angular/forms';
-import { MatPaginatorIntl } from '@angular/material/paginator';
+import { MatPaginatorIntl, MatPaginatorSelectConfig } from '@angular/material/paginator';
 import { Sort } from '@angular/material/sort';
 import { KlesColumnConfig } from './column.interface';
 import { LinesLazyLoader, LinesLoader } from './loader.interface';
+import { SelectionConfig } from './selection-config.interface';
 
 export interface IDefaultTableConfig {
     id?: string;
@@ -12,7 +13,6 @@ export interface IDefaultTableConfig {
     lineAsyncValidations?: AsyncValidatorFn[]; //TODO
     footer?: boolean; //TODO
     sortConfig?: Sort;
-    selectionMode?: boolean; //TODO
 }
 
 export interface IPaginatorConfig {
@@ -20,6 +20,8 @@ export interface IPaginatorConfig {
     customMatPaginatorIntl?: Type<MatPaginatorIntl>;
     pageSize?: number;
     pageSizeOptions?: number[];
+    showFirstLastButtons?: boolean;
+    selectConfig?: MatPaginatorSelectConfig
 }
 
 export interface IInfiniteScrollConfig {
@@ -51,9 +53,14 @@ export type IDragDrop = {
 
 export type ILoaderConfig<T, R> = { lazy: true; lines: LinesLazyLoader<T, R> } | { lazy?: false | undefined; lines: LinesLoader<T, R> };
 
+export type Selection<T> = {
+    selection?: SelectionConfig<T>;
+};
+
 type Exclusive<T, U> = (T & { [K in keyof U]?: never }) | (U & { [K in keyof T]?: never });
 
 export type KlesTableConfig<T = any, R = any> = IDefaultTableConfig &
     Exclusive<IPaginatorConfig, IInfiniteScrollConfig> &
     ILoaderConfig<T, R> &
-    IDragDrop;
+    IDragDrop &
+    Selection<T>;

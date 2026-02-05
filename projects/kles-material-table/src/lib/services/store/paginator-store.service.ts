@@ -10,10 +10,7 @@ export class PaginatorStore implements ITableStore {
     private s: BehaviorSubject<Pagination>;
     public page$: Observable<Pagination>;
 
-    public pageSizeOptions: number[];
-
     constructor(@Optional() @Inject(PAGINATOR_CONFIG) protected config: IPaginatorConfig) {
-        this.pageSizeOptions = config?.pageSizeOptions ?? [5, 10, 20, 25, 50];
         this.s = new BehaviorSubject<Pagination>({ page: 0, perPage: config?.pageSize ?? 10 });
         this.page$ = this.s.asObservable();
     }

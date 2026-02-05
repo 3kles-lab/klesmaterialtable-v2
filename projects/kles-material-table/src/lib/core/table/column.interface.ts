@@ -1,3 +1,4 @@
+import { SortHeaderArrowPosition } from '@angular/material/sort';
 import { AlignCell } from '../../enums/align.enum';
 import { IKlesCellFieldConfig, IKlesHeaderFieldConfig } from './cell.interface';
 import { Signal } from '@angular/core';
@@ -13,6 +14,7 @@ export interface KlesColumnConfig {
     ngClass?: any;
     filterable?: boolean;
     sortable?: boolean;
+    sortArrowPosition?: SortHeaderArrowPosition;
     resizable?: boolean; //TODO
     headerCell: IKlesHeaderFieldConfig;
     cell: IKlesCellFieldConfig;

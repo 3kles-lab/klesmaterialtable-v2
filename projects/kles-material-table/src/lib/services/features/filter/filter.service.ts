@@ -1,25 +1,40 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { KlesColumnConfig } from '../../../core/table/column.interface';
 import * as _ from 'lodash';
+import { ColumnsService } from '../columns/columns.service';
+import { DatasourceService } from '../datasource/datasource.service';
+import { DATASOURCE_SERVICE } from '../../../token';
 
 @Injectable()
 export class FilterService {
-    public prepareFilterData(data: FormGroup): any {
-        return data.getRawValue();
+    constructor(
+        private columnsService: ColumnsService,
+        @Inject(DATASOURCE_SERVICE) private datasourceService: DatasourceService,
+    ) {}
+
+    public register() {
+        this.datasourceService.datasource.filterPredicate = this.createFilterPredicate();
     }
 
-    public createFilter(columns: KlesColumnConfig[]) {
+    public formatData(data: { [key: string]: any }): any {
+        return data;
+    }
+
+    private createFilterPredicate() {
         return (data: FormGroup, filter: string): boolean => {
             let searchString = JSON.parse(filter);
-            const filterableColumn = columns.filter((f) => f.filterable).map((m) => m.columnDef);
+            const filterableColumn = this.columnsService
+                .columns()
+                .filter((f) => f.filterable)
+                .map((m) => m.columnDef);
 
             searchString = _.pick(searchString, filterableColumn);
             return Object.keys(searchString)
                 .filter((f) => searchString[f] && filterableColumn.includes(f))
                 .every((key) => {
                     let keyValue = data?.controls[key]?.value;
-                    const column: KlesColumnConfig = columns.find((col) => col.columnDef === key);
+                    const column: KlesColumnConfig = this.columnsService.columns().find((col) => col.columnDef === key);
 
                     if (column.headerCell.filterPredicate) {
                         return column.headerCell.filterPredicate(keyValue, searchString[key]) || false;

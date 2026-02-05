@@ -15,6 +15,7 @@ export class KlesLazyDataSource implements IKlesDataSource {
     private _paginator: MatPaginator;
     private _sort: MatSort;
     private _rows$ = new BehaviorSubject<FormGroup[]>([]);
+    private _filter: string = null;
 
     get sort(): MatSort {
         return this._sort;
@@ -34,6 +35,13 @@ export class KlesLazyDataSource implements IKlesDataSource {
 
     set data(data: any[]) {
         this._rows$.next(data);
+    }
+
+    get filter(): string {
+        return this._filter;
+    }
+    set filter(f: string) {
+        this._filter = f;
     }
 
     connect(): Observable<readonly FormGroup[]> {

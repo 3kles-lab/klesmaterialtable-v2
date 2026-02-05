@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, ElementRef, HostBinding, Inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostBinding, Inject, OnDestroy, OnInit, Optional, ViewChild } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -14,9 +14,9 @@ import { KlesMaterialDynamicformsModule } from '@3kles/kles-material-dynamicform
 import { HeaderFieldPipe } from '../../pipes/header-field.pipe';
 import { CellFieldPipe } from '../../pipes/cell-field.pipe';
 import { MatSort, MatSortModule } from '@angular/material/sort';
-import { CdkDrag, CdkDropList, DragDropModule } from '@angular/cdk/drag-drop';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 import { DragDropService } from '../../services/features/dragdrop/dragdrop.service';
-import { ROW_DRAG_DROP, TABLE_SERVICE } from '../../token';
+import { DATASOURCE_SERVICE, LINES_SERVICE, ROW_DRAG_DROP, SORT_SERVICE, TABLE_SERVICE } from '../../token';
 import { ResolveNgStylePipe } from '../../pipes/ng-style.pipe';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ResizableColumnDirective } from '../../directives/resizable-column.directive';
@@ -27,7 +27,17 @@ import { KlesTableConnectorService } from '../../kles-table-connector.service';
 import { ColumnApi } from '../../core/api/column';
 import { ColumnsService } from '../../services/features/columns/columns.service';
 import { PaginationApi } from '../../core/api/pagination';
-import { ITableService } from '../../services/features/table/abstract-table.service';
+import { SelectionApi } from '../../core/api/selection';
+import { LoadingService } from '../../services/features/loading/loading.service';
+import { PaginatorService } from '../../services/features/paginator/paginator.service';
+import { SortApi } from '../../core/api/sort';
+import { ISortService } from '../../services/features/sort/sort.service';
+import { FilterService } from '../../services/features/filter/filter.service';
+import { IDatasourceService } from '../../services/features/datasource/datasource.service';
+import { IKlesDataSource } from '../../core/datasource/datasource.interface';
+import { LoadingApi } from '../../core/api/loading';
+import { ITableService } from '../../services/features/table/table.service';
+import { ILinesService } from '../../services/features/lines/lines.service';
 
 @Component({
     selector: 'kles-table',
@@ -56,28 +66,36 @@ import { ITableService } from '../../services/features/table/abstract-table.serv
 })
 export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy {
     @ViewChild(MatTable) table!: MatTable<FormGroup>;
-    @ViewChild(MatSort, { static: true }) sort: MatSort;
+    @ViewChild(MatSort, { static: true }) matSort: MatSort;
 
     headerHeightPx = 56;
     private ro?: ResizeObserver;
 
-    dataSource: any;
+    dataSource: IKlesDataSource;
 
     constructor(
         private connectorService: KlesTableConnectorService,
+        @Inject(DATASOURCE_SERVICE) private datasourceService: IDatasourceService,
         @Inject(TABLE_SERVICE) public tableService: ITableService,
         @Inject(ROW_DRAG_DROP) public dragDropRowService: DragDropService,
+         @Inject(LINES_SERVICE) private linesService: ILinesService,
         public columnsService: ColumnsService,
+        public loadingService: LoadingService,
+        private paginatorService: PaginatorService,
         private host: ElementRef<HTMLElement>,
         private scrollbarService: ScrollbarService,
+        @Inject(SORT_SERVICE) private sortService: ISortService,
+        @Optional() private filterService: FilterService,
     ) {
+        this.dataSource = this.datasourceService.datasource;
         this.connectorService.connect(this);
+        this.filterService?.register();
         this.scrollbarService.register(this.host.nativeElement);
     }
 
     @HostBinding('class.loading')
     get isLoadingClass() {
-        return this.tableService.loading();
+        return this.loadingService.loading();
     }
 
     get scrollbar(): ScrollbarApi {
@@ -100,24 +118,54 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
             toggleResizable: (columnDef) => this.columnsService.toggleResizable(columnDef),
             setSticky: (columnDef, options) => this.columnsService.setSticky(columnDef, options),
             columns: () => this.columnsService.columns(),
+            setColumnPosition: (columnDef, position) => this.columnsService.setColumnPosition(columnDef, position),
         };
     }
 
     get pagination(): PaginationApi {
         return {
-            setPageIndex: (index) => this.tableService.setPageIndex(index),
-            setPageSize: (size) => this.tableService.setPageSize(size),
-            firstPage: () => this.tableService.firstPage(),
-            lastPage: () => this.tableService.lastPage(),
+            setPageIndex: (index) => this.paginatorService.setPageIndex(index),
+            setPageSize: (size) => this.paginatorService.setPageSize(size),
+            firstPage: () => this.paginatorService.firstPage(),
+            lastPage: () => this.paginatorService.lastPage(),
+            enable: () => this.paginatorService.enable(),
+            disable: () => this.paginatorService.disable(),
+            setPageSizeOptions: (option) => this.paginatorService.setPageSizeOptions(option),
+        };
+    }
+
+    get selection(): SelectionApi {
+        return {
+            disable: () => {},
+            enable: () => {},
+            changed: () => {},
+            isEmpty: () => {},
+            isMultipleSelection: () => {},
+            selected: () => {},
+        };
+    }
+
+    get sort(): SortApi {
+        return {
+            setActive: (active) => this.sortService.setActive(active),
+            setDirection: (direction) => this.sortService.setDirection(direction),
+            sortChange: () => this.sortService.sortChange(),
+        };
+    }
+
+    get loading(): LoadingApi {
+        return {
+            start: () => this.loadingService.start(),
+            stop: () => this.loadingService.stop(),
         };
     }
 
     refresh() {
-        this.tableService.refresh();
+        this.linesService.refresh();
     }
 
     ngOnInit(): void {
-        this.tableService.sort = this.sort;
+        this.sortService.register(this.matSort);
     }
 
     ngAfterViewInit(): void {
@@ -130,8 +178,7 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
     }
 
     submit() {
-        if (this.dataSource.form.invalid) return;
-        console.log(this.dataSource.form.value.rows);
+        // TODO
     }
 
     private calculHeaderHeight() {

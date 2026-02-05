@@ -8,4 +8,5 @@ export interface ColumnApi {
     toggleResizable(columnDef: string);
     setSticky(columnDef: string, options: { sticky?: boolean; stickyEnd?: boolean });
     columns(): KlesColumnConfig[];
+    setColumnPosition: (columnDef, position: number) => void;
 }

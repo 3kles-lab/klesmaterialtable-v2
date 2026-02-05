@@ -7,22 +7,22 @@ import { SortStore } from '../../store/sort-store.service';
 import { FilterStore } from '../../store/filter-store.service';
 import { LinesLazyLoader, LinesLoader } from '../../../core/table/loader.interface';
 
-export interface ILoader<R> {
+export interface ILinesLoader<R> {
     load(): Observable<{ total: number; items: R[]; loading: boolean; error?: any }>;
-    refresh(): void;
+
 }
 
 @Injectable()
-export class LoaderService<T, R> implements ILoader<R> {
+export class LinesLoaderService<T, R> implements ILinesLoader<R> {
     private _refresh$ = new Subject<void>();
 
     constructor(@Inject(LOADER_CONFIG) private readonly loaderConfig: ILoaderConfig<T, R>) {}
 
     public load(): Observable<{ total: number; items: R[]; loading: boolean; error?: any }> {
         const linesLoader = this.loaderConfig.lines as LinesLoader<T, R>;
-        return combineLatest([this._refresh$.pipe(startWith(void 0)), this.loaderConfig.lines.params?.() || of({} as T)]).pipe(
+        return combineLatest([ this.loaderConfig.lines.params?.() || of({} as T)]).pipe(
             auditTime(0),
-            switchMap(([_, params]) => {
+            switchMap(([ params]) => {
                 return concat(
                     of({ loading: true, total: 0, items: [] }),
                     linesLoader.loader(params).pipe(
@@ -38,13 +38,11 @@ export class LoaderService<T, R> implements ILoader<R> {
         );
     }
 
-    public refresh() {
-        this._refresh$.next();
-    }
+  
 }
 
 @Injectable()
-export class LoaderLazyService<T, R> implements ILoader<R> {
+export class LinesLoaderLazyService<T, R> implements ILinesLoader<R> {
     private _refresh$ = new Subject<void>();
 
     constructor(
@@ -78,9 +76,5 @@ export class LoaderLazyService<T, R> implements ILoader<R> {
                 );
             }),
         );
-    }
-
-    public refresh() {
-        this._refresh$.next();
     }
 }

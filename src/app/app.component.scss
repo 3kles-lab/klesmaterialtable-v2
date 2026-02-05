@@ -1,5 +1,18 @@
-:host{
-    display: flex;
-    flex-direction: column;
-    height: 100%;
+// :host{
+//     display: flex;
+//     flex-direction: column;
+//     height: 100%;
+// }
+
+
+.box {
+  height: 220px;
+  overflow: auto;
+  border: 1px solid #ccc;
+  scroll-behavior: smooth; /* optionnel si tu utilises behavior:'smooth' */
+}
+
+.row {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
 }

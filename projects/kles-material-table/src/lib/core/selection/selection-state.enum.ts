@@ -1,4 +1,4 @@
 export enum KlesSelectionModelState {
-    ENABLED,
-    DISABLED,
+    ENABLED = 'enabled',
+    DISABLED = 'disabled',
 }

@@ -1,18 +1,18 @@
-import { AfterViewInit, Component, OnInit, signal, Signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { MaterialModule } from './modules/material.module';
 import {
-    AlignCell,
     KlesFormDynamicHeaderFilterComponent,
     KlesMaterialTableModule,
-    KlesTableComponent,
+    KlesTableApi,
     KlesTableConfig,
-    KlesTableService,
     linesLazyLoader,
     linesLoader,
+    selectionConfig,
 } from 'kles-material-table';
-import { BehaviorSubject, delay, Observable, of } from 'rxjs';
-import { KlesFormInputComponent, KlesFormTextComponent } from '@3kles/kles-material-dynamicforms';
-import { FormControlStatus, FormGroup } from '@angular/forms';
+import { BehaviorSubject, delay, of } from 'rxjs';
+import { KlesFormCheckboxComponent, KlesFormInputComponent, KlesFormTextComponent } from '@3kles/kles-material-dynamicforms';
+import { FormControlStatus } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 // import { ResourceLineLoaderParams } from 'projects/kles-material-table/src/lib/interfaces/resource-loader.interface';
 
@@ -22,7 +22,7 @@ import { FormControlStatus, FormGroup } from '@angular/forms';
     styleUrls: ['./app.component.scss'],
     providers: [],
     standalone: true,
-    imports: [MaterialModule, KlesMaterialTableModule],
+    imports: [MaterialModule, KlesMaterialTableModule, CommonModule],
 })
 export class AppComponent implements OnInit, AfterViewInit {
     toto = new BehaviorSubject({ foo: 123, toto: 'aaaa' });
@@ -42,12 +42,21 @@ export class AppComponent implements OnInit, AfterViewInit {
     config: KlesTableConfig = {
         columns: [
             {
+                columnDef: '#select',
+                sortable: false,
+                headerCell: {
+                    component: KlesFormCheckboxComponent,
+                },
+                cell: {
+                    component: KlesFormCheckboxComponent,
+                },
+            },
+            {
                 columnDef: '_id',
                 sortable: true,
-                filterable: true,
-                width: '500px',
-                minWidth: '250px',
-                maxWidth: '500px',
+                // filterable: true,
+
+                minWidth: '500%',
                 headerCell: {
                     label: '_id',
                     component: KlesFormDynamicHeaderFilterComponent,
@@ -75,10 +84,16 @@ export class AppComponent implements OnInit, AfterViewInit {
                 // minWidth: '350px',
                 // width: '950px',
                 resizable: true,
+
                 headerCell: {
                     label: 'Name',
                     component: KlesFormDynamicHeaderFilterComponent,
-                    filterComponent: KlesFormInputComponent,
+                    // filterComponent: KlesFormInputComponent,
+                    style: {
+                        ngStyle: {
+                            background: 'blue',
+                        },
+                    },
                     // style: {
                     //     ngStyle: (value: string, status: FormControlStatus, row: Record<string, any>, rowStatus: FormControlStatus) => {
                     //         return {
@@ -88,7 +103,7 @@ export class AppComponent implements OnInit, AfterViewInit {
                     // },
                 },
                 cell: {
-                    component: KlesFormTextComponent,
+                    component: KlesFormInputComponent,
                     style: {
                         ngStyle: (value: number, status: FormControlStatus, row: Record<string, any>, rowStatus: FormControlStatus) => {
                             return {
@@ -175,17 +190,27 @@ export class AppComponent implements OnInit, AfterViewInit {
             },
         ],
         paginator: true,
+
         lines: linesLoader({
             params: () => this.toto,
             loader: (params) => {
                 return of({
                     items: this.data,
-                }).pipe(delay(1000));
+                }).pipe(delay(200));
             },
         }),
         dragDropRows: {
             enable: true,
         },
+        selection: selectionConfig({
+            selectionMode: true,
+            // select: (params, row, selected, filters) => {
+            //     return of({ indeterminate: true, selected: false }).pipe(delay(1000));
+            // },
+            // selectAll: (params, selected, filters) => {
+            //     return of({ indeterminate: true, selected: false }).pipe(delay(1000));
+            // },
+        }),
         // sortConfig: {
         //     active: 'name',
         //     direction: 'desc',
@@ -194,6 +219,16 @@ export class AppComponent implements OnInit, AfterViewInit {
 
     lazyConfig: KlesTableConfig = {
         columns: [
+            {
+                columnDef: 'bb',
+                sortable: false,
+                headerCell: {
+                    component: KlesFormCheckboxComponent,
+                },
+                cell: {
+                    component: KlesFormCheckboxComponent,
+                },
+            },
             {
                 columnDef: 'name',
                 sortable: true,
@@ -213,7 +248,7 @@ export class AppComponent implements OnInit, AfterViewInit {
                     filterComponent: KlesFormInputComponent,
                 },
                 cell: {
-                    component: KlesFormTextComponent,
+                    component: KlesFormInputComponent,
                 },
             },
         ],
@@ -221,7 +256,7 @@ export class AppComponent implements OnInit, AfterViewInit {
         // infinite:true,
         paginator: true,
         lines: linesLazyLoader({
-            params: () => this.toto,
+            params: () => of({ _id: 'aaaaa' }),
             loader: (params, query) => {
                 console.log(query);
                 return of({
@@ -233,26 +268,72 @@ export class AppComponent implements OnInit, AfterViewInit {
                 }).pipe(delay(500));
             },
         }),
+        selection: selectionConfig({
+            key: 'bb',
+            params: () => {
+                return of({ toto: 1 });
+            },
+            selectAll: (params, selected, filters) => {
+                return of({ selected: true }).pipe(delay(100));
+            },
+            select: (params, row, selected, filters) => {
+                return of({ selected: selected, count: selected ? 1 : 0 });
+            },
+        }),
         dragDropRows: {
             enable: true,
         },
     };
 
-    @ViewChild('table') klesTable: KlesTableComponent;
-    @ViewChild('lazyTable') klesLazyTable: KlesTableComponent;
+    @ViewChild('table') klesTable: KlesTableApi;
+    @ViewChild('lazyTable') klesLazyTable: KlesTableApi;
 
     constructor() {}
 
     ngOnInit() {}
 
-    ngAfterViewInit(): void {}
+    ngAfterViewInit(): void {
+        //sort api
+        // this.klesTable.sort.sortChange().subscribe((value) => console.log(value))
+    }
 
     add() {
-        console.log('add');
-
-        this.klesTable.tableService.scrollToTop()
-
-        // this.klesTable.tableService.addRecord({ name: 'blabla', toto: 'dfsssdf' }, { index: 1 });
-        // this.klesTable.tableService.toggleColumnVisibility('name');
+        /** */
+        // table api
+        // this.klesTable.refresh()
+        /** */
+        // scrollbar api
+        // this.klesTable.scrollbar.toTop('smooth')
+        // this.klesTable.scrollbar.toLeft()
+        // this.klesTable.scrollbar.toBottom();
+        // this.klesTable.scrollbar.to(50, 50);
+        // this.klesTable.scrollbar.toRight()
+        /** */
+        // column api
+        // this.klesTable.column.toggleVisible('name')
+        // this.klesTable.column.setVisible('name', false)
+        // this.klesTable.column.changeWidth('name', { minWidth: '500px' });
+        // this.klesTable.column.setResizable('name', false);
+        // this.klesTable.column.toggleResizable('name');
+        // this.klesTable.column.setColumnPosition('name', 5);
+        // this.klesTable.column.setSticky('test', { stickyEnd: true });
+        // this.klesTable.column.setSticky('name', { sticky: true });
+        // console.log(this.klesTable.column.columns())
+        /** */
+        // pagination api
+        // this.klesTable.pagination?.setPageIndex(2);
+        // this.klesTable.pagination?.setPageSize(10);
+        // this.klesTable.pagination?.disable();
+        // this.klesTable.pagination?.setPageSizeOptions([7, 12]);
+        // this.klesTable.pagination?.lastPage()
+        // this.klesTable.pagination?.firstPage()
+        /** */
+        // sort api
+        // this.klesTable.sort.setDirection('asc')
+        // this.klesTable.sort.setActive('name')
+        /** */
+        // loading api
+        // this.klesTable.loading.start()
+        // this.klesTable.loading.stop()
     }
 }

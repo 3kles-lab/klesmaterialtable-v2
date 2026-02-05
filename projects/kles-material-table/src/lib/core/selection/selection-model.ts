@@ -1,13 +1,16 @@
-import { Observable, of, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
 import { IKlesSelectionModel } from './selection-model.interface';
 import { getMultipleValuesInSingleSelectionError } from './selection-model-error';
 import { KlesSelectionModelState } from './selection-state.enum';
+import { Signal, signal } from '@angular/core';
 
 export class KlesSelectionModel<T> implements IKlesSelectionModel<T> {
     private _selection = new Set<T>();
     private _changed = new Subject<{ added?: T[]; removed?: T[]; count: number; state: KlesSelectionModelState }>();
     private _stateChanged = new Subject<KlesSelectionModelState>();
     private _state: KlesSelectionModelState = KlesSelectionModelState.ENABLED;
+
+    private _count = signal<number>(0);
 
     constructor(
         private multiple: boolean = false,
@@ -26,6 +29,10 @@ export class KlesSelectionModel<T> implements IKlesSelectionModel<T> {
         };
     }
 
+    get count(): Signal<number> {
+        return this._count.asReadonly();
+    }
+
     get changed() {
         return this._changed.asObservable();
     }
@@ -36,6 +43,7 @@ export class KlesSelectionModel<T> implements IKlesSelectionModel<T> {
 
     public select(value: T | T[], options?: { emitEvent?: boolean }): void {
         const added = [];
+        const removed = [];
         if (this._state === KlesSelectionModelState.ENABLED) {
             if (Array.isArray(value)) {
                 if (value.length > 1 && !this.multiple) {
@@ -51,6 +59,7 @@ export class KlesSelectionModel<T> implements IKlesSelectionModel<T> {
             } else {
                 if (!this.isSelected(value)) {
                     if (!this.multiple) {
+                        removed.push(...Array.from(this._selection));
                         this._selection.clear();
                     }
                     this._selection.add(value);
@@ -59,19 +68,17 @@ export class KlesSelectionModel<T> implements IKlesSelectionModel<T> {
             }
         }
 
-        if (options?.emitEvent) {
-            this._changed.next({ added, removed: [], count: this._selection.size, state: this._state });
+        this._count.set(this._selection.size);
+        if (options?.emitEvent ?? true) {
+            this._changed.next({ added, removed, count: this._selection.size, state: this._state });
         }
     }
 
     public deselect(value: T | T[], options?: { emitEvent?: boolean }): void {
         const removed = [];
+        const added = [];
         if (this._state === KlesSelectionModelState.ENABLED) {
             if (Array.isArray(value)) {
-                if (value.length > 1 && !this.multiple) {
-                    throw getMultipleValuesInSingleSelectionError();
-                }
-
                 value.forEach((v) => {
                     if (this.isSelected(v)) {
                         this._selection.delete(v);
@@ -86,8 +93,9 @@ export class KlesSelectionModel<T> implements IKlesSelectionModel<T> {
             }
         }
 
-        if (options?.emitEvent) {
-            this._changed.next({ added: [], removed, count: this._selection.size, state: this._state });
+        this._count.set(this._selection.size);
+        if (options?.emitEvent ?? true) {
+            this._changed.next({ added, removed, count: this._selection.size, state: this._state });
         }
     }
 
@@ -118,6 +126,10 @@ export class KlesSelectionModel<T> implements IKlesSelectionModel<T> {
 
     public isSelected(value: T): boolean {
         return this._selection.has(this.getValue(value));
+    }
+
+    public isMultipleSelection(): boolean {
+        return this.multiple || false;
     }
 
     private getValue(value: T) {

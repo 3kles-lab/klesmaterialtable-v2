@@ -18,20 +18,41 @@ import { isDestroyable } from '../utils';
 import { KlesTableConfig } from '../core/table/config.interface';
 import { PaginateTableComponent } from '../components/paginate-table/paginate-table.component';
 import { PaginatorStore } from '../services/store/paginator-store.service';
-import { SortService } from '../services/features/sort/sort.service';
+import { SortLazyService, SortService } from '../services/features/sort/sort.service';
 import { SortStore } from '../services/store/sort-store.service';
 import { FilterService } from '../services/features/filter/filter.service';
 import { FilterStore } from '../services/store/filter-store.service';
 import { DragDropLazyService, DragDropService } from '../services/features/dragdrop/dragdrop.service';
-import { COLUMNS, LOADER_CONFIG, PAGINATOR_CONFIG, ROW_DRAG_DROP, SELECTION_KEY, SORT_CONFIG, TABLE_SERVICE } from '../token';
+import {
+    COLUMNS,
+    DATASOURCE_SERVICE,
+    LINES_SERVICE,
+    LINESLOADER_SERVICE,
+    LOADER_CONFIG,
+    PAGINATOR_CONFIG,
+    ROW_DRAG_DROP,
+    SELECTION_CONFIG,
+    SELECTION_SERVICE,
+    SORT_CONFIG,
+    SORT_SERVICE,
+    TABLE_SERVICE,
+} from '../token';
 import { KlesColumnConfig } from '../core/table/column.interface';
 import { ColumnsService } from '../services/features/columns/columns.service';
 import { MatPaginatorIntl } from '@angular/material/paginator';
 import { ScrollbarService } from '../services/features/scrollbar/scrollbar.service';
 import { InfiniteScrollTableComponent } from '../components/infinite-scroll-table/infinite-scroll-table.component';
-import { TableLazyService, TableService } from '../services/features/table/table.service';
+
 import { KlesForm } from '../services/features/table/form';
-import { LoaderLazyService, LoaderService } from '../services/features/loader/loader.service';
+import { LinesLoaderLazyService, LinesLoaderService } from '../services/features/lines/lines-loader.service';
+import { SelectionLoaderService } from '../services/features/selection/selection-loader.service';
+import { LoadingService } from '../services/features/loading/loading.service';
+import { HeaderService } from '../services/features/header/header.service';
+import { DatasourceLazyService, DatasourceService } from '../services/features/datasource/datasource.service';
+import { PaginatorService } from '../services/features/paginator/paginator.service';
+import { SelectionLazyService, SelectionService } from '../services/features/selection/selection.service';
+import { LinesLazyService, LinesService } from '../services/features/lines/lines.service';
+import { TableService } from '../services/features/table/table.service';
 
 @Directive({
     selector: '[appDynamicTableLoader]',
@@ -106,12 +127,12 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
                 },
             },
             {
-                provide: SELECTION_KEY,
-                useValue: '#select',
-            },
-            {
                 provide: SORT_CONFIG,
                 useValue: this.tableConfig().sortConfig,
+            },
+            {
+                provide: SELECTION_CONFIG,
+                useValue: this.tableConfig().selection,
             },
             {
                 provide: PAGINATOR_CONFIG,
@@ -132,39 +153,85 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
                 : []),
         ];
 
+        const datasourceProvider = this.tableConfig().lazy
+            ? [
+                  {
+                      provide: DATASOURCE_SERVICE,
+                      useClass: DatasourceLazyService,
+                  },
+              ]
+            : [
+                  {
+                      provide: DATASOURCE_SERVICE,
+                      useClass: DatasourceService,
+                  },
+              ];
+
         const featureProviders = [
+            LoadingService,
             KlesForm,
             ColumnsService,
+            HeaderService,
             ScrollbarService,
+            SelectionLoaderService,
+            PaginatorService,
+            {
+                provide: TABLE_SERVICE,
+                useClass: TableService,
+            },
+
             ...(this.tableConfig().lazy
                 ? [
-                      LoaderLazyService,
                       {
-                          provide: TABLE_SERVICE,
-                          useClass: TableLazyService,
+                          provide: LINESLOADER_SERVICE,
+                          useClass: LinesLoaderLazyService,
                       },
+                      {
+                          provide: LINES_SERVICE,
+                          useClass: LinesLazyService,
+                      },
+                      {
+                          provide: SELECTION_SERVICE,
+                          useClass: SelectionLazyService,
+                      },
+
                       {
                           provide: ROW_DRAG_DROP,
                           useFactory: () => new DragDropLazyService(this.tableConfig().dragDropRows),
                       },
+                      {
+                          provide: SORT_SERVICE,
+                          useClass: SortLazyService,
+                      },
                   ]
                 : [
-                      LoaderService,
                       {
-                          provide: TABLE_SERVICE,
-                          useClass: TableService,
+                          provide: LINESLOADER_SERVICE,
+                          useClass: LinesLoaderService,
                       },
-                      SortService,
+                      {
+                          provide: LINES_SERVICE,
+                          useClass: LinesService,
+                      },
+                      {
+                          provide: SELECTION_SERVICE,
+                          useClass: SelectionService,
+                      },
+
                       FilterService,
                       {
                           provide: ROW_DRAG_DROP,
                           useFactory: (paginatorstore: PaginatorStore | null) => new DragDropService(this.tableConfig().dragDropRows, paginatorstore),
                           deps: [...(this.tableConfig().paginator ? [PaginatorStore] : [])],
                       },
+                      {
+                          provide: SORT_SERVICE,
+                          useClass: SortService,
+                      },
                   ]),
         ];
 
-        const providers: Array<Provider | StaticProvider> = [storeProviders, configProviders, featureProviders];
+        const providers: Array<Provider | StaticProvider> = [storeProviders, configProviders, datasourceProvider, featureProviders];
 
         return Injector.create({
             parent: this.viewContainerRef.injector,

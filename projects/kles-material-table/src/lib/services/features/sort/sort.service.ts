@@ -1,10 +1,80 @@
-import { Injectable } from '@angular/core';
+import { DestroyRef, EventEmitter, Inject, inject, Injectable, Optional } from '@angular/core';
 import { AbstractControl, FormGroup } from '@angular/forms';
-import { MatSort } from '@angular/material/sort';
+import { MatSort, Sort, SortDirection } from '@angular/material/sort';
+import { SortStore } from '../../store/sort-store.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { DatasourceLazyService, DatasourceService } from '../datasource/datasource.service';
+import { DATASOURCE_SERVICE } from '../../../token';
+import { ColumnsService } from '../columns/columns.service';
+
+export interface ISortService {
+    sort: MatSort;
+    register(s: MatSort);
+    setDirection(direction: SortDirection);
+    setActive(active: string);
+    sortChange(): EventEmitter<Sort>;
+}
 
 @Injectable()
-export class SortService {
-    public sortingDataAccessor = (item: AbstractControl, property) => {
+export abstract class AbstractSortService implements ISortService {
+    protected _sort: MatSort;
+
+    public get sort(): MatSort {
+        return this._sort;
+    }
+
+    public register(s: MatSort) {
+        this._sort = s;
+    }
+
+    public setDirection(direction: SortDirection) {
+        if (this._sort) {
+            this._sort.direction = direction;
+            this.sort.sortChange.emit({ active: this._sort.active, direction: this._sort.direction });
+        }
+    }
+
+    public setActive(active: string) {
+        if (this._sort) {
+            this._sort.active = active;
+            this.sort.sortChange.emit({ active: this._sort.active, direction: this._sort.direction });
+        }
+    }
+
+    public sortChange(): EventEmitter<Sort> {
+        return this._sort.sortChange;
+    }
+}
+
+@Injectable()
+export class SortService extends AbstractSortService {
+    protected readonly destroyRef = inject(DestroyRef);
+
+    constructor(
+        @Optional() private sortStore: SortStore | null,
+        private columnsService: ColumnsService,
+        @Inject(DATASOURCE_SERVICE) private datasourceService: DatasourceService,
+    ) {
+        super();
+    }
+
+    public register(s: MatSort) {
+        super.register(s);
+        this.datasourceService.datasource.sort = this._sort;
+        if (!this._sort) return;
+
+        this.datasourceService.datasource.sortingDataAccessor = this.sortingDataAccessor;
+        this.datasourceService.datasource.sortData = this.sortDataPredicate(this.columnsService.columns());
+
+        s.active = this.sortStore?.snapshot()?.active ?? s.active;
+        s.direction = this.sortStore?.snapshot()?.direction ?? s.direction;
+
+        s.sortChange.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
+            this.sortStore?.setSort(event);
+        });
+    }
+
+    private sortingDataAccessor = (item: AbstractControl, property) => {
         if (!item.value) {
             return undefined;
         }
@@ -19,7 +89,7 @@ export class SortService {
         return value;
     };
 
-    public sortData(columns: any[]) {
+    private sortDataPredicate(columns: any[]) {
         return (data: FormGroup[], sort: MatSort): FormGroup[] => {
             const active = sort.active;
             const direction = sort.direction;
@@ -72,5 +142,30 @@ export class SortService {
                 return comparatorResult * (direction == 'asc' ? 1 : -1);
             });
         };
+    }
+}
+
+@Injectable()
+export class SortLazyService extends AbstractSortService {
+    protected readonly destroyRef = inject(DestroyRef);
+
+    constructor(
+        @Optional() private sortStore: SortStore | null,
+        @Inject(DATASOURCE_SERVICE) private datasourceService: DatasourceLazyService,
+    ) {
+        super();
+    }
+
+    public register(s: MatSort) {
+        super.register(s);
+        this.datasourceService.datasource.sort = this._sort;
+        if (!this._sort) return;
+
+        s.active = this.sortStore?.snapshot()?.active ?? s.active;
+        s.direction = this.sortStore?.snapshot()?.direction ?? s.direction;
+
+        s.sortChange.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
+            this.sortStore?.setSort(event);
+        });
     }
 }

@@ -12,7 +12,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatSortModule } from '@angular/material/sort';
+import { MatSortModule, SortHeaderArrowPosition } from '@angular/material/sort';
 
 @FieldMapper({
     type: 'dynamicHeader',
@@ -37,22 +37,34 @@ import { MatSortModule } from '@angular/material/sort';
 @Component({
     selector: 'kles-header',
     template: `
-        <div class="header" mat-sort-header [disabled]="!field.sortable" [matTooltip]="field.tooltip" matTooltipPosition="above">
+        <div
+            class="header"
+            mat-sort-header
+            [disabled]="!field.sortable"
+            [arrowPosition]="field.sortArrowPosition"
+            [matTooltip]="field.tooltip"
+            matTooltipPosition="above"
+        >
             <span>{{ field.label }}</span>
         </div>
         @if (field.filterComponent && filterField) {
-        <div (click)="stopPropagation($event)" class="filterHeader">
-            <ng-container klesDynamicField [group]="group" [field]="filterField"> </ng-container>
+            <div (click)="stopPropagation($event)" class="filterHeader">
+                <ng-container klesDynamicField [group]="group" [field]="filterField"> </ng-container>
 
-            @if (field.filterClearable && group.get(field.name).value) {
-            <div class="icon-button">
-                <button mat-icon-button aria-label="Clear" type="button" class="icon-button-small" (click)="group.controls[field.name].reset()">
-                    <mat-icon>close</mat-icon>
-                </button>
+                @if (field.filterClearable && group.get(field.name).value) {
+                    <div class="icon-button">
+                        <button
+                            mat-icon-button
+                            aria-label="Clear"
+                            type="button"
+                            class="icon-button-small"
+                            (click)="group.controls[field.name].reset()"
+                        >
+                            <mat-icon>close</mat-icon>
+                        </button>
+                    </div>
+                }
             </div>
-
-            }
-        </div>
         }
     `,
     // styleUrl: './dynamic-headerfilter.component.scss',
@@ -70,7 +82,7 @@ import { MatSortModule } from '@angular/material/sort';
     ],
 })
 export class KlesFormDynamicHeaderFilterComponent extends KlesFieldAbstract implements OnInit {
-    field: IKlesHeaderFieldConfig & { name: string; sortable: boolean };
+    field: IKlesHeaderFieldConfig & { name: string; sortable?: boolean; sortArrowPosition?: SortHeaderArrowPosition };
     filterField: IKlesHeaderFieldConfig;
     // tableOptions: Options<any>;
 

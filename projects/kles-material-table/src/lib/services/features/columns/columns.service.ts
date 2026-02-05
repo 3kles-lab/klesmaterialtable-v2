@@ -6,7 +6,9 @@ import { KlesColumnConfig } from '../../../core/table/column.interface';
 export class ColumnsService {
     public displayedColumns: Signal<string[]>;
 
-    constructor(@Inject(COLUMNS) private _columns: WritableSignal<KlesColumnConfig[]>) {
+    constructor(@Inject(COLUMNS) private _columns: WritableSignal<KlesColumnConfig[]>) {}
+
+    public register() {
         this.setDisplayedColumns();
     }
 
@@ -16,6 +18,14 @@ export class ColumnsService {
 
     public setVisible(columnDef: string, visible: boolean): void {
         this.updateColumn(columnDef, { visible });
+    }
+
+    public setCellIndeterminate(columnDef: string, indeterminate: boolean): void {
+        this.updateColumn(columnDef, { cell: { indeterminate } });
+    }
+
+    public setHeaderCellIndeterminate(columnDef: string, indeterminate: boolean): void {
+        this.updateColumn(columnDef, { headerCell: { indeterminate } });
     }
 
     public toggleVisible(columnDef: string): void {
@@ -47,8 +57,20 @@ export class ColumnsService {
         });
     }
 
-    public setColumnPosition(columnDef: string, position: number){
-        //TODO
+    public setColumnPosition(columnDef: string, position: number) {
+        this._columns.update((columns) => {
+            const actualIndex = columns.findIndex((c) => c.columnDef === columnDef);
+            if (actualIndex >= 0 && position >= 0 && actualIndex != position) {
+                const currentElement = columns.at(position);
+                const [val] = columns.splice(actualIndex, 1);
+                const newCurrentElementPosition = columns.findIndex((c) => c.columnDef === currentElement.columnDef);
+                columns.splice(newCurrentElementPosition, 0, val);
+
+                return [...columns];
+            } else {
+                return columns;
+            }
+        });
     }
 
     private updateColumn(columnDef: string, config: Partial<KlesColumnConfig>): void {
@@ -58,6 +80,9 @@ export class ColumnsService {
                     ? {
                           ...col,
                           ...config,
+                          cell: config.cell ? { ...col.cell, ...config.cell } : col.cell,
+                          headerCell: config.headerCell ? { ...col.headerCell, ...config.headerCell } : col.headerCell,
+                          footerCell: config.footerCell ? { ...col.footerCell, ...config.footerCell } : col.footerCell,
                       }
                     : col,
             ),
