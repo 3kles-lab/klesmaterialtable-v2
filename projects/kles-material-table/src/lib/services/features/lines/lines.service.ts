@@ -1,6 +1,5 @@
 import { DestroyRef, EventEmitter, inject, Inject, Injectable } from '@angular/core';
-import { LinesLoaderLazyService, LinesLoaderService } from './lines-loader.service';
-import { LINESLOADER_SERVICE } from '../../../token';
+import { LOADER_SERVICE } from '../../../token';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LoadingService } from '../loading/loading.service';
 import { ScrollbarService } from '../scrollbar/scrollbar.service';
@@ -8,11 +7,11 @@ import { KlesForm } from '../table/form';
 import { RowFormFactory } from '../table/row-factory.service';
 import { ColumnsService } from '../columns/columns.service';
 import { PaginatorService } from '../paginator/paginator.service';
-import { auditTime, combineLatest, map, startWith, Subject, switchMap } from 'rxjs';
+import { Subject } from 'rxjs';
+import { LoaderLazyService, LoaderService } from '../loader/loader.service';
 
 export interface ILinesService {
     register(): void;
-    refresh(): void;
     total(): number;
     loaded(): EventEmitter<void>;
 }
@@ -20,13 +19,12 @@ export interface ILinesService {
 @Injectable()
 export class LinesService implements ILinesService {
     private readonly destroyRef = inject(DestroyRef);
-    private _refresh$ = new Subject<void>();
     private _loaded = new EventEmitter<void>();
 
     private _total: number;
 
     constructor(
-        @Inject(LINESLOADER_SERVICE) private loader: LinesLoaderService<any, any>,
+        @Inject(LOADER_SERVICE) private loader: LoaderService<any, any>,
         private fm: KlesForm,
         private columnsService: ColumnsService,
         private rowFactory: RowFormFactory,
@@ -42,24 +40,14 @@ export class LinesService implements ILinesService {
         return this._total;
     }
 
-    public refresh() {
-        this._refresh$.next();
-    }
-
     public loaded(): EventEmitter<void> {
         return this._loaded;
     }
 
     private load() {
-        this._refresh$
-            .pipe(startWith(void 0))
-            .pipe(
-                takeUntilDestroyed(this.destroyRef),
-                auditTime(0),
-                switchMap(() => {
-                    return this.loader.load();
-                }),
-            )
+        this.loader
+            .load()
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((response) => {
                 if (response.loading) {
                     this.scrollbarService.toTop('instant');
@@ -89,7 +77,7 @@ export class LinesLazyService implements ILinesService {
     private _loaded = new EventEmitter<void>();
 
     constructor(
-        @Inject(LINESLOADER_SERVICE) private loader: LinesLoaderLazyService<any, any>,
+        @Inject(LOADER_SERVICE) private loader: LoaderLazyService<any, any>,
         private fm: KlesForm,
         private columnsService: ColumnsService,
         private rowFactory: RowFormFactory,

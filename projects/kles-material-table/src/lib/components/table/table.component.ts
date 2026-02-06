@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, ElementRef, HostBinding, Inject, OnDestroy, OnInit, Optional, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostBinding, Inject, OnDestroy, OnInit, Optional, Signal, ViewChild } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -16,7 +16,7 @@ import { CellFieldPipe } from '../../pipes/cell-field.pipe';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { DragDropService } from '../../services/features/dragdrop/dragdrop.service';
-import { DATASOURCE_SERVICE, LINES_SERVICE, ROW_DRAG_DROP, SELECTION_SERVICE, SORT_SERVICE, TABLE_SERVICE } from '../../token';
+import { DATASOURCE_SERVICE, LINES_SERVICE, LOADER_SERVICE, ROW_DRAG_DROP, SELECTION_SERVICE, SORT_SERVICE, TABLE_SERVICE } from '../../token';
 import { ResolveNgStylePipe } from '../../pipes/ng-style.pipe';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ResizableColumnDirective } from '../../directives/resizable-column.directive';
@@ -39,6 +39,9 @@ import { LoadingApi } from '../../core/api/loading';
 import { ITableService } from '../../services/features/table/table.service';
 import { ILinesService } from '../../services/features/lines/lines.service';
 import { ISelectionService } from '../../services/features/selection/selection.service';
+import { FooterFieldPipe } from '../../pipes/footer-field.pipe';
+import { KlesColumnConfig } from '../../core/table/column.interface';
+import { ILoader } from '../../services/features/loader/loader.service';
 
 @Component({
     selector: 'kles-table',
@@ -58,6 +61,7 @@ import { ISelectionService } from '../../services/features/selection/selection.s
         KlesMaterialDynamicformsModule,
         HeaderFieldPipe,
         CellFieldPipe,
+        FooterFieldPipe,
         DragDropModule,
         ResolveNgStylePipe,
         MatProgressSpinnerModule,
@@ -73,9 +77,11 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
     private ro?: ResizeObserver;
 
     dataSource: IKlesDataSource;
+    columns: Signal<KlesColumnConfig[]>;
 
     constructor(
         private connectorService: KlesTableConnectorService,
+        @Inject(LOADER_SERVICE) private loader: ILoader<any>,
         @Inject(DATASOURCE_SERVICE) private datasourceService: IDatasourceService,
         @Inject(TABLE_SERVICE) public tableService: ITableService,
         @Inject(ROW_DRAG_DROP) public dragDropRowService: DragDropService,
@@ -89,6 +95,8 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
         @Inject(SORT_SERVICE) private sortService: ISortService,
         @Optional() private filterService: FilterService,
     ) {
+        this.columns = this.columnsService.columns;
+        console.log(this.columns());
         this.dataSource = this.datasourceService.datasource;
         this.connectorService.connect(this);
         this.filterService?.register();
@@ -165,7 +173,7 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
     }
 
     refresh() {
-        this.linesService.refresh();
+        this.loader.refresh();
     }
 
     ngOnInit(): void {
@@ -187,9 +195,11 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
 
     private calculHeaderHeight() {
         const header = this.host.nativeElement.querySelector('.mat-mdc-header-row') as HTMLElement | null;
-        if (!header) return;
+        const footer = this.host.nativeElement.querySelector('.mat-mdc-footer-row') as HTMLElement | null;
 
-        const update = () => (this.headerHeightPx = Math.ceil(header.getBoundingClientRect().height));
+        const update = () => {
+            this.headerHeightPx = Math.ceil(header?.getBoundingClientRect().height ?? 0);
+        };
 
         update();
         this.ro = new ResizeObserver(update);

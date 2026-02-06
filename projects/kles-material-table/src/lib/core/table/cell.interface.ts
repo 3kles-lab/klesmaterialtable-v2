@@ -4,6 +4,7 @@ import { AbstractControl, FormArray, FormControlStatus, FormGroup } from '@angul
 import { Observable } from 'rxjs';
 
 type B = Omit<IKlesFieldConfig, 'name'>;
+type C = Omit<IKlesFieldConfig, 'name' | 'value'>;
 
 export type NgStyleInput =
     | Record<string, any>
@@ -21,7 +22,11 @@ export interface IKlesHeaderFieldConfig extends B {
     style?: IStyle;
 }
 
-export interface IKlesCellFieldConfig extends B {
+export interface IKlesCellFieldConfig extends C {
     executeAfterChange?: (property?: string, row?: any, group?: FormGroup<any> | FormArray<any>) => Observable<any>;
+    style?: IStyle;
+}
+
+export interface IKlesFooterFieldConfig extends B {
     style?: IStyle;
 }

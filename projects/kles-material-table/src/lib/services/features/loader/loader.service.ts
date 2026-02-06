@@ -1,5 +1,5 @@
 import { Inject, Injectable, Optional } from '@angular/core';
-import { auditTime, catchError, combineLatest, concat, map, Observable, of, startWith, Subject, switchMap } from 'rxjs';
+import { auditTime, catchError, combineLatest, concat, map, Observable, of, ReplaySubject, shareReplay, startWith, Subject, switchMap } from 'rxjs';
 import { LOADER_CONFIG } from '../../../token';
 import { PaginatorStore } from '../../store/paginator-store.service';
 import { ILoaderConfig } from '../../../core/table/config.interface';
@@ -7,22 +7,26 @@ import { SortStore } from '../../store/sort-store.service';
 import { FilterStore } from '../../store/filter-store.service';
 import { LinesLazyLoader, LinesLoader } from '../../../core/table/loader.interface';
 
-export interface ILinesLoader<R> {
-    load(): Observable<{ total: number; items: R[]; loading: boolean; error?: any }>;
-
+export interface ILoader<R> {
+    load(): Observable<{ total: number; items: R[]; loading: boolean; error?: any; header?: any }>;
+    refresh(): void;
 }
 
 @Injectable()
-export class LinesLoaderService<T, R> implements ILinesLoader<R> {
+export class LoaderService<T, R> implements ILoader<R> {
     private _refresh$ = new Subject<void>();
 
-    constructor(@Inject(LOADER_CONFIG) private readonly loaderConfig: ILoaderConfig<T, R>) {}
+    private _loader$: Observable<{ total: number; items: R[]; loading: boolean; error?: any; header?: any }>;
 
-    public load(): Observable<{ total: number; items: R[]; loading: boolean; error?: any }> {
+    constructor(@Inject(LOADER_CONFIG) private readonly loaderConfig: ILoaderConfig<T, R>) {
+        this.init();
+    }
+
+    private init() {
         const linesLoader = this.loaderConfig.lines as LinesLoader<T, R>;
-        return combineLatest([ this.loaderConfig.lines.params?.() || of({} as T)]).pipe(
+        this._loader$ = combineLatest([this._refresh$.pipe(startWith(void 0)), this.loaderConfig.lines.params?.() || of({} as T)]).pipe(
             auditTime(0),
-            switchMap(([ params]) => {
+            switchMap(([_, params]) => {
                 return concat(
                     of({ loading: true, total: 0, items: [] }),
                     linesLoader.loader(params).pipe(
@@ -35,26 +39,41 @@ export class LinesLoaderService<T, R> implements ILinesLoader<R> {
                     ),
                 );
             }),
+            shareReplay({ bufferSize: 1, refCount: true }),
         );
     }
 
-  
+    public load(): Observable<{ total: number; items: R[]; loading: boolean; error?: any }> {
+        return this._loader$;
+    }
+
+    public refresh() {
+        this._refresh$.next();
+    }
 }
 
 @Injectable()
-export class LinesLoaderLazyService<T, R> implements ILinesLoader<R> {
+export class LoaderLazyService<T, R> implements ILoader<R> {
     private _refresh$ = new Subject<void>();
+
+    private _loader$: Observable<{ total: number; items: R[]; loading: boolean; error?: any; header?: any }>;
 
     constructor(
         @Inject(LOADER_CONFIG) private readonly loaderConfig: ILoaderConfig<T, R>,
         @Optional() private paginatorStore: PaginatorStore | null,
         @Optional() private sortStore: SortStore | null,
         @Optional() private filterStore: FilterStore | null,
-    ) {}
+    ) {
+        this.init();
+    }
 
     public load(): Observable<{ total: number; items: R[]; loading: boolean; error?: any }> {
+        return this._loader$;
+    }
+
+    private init() {
         const linesLoader = this.loaderConfig.lines as LinesLazyLoader<T, R>;
-        return combineLatest([
+        this._loader$ = combineLatest([
             this._refresh$.pipe(startWith(void 0)),
             this.loaderConfig.lines.params?.() || of({} as T),
             this.paginatorStore?.page$ || of(null),
@@ -75,6 +94,11 @@ export class LinesLoaderLazyService<T, R> implements ILinesLoader<R> {
                     ),
                 );
             }),
+            shareReplay({ bufferSize: 1, refCount: true }),
         );
+    }
+
+    public refresh() {
+        this._refresh$.next();
     }
 }

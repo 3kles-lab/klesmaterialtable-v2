@@ -16,56 +16,75 @@
         [cdkDropListConnectedTo]="dragDropRowService.connectedTo"
     >
         <colgroup>
-            @for (column of columnsService.columns(); track column.columnDef) {
-            <col [style.width]="column.width ?? null" [style.minWidth]="column.minWidth ?? null" [style.maxWidth]="column.maxWidth ?? null" />
+            @for (column of columns(); track column.columnDef) {
+                <col [style.width]="column.width ?? null" [style.minWidth]="column.minWidth ?? null" [style.maxWidth]="column.maxWidth ?? null" />
             }
         </colgroup>
 
-        @for (column of columnsService.columns(); track column.columnDef; let first = $first;) {
+        @for (column of columns(); track column.columnDef; let first = $first) {
+            <ng-container [cdkColumnDef]="column.columnDef" [sticky]="column.sticky ?? false" [stickyEnd]="column.stickyEnd ?? false">
+                <th
+                    mat-header-cell
+                    *matHeaderCellDef
+                    [appResizableColumn]="column"
+                    [ngStyle]="
+                        column.headerCell?.style?.ngStyle
+                            | resolveNgStyle
+                                : tableService.form.get(['header', column.columnDef])?.value
+                                : tableService.form.get(['header', column.columnDef])?.status
+                                : tableService.form.controls.header.value
+                                : tableService.form.controls.header.status
+                    "
+                >
+                    <ng-container klesDynamicField [field]="column | headerField" [group]="tableService.form.controls.header"></ng-container>
+                </th>
 
-        <ng-container [cdkColumnDef]="column.columnDef" [sticky]="column.sticky ?? false" [stickyEnd]="column.stickyEnd ?? false">
-            <th
-                mat-header-cell
-                *matHeaderCellDef
-                [appResizableColumn]="column"
-                [ngStyle]="
-                    column.headerCell?.style?.ngStyle
-                        | resolveNgStyle
-                            : tableService.form.get(['header', column.columnDef])?.value
-                            : tableService.form.get(['header', column.columnDef])?.status
-                            : tableService.form.controls.header.value
-                            : tableService.form.controls.header.status
-                "
-            >
-                <ng-container klesDynamicField [field]="column | headerField" [group]="tableService.form.controls.header"></ng-container>
-            </th>
+                <td
+                    mat-cell
+                    *cdkCellDef="let row; let index = index"
+                    [ngStyle]="
+                        column.cell?.style?.ngStyle
+                            | resolveNgStyle: row.controls[column.columnDef].value : row.controls[column.columnDef].status : row.value : row.status
+                    "
+                >
+                    <div class="cell" [style.--align]="column.align">
+                        <ng-container klesDynamicField [field]="column | cellField" [group]="row"></ng-container>
+                    </div>
+                </td>
 
-            <td
-                mat-cell
-                *cdkCellDef="let row; let index = index"
-                [ngStyle]="
-                    column.cell?.style?.ngStyle
-                        | resolveNgStyle : row.controls[column.columnDef].value : row.controls[column.columnDef].status : row.value : row.status
-                "
-            >
-                <div class="cell" [style.--align]="column.align">
-                    <ng-container klesDynamicField [field]="column | cellField" [group]="row"></ng-container>
-                </div>
-            </td>
-        </ng-container>
+                <td
+                    mat-footer-cell
+                    *matFooterCellDef
+                    [ngStyle]="
+                        column.footerCell?.style?.ngStyle
+                            | resolveNgStyle
+                                : tableService.form.get(['footer', column.columnDef])?.value
+                                : tableService.form.get(['footer', column.columnDef])?.status
+                                : tableService.form.controls.footer.value
+                                : tableService.form.controls.footer.status
+                    "
+                >
+                    @if (column.footerCell) {
+                        <ng-container klesDynamicField [field]="column | footerField" [group]="tableService.form.controls.footer"> </ng-container>
+                    }
+                </td>
+            </ng-container>
         }
 
         <tr mat-header-row *matHeaderRowDef="columnsService.displayedColumns(); sticky: true"></tr>
         <tr mat-row *matRowDef="let row; columns: columnsService.displayedColumns()" cdkDrag [cdkDragData]="row"></tr>
+        <tr mat-footer-row *matFooterRowDef="columnsService.displayedColumns(); sticky: true"></tr>
 
-        <tr *matNoDataRow>
-            @if(!(loadingService.loading()) ){ no data TODO }
+        <tr *matNoDataRow [attr.colspan]="columnsService.displayedColumns().length">
+            @if (!loadingService.loading()) {
+                no data TODO
+            }
         </tr>
     </table>
 </form>
 
-@if(loadingService.loading() ){
-<div class="table-overlay" [style.--header-h.px]="headerHeightPx">
-    <mat-spinner></mat-spinner>
-</div>
+@if (loadingService.loading()) {
+    <div class="table-overlay" [style.--header-h.px]="headerHeightPx">
+        <mat-spinner></mat-spinner>
+    </div>
 }

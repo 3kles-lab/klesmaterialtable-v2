@@ -1,12 +1,11 @@
 import { Inject, Injectable } from '@angular/core';
 import { FormArray, FormGroup } from '@angular/forms';
 import { ColumnsService } from '../columns/columns.service';
-import { DATASOURCE_SERVICE, HEADER_SERVICE, LINES_SERVICE, LINESLOADER_SERVICE, SELECTION_SERVICE } from '../../../token';
+import { DATASOURCE_SERVICE, HEADER_SERVICE, LINES_SERVICE, SELECTION_SERVICE } from '../../../token';
 import { KlesForm } from './form';
 import { IDatasourceService } from '../datasource/datasource.service';
-import { HeaderService, IHeaderService } from '../header/header.service';
+import { IHeaderService } from '../header/header.service';
 import { ILinesService } from '../lines/lines.service';
-import { ILinesLoader } from '../lines/lines-loader.service';
 import { ISelectionService } from '../selection/selection.service';
 
 export interface ITableService {

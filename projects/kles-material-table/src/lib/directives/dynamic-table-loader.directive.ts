@@ -26,9 +26,10 @@ import { DragDropLazyService, DragDropService } from '../services/features/dragd
 import {
     COLUMNS,
     DATASOURCE_SERVICE,
+    FOOTER,
     HEADER_SERVICE,
     LINES_SERVICE,
-    LINESLOADER_SERVICE,
+    LOADER_SERVICE,
     LOADER_CONFIG,
     PAGINATOR_CONFIG,
     ROW_DRAG_DROP,
@@ -45,7 +46,6 @@ import { ScrollbarService } from '../services/features/scrollbar/scrollbar.servi
 import { InfiniteScrollTableComponent } from '../components/infinite-scroll-table/infinite-scroll-table.component';
 
 import { KlesForm } from '../services/features/table/form';
-import { LinesLoaderLazyService, LinesLoaderService } from '../services/features/lines/lines-loader.service';
 import { SelectionLoaderService } from '../services/features/selection/selection-loader.service';
 import { LoadingService } from '../services/features/loading/loading.service';
 import { HeaderLazyService, HeaderService } from '../services/features/header/header.service';
@@ -54,6 +54,7 @@ import { PaginatorService } from '../services/features/paginator/paginator.servi
 import { SelectionLazyService, SelectionService } from '../services/features/selection/selection.service';
 import { LinesLazyService, LinesService } from '../services/features/lines/lines.service';
 import { TableService } from '../services/features/table/table.service';
+import { LoaderLazyService, LoaderService } from '../services/features/loader/loader.service';
 
 @Directive({
     selector: '[appDynamicTableLoader]',
@@ -119,6 +120,10 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
             {
                 provide: COLUMNS,
                 useValue: signal<KlesColumnConfig[]>(this.tableConfig().columns || []),
+            },
+            {
+                provide: FOOTER,
+                useValue: signal<boolean>(this.tableConfig().footer ?? false),
             },
             {
                 provide: LOADER_CONFIG,
@@ -188,8 +193,8 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
                           useClass: HeaderLazyService,
                       },
                       {
-                          provide: LINESLOADER_SERVICE,
-                          useClass: LinesLoaderLazyService,
+                          provide: LOADER_SERVICE,
+                          useClass: LoaderLazyService,
                       },
                       {
                           provide: LINES_SERVICE,
@@ -211,8 +216,8 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
                   ]
                 : [
                       {
-                          provide: LINESLOADER_SERVICE,
-                          useClass: LinesLoaderService,
+                          provide: LOADER_SERVICE,
+                          useClass: LoaderService,
                       },
                       {
                           provide: HEADER_SERVICE,

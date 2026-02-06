@@ -4,9 +4,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { combineLatest, distinctUntilChanged, filter, map, pairwise, startWith } from 'rxjs';
 import { FilterService } from '../filter/filter.service';
 import { FilterStore } from '../../store/filter-store.service';
-import { DATASOURCE_SERVICE } from '../../../token';
+import { DATASOURCE_SERVICE, LOADER_SERVICE } from '../../../token';
 import { IDatasourceService } from '../datasource/datasource.service';
 import { ColumnsService } from '../columns/columns.service';
+import { ILoader } from '../loader/loader.service';
 
 export interface IHeaderService {
     register(): void;
@@ -15,22 +16,27 @@ export interface IHeaderService {
 @Injectable()
 export class HeaderService implements IHeaderService {
     private readonly destroyRef = inject(DestroyRef);
+    private filterableColumns: string[];
+
     constructor(
         private fm: KlesForm,
         @Optional() private filterService: FilterService | null,
         @Optional() private filterStore: FilterStore | null,
         @Inject(DATASOURCE_SERVICE) private datasourceService: IDatasourceService,
+        @Inject(LOADER_SERVICE) private loader: ILoader<any>,
         private columnsService: ColumnsService,
-    ) {}
-
-    public register() {
-        const fiterableCols = this.columnsService
+    ) {
+        this.filterableColumns = this.columnsService
             .columns()
             .filter((c) => c.filterable === true)
             .map((c) => c.columnDef);
+    }
+
+    public register() {
+        this.load();
 
         combineLatest(
-            fiterableCols.map((k) =>
+            this.filterableColumns.map((k) =>
                 this.fm
                     .getHeader()
                     .get(k)!
@@ -55,27 +61,47 @@ export class HeaderService implements IHeaderService {
                 }
             });
     }
+
+    private load() {
+        this.loader
+            .load()
+            .pipe(
+                takeUntilDestroyed(this.destroyRef),
+                filter((response) => !response.loading),
+                map((response) => response.header),
+                distinctUntilChanged((p, c) => {
+                    return this.filterableColumns.every((col) => p?.[col] === c?.[col]);
+                }),
+            )
+            .subscribe((response) => {
+                //TODO maj header
+                console.log('maj header');
+            });
+    }
 }
 
 @Injectable()
 export class HeaderLazyService implements IHeaderService {
     private readonly destroyRef = inject(DestroyRef);
+    private filterableColumns: string[];
+
     constructor(
         private fm: KlesForm,
-        @Optional() private filterService: FilterService | null,
         @Optional() private filterStore: FilterStore | null,
-        @Inject(DATASOURCE_SERVICE) private datasourceService: IDatasourceService,
+        @Inject(LOADER_SERVICE) private loader: ILoader<any>,
         private columnsService: ColumnsService,
-    ) {}
-
-    public register() {
-        const fiterableCols = this.columnsService
+    ) {
+        this.filterableColumns = this.columnsService
             .columns()
             .filter((c) => c.filterable === true)
             .map((c) => c.columnDef);
+    }
+
+    public register() {
+        this.load();
 
         combineLatest(
-            fiterableCols.map((k) =>
+            this.filterableColumns.map((k) =>
                 this.fm
                     .getHeader()
                     .get(k)!
@@ -90,8 +116,26 @@ export class HeaderLazyService implements IHeaderService {
                 map((entries) => Object.fromEntries(entries)),
             )
             .subscribe((value) => {
-                console.log(value)
+                console.log(value);
                 this.filterStore?.setFilters(value);
+            });
+    }
+
+    private load() {
+        this.loader
+            .load()
+            .pipe(
+                takeUntilDestroyed(this.destroyRef),
+                filter((response) => !response.loading),
+                map((response) => response.header),
+                distinctUntilChanged((p, c) => {
+                    return this.filterableColumns.every((col) => p?.[col] === c?.[col]);
+                }),
+            )
+            .subscribe((header) => {
+                //TODO maj header
+                console.log('header', header);
+                console.log('mak lazy header');
             });
     }
 }

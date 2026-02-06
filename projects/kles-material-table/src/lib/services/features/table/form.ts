@@ -34,8 +34,12 @@ export class KlesForm {
         rows.forEach((r) => this.getRows().push(r));
     }
 
-    public setHeader(name: string, header: AbstractControl, options?: { emitEvent?: false }): void {
+    public setHeaderControl(name: string, header: AbstractControl, options?: { emitEvent?: false }): void {
         this.getHeader().setControl(name, header, options);
+    }
+
+    public setFooterControl(name: string, footer: AbstractControl, options?: { emitEvent?: false }): void {
+        this.getFooter().setControl(name, footer, options);
     }
 
     public get rows(): FormGroup[] {
@@ -50,7 +54,18 @@ export class KlesForm {
             colCellHeader.name = column.columnDef;
 
             const control = this.rowFactory.createControl(colCellHeader, colCellHeader.value);
-            this.setHeader(colCellHeader.name, control, { emitEvent: false });
+            this.setHeaderControl(colCellHeader.name, control, { emitEvent: false });
         });
+
+        this.columnsService
+            .columns()
+            .filter((column) => column.footerCell != undefined)
+            .forEach((column) => {
+                const { pipeTransform, ...tmpCell } = column.footerCell;
+                let colCellFooter = _.cloneDeep(tmpCell);
+                colCellFooter.name = column.columnDef;
+                const control = this.rowFactory.createControl(colCellFooter, colCellFooter.value);
+                this.setFooterControl(colCellFooter.name, control, { emitEvent: false });
+            });
     }
 }
