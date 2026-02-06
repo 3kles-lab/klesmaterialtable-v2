@@ -1,7 +1,7 @@
 import { DestroyRef, Inject, inject, Injectable, Optional } from '@angular/core';
 import { KlesForm } from '../table/form';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { combineLatest, distinctUntilChanged, filter, map, pairwise, startWith } from 'rxjs';
+import { combineLatest, debounceTime, distinctUntilChanged, filter, map, pairwise, startWith } from 'rxjs';
 import { FilterService } from '../filter/filter.service';
 import { FilterStore } from '../../store/filter-store.service';
 import { DATASOURCE_SERVICE, LOADER_SERVICE } from '../../../token';
@@ -41,6 +41,7 @@ export class HeaderService implements IHeaderService {
                     .getHeader()
                     .get(k)!
                     .valueChanges.pipe(
+                        debounceTime(300),
                         startWith(this.fm.getHeader().get(k)!.value),
                         map((value) => [k, value] as const),
                     ),
@@ -106,6 +107,7 @@ export class HeaderLazyService implements IHeaderService {
                     .getHeader()
                     .get(k)!
                     .valueChanges.pipe(
+                        debounceTime(300),
                         startWith(this.fm.getHeader().get(k)!.value),
                         map((value) => [k, value] as const),
                     ),
