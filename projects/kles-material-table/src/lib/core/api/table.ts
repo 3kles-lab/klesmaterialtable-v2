@@ -1,4 +1,5 @@
 import { ColumnApi } from './column';
+import { FormApi } from './form';
 import { LoadingApi } from './loading';
 import { PaginationApi } from './pagination';
 import { ScrollbarApi } from './scrollbar';
@@ -13,10 +14,7 @@ export interface KlesTableApi {
     get sort(): SortApi;
     get loading(): LoadingApi;
     get selection(): SelectionApi;
-
-    // sort
-    // selection
-    // header
-    // footer
+    get form(): FormApi;
+   
     // event
 }

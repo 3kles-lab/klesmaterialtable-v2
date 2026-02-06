@@ -13,6 +13,7 @@ type SelectionConfigDef<T> = {
     /** optionnel */
     /** pour indiquer le critère des lignes déja sélectionné */
     isSelected?: (row: FormGroup) => boolean;
+    isDisabled?: (row: FormGroup) => boolean;
 };
 
 type Brand<K extends string> = { readonly __brand: K };

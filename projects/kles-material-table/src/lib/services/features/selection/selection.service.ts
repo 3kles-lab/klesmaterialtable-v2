@@ -67,6 +67,7 @@ export class SelectionService<T> extends AbstractSelectionService<T> {
     public register(): void {
         this.listenSelection();
         this.setSelection();
+        this.listenDatasource();
         this.listenRowSelection();
         this.listenHeaderSelection();
     }
@@ -84,23 +85,25 @@ export class SelectionService<T> extends AbstractSelectionService<T> {
     }
 
     private setSelection() {
-        if (this.selectionConfig.isSelected != undefined) {
-            this.linesService
-                .loaded()
-                .pipe(takeUntilDestroyed(this.destroyRef))
-                .subscribe(() => {
-                    this.fm.getRows().controls.forEach((group) => {
-                        if (this.selectionConfig.isSelected(group)) {
-                            this.selectionModel.select(group, { emitEvent: false }); // event false to avoid multiple send event
-                            group.controls[this.selectionLoaderService.key].patchValue(true, { emitEvent: false });
-                        } else {
-                            this.selectionModel.deselect(group, { emitEvent: false }); // event false to avoid multiple send event
-                            group.controls[this.selectionLoaderService.key].patchValue(false, { emitEvent: false });
-                        }
-                    });
-                    this.updateIndeterminate();
+        this.linesService
+            .loaded()
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(() => {
+                this.fm.getRows().controls.forEach((group) => {
+                    if (group.controls[this.selectionLoaderService.key]?.value === true) {
+                        this.selectionModel.select(group, { emitEvent: false }); // event false to avoid multiple send event
+                    } else if (this.selectionConfig.isSelected != undefined && this.selectionConfig.isSelected(group)) {
+                        this.selectionModel.select(group, { emitEvent: false }); // event false to avoid multiple send event
+                        group.controls[this.selectionLoaderService.key]?.patchValue(true, { emitEvent: false });
+                    } else {
+                        this.selectionModel.deselect(group, { emitEvent: false }); // event false to avoid multiple send event
+                    }
+                    if (this.selectionConfig.isDisabled && this.selectionConfig.isDisabled(group)) {
+                        group.controls[this.selectionLoaderService.key]?.disable({ emitEvent: false });
+                    }
                 });
-        }
+                this.updateHeader();
+            });
     }
 
     private listenHeaderSelection(): void {
@@ -121,12 +124,21 @@ export class SelectionService<T> extends AbstractSelectionService<T> {
                     this.loadingService.stop();
                     if (response.selected) {
                         if (this.selectionModel.isMultipleSelection()) {
-                            this.selectionModel.select(this.datasourceService.datasource.filteredData);
+                            this.selectionModel.select(
+                                this.datasourceService.datasource.filteredData?.filter((g) => g.controls[this.selectionLoaderService.key]?.enabled) ??
+                                    [],
+                            );
                         } else {
-                            this.selectionModel.select(this.datasourceService.datasource.filteredData?.[0] ?? []);
+                            this.selectionModel.select(
+                                this.datasourceService.datasource.filteredData?.filter(
+                                    (g) => g.controls[this.selectionLoaderService.key]?.enabled,
+                                )[0] ?? [],
+                            );
                         }
                     } else {
-                        this.selectionModel.deselect(this.datasourceService.datasource.filteredData);
+                        this.selectionModel.deselect(
+                            this.datasourceService.datasource.filteredData?.filter((g) => g.controls[this.selectionLoaderService.key]?.enabled),
+                        );
                     }
                 }
             });
@@ -187,7 +199,7 @@ export class SelectionService<T> extends AbstractSelectionService<T> {
                 group.controls[this.selectionLoaderService.key].patchValue(true, { emitEvent: false });
             });
             this.fm.getRows().updateValueAndValidity({ emitEvent: false });
-            this.updateIndeterminate();
+            this.updateHeader();
         });
 
         this.selectionModel.stateChanged.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((state) => {
@@ -205,9 +217,22 @@ export class SelectionService<T> extends AbstractSelectionService<T> {
         });
     }
 
-    private updateIndeterminate() {
+    private listenDatasource(): void {
+        this.datasourceService.datasource
+            .connect()
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(() => {
+                this.updateHeader();
+            });
+    }
+
+    private updateHeader() {
         if (this.selectionModel.hasValue()) {
-            if (this.datasourceService.datasource.filteredData.length === this.selectionModel.selected.count) {
+            if (
+                this.datasourceService.datasource.filteredData
+                    .filter((group) => group.controls[this.selectionLoaderService.key]?.enabled)
+                    .every((group) => this.selectionModel.isSelected(group))
+            ) {
                 this.columnsService.setHeaderCellIndeterminate(this.selectionLoaderService.key, false);
                 this.fm.getHeader().controls[this.selectionLoaderService.key]?.patchValue(true, { emitEvent: false });
             } else {
