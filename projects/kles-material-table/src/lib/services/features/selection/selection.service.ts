@@ -265,6 +265,7 @@ export class SelectionLazyService<T> extends AbstractSelectionService<T> {
     }
 
     public register(): void {
+        this.setSelection();
         this.listenHeaderSelection();
         this.listenRowSelection();
     }
@@ -298,9 +299,12 @@ export class SelectionLazyService<T> extends AbstractSelectionService<T> {
                 } else {
                     this.loadingService.stop();
                     this._count.set(response.count ?? 0);
-                    this.fm.getRows().controls.forEach((group) => {
-                        group.controls[this.selectionLoaderService.key].patchValue(response.selected, { emitEvent: false });
-                    });
+                    this.fm
+                        .getRows()
+                        .controls.filter((group) => group.controls[this.key]?.enabled)
+                        .forEach((group) => {
+                            group.controls[this.selectionLoaderService.key].patchValue(response.selected, { emitEvent: false });
+                        });
                     this.fm.getRows().updateValueAndValidity({ emitEvent: false });
 
                     // if (response.footer) {
@@ -353,6 +357,23 @@ export class SelectionLazyService<T> extends AbstractSelectionService<T> {
                     //             this.fm.getFooter().patchValue(footer, { emitEvent: false });
                     //         }
                 }
+            });
+    }
+
+    private setSelection() {
+        this.linesService
+            .loaded()
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(() => {
+                this.fm.getRows().controls.forEach((group) => {
+                    if (this.selectionConfig.isSelected != undefined && this.selectionConfig.isSelected(group)) {
+                        group.controls[this.selectionLoaderService.key]?.patchValue(true, { emitEvent: false });
+                    }
+                    if (this.selectionConfig.isDisabled && this.selectionConfig.isDisabled(group)) {
+                        group.controls[this.selectionLoaderService.key]?.disable({ emitEvent: false });
+                    }
+                });
+                // this.updateHeader();
             });
     }
 }
