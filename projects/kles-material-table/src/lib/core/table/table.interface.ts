@@ -1,4 +1,5 @@
 import { ColumnApi } from '../api/column';
+import { FooterApi } from '../api/footer';
 import { LoadingApi } from '../api/loading';
 import { PaginationApi } from '../api/pagination';
 import { ScrollbarApi } from '../api/scrollbar';
@@ -11,6 +12,7 @@ export interface ITable {
     pagination?: PaginationApi | undefined;
     selection: SelectionApi;
     sort: SortApi;
+    footer: FooterApi;
     loading: LoadingApi;
     refresh();
 }

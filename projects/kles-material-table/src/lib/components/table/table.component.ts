@@ -43,6 +43,7 @@ import { FooterFieldPipe } from '../../pipes/footer-field.pipe';
 import { KlesColumnConfig } from '../../core/table/column.interface';
 import { ILoader } from '../../services/features/loader/loader.service';
 import { FooterService } from '../../services/features/footer/footer.service';
+import { FooterApi } from '../../core/api/footer';
 
 @Component({
     selector: 'kles-table',
@@ -81,7 +82,7 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
 
     dataSource: IKlesDataSource;
     columns: Signal<KlesColumnConfig[]>;
-    footer: Signal<boolean>;
+    showFooter: Signal<boolean>;
 
     private ro?: ResizeObserver;
     private rafId?: number;
@@ -104,7 +105,7 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
         @Optional() private filterService: FilterService,
     ) {
         this.columns = this.columnsService.columns;
-        this.footer = this.footerService.footer;
+        this.showFooter = this.footerService.footer;
         this.dataSource = this.datasourceService.datasource;
         this.connectorService.connect(this);
         this.filterService?.register();
@@ -176,6 +177,13 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
         return {
             start: () => this.loadingService.start(),
             stop: () => this.loadingService.stop(),
+        };
+    }
+
+    get footer(): FooterApi {
+        return {
+            hide: () => this.footerService.hide(),
+            show: () => this.footerService.show(),
         };
     }
 

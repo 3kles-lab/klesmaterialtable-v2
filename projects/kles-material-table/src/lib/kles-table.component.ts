@@ -10,6 +10,7 @@ import { SortApi } from './core/api/sort';
 import { LoadingApi } from './core/api/loading';
 import { SelectionApi } from './core/api/selection';
 import { FormApi } from './core/api/form';
+import { FooterApi } from './core/api/footer';
 
 @Component({
     selector: 'kles-dynamic-table',
@@ -61,5 +62,9 @@ export class KlesTableComponent implements OnInit, KlesTableApi {
 
     get form(): FormApi {
         return null;
+    }
+
+    get footer(): FooterApi {
+        return this.connectorService.footer;
     }
 }

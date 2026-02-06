@@ -6,6 +6,7 @@ import { PaginationApi } from './core/api/pagination';
 import { SortApi } from './core/api/sort';
 import { LoadingApi } from './core/api/loading';
 import { SelectionApi } from './core/api/selection';
+import { FooterApi } from './core/api/footer';
 
 @Injectable()
 export class KlesTableConnectorService {
@@ -44,6 +45,10 @@ export class KlesTableConnectorService {
 
     get selection(): SelectionApi {
         return this.table.selection;
+    }
+
+    get footer(): FooterApi {
+        return this.table.footer;
     }
 
     public refresh() {

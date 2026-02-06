@@ -1,4 +1,5 @@
 import { ColumnApi } from './column';
+import { FooterApi } from './footer';
 import { FormApi } from './form';
 import { LoadingApi } from './loading';
 import { PaginationApi } from './pagination';
@@ -15,6 +16,7 @@ export interface KlesTableApi {
     get loading(): LoadingApi;
     get selection(): SelectionApi;
     get form(): FormApi;
-   
+    get footer(): FooterApi;
+
     // event
 }
