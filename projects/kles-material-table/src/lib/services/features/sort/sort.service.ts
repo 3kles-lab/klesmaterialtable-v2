@@ -18,6 +18,8 @@ export interface ISortService {
 @Injectable()
 export abstract class AbstractSortService implements ISortService {
     protected _sort: MatSort;
+    protected _sortChange = new EventEmitter<Sort>();
+    protected readonly destroyRef = inject(DestroyRef);
 
     public get sort(): MatSort {
         return this._sort;
@@ -25,6 +27,9 @@ export abstract class AbstractSortService implements ISortService {
 
     public register(s: MatSort) {
         this._sort = s;
+        this._sort.sortChange.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
+            this._sortChange.emit(event);
+        });
     }
 
     public setDirection(direction: SortDirection) {
@@ -42,14 +47,12 @@ export abstract class AbstractSortService implements ISortService {
     }
 
     public sortChange(): EventEmitter<Sort> {
-        return this._sort.sortChange;
+        return this._sortChange;
     }
 }
 
 @Injectable()
 export class SortService extends AbstractSortService {
-    protected readonly destroyRef = inject(DestroyRef);
-
     constructor(
         @Optional() private sortStore: SortStore | null,
         private columnsService: ColumnsService,
@@ -147,8 +150,6 @@ export class SortService extends AbstractSortService {
 
 @Injectable()
 export class SortLazyService extends AbstractSortService {
-    protected readonly destroyRef = inject(DestroyRef);
-
     constructor(
         @Optional() private sortStore: SortStore | null,
         @Inject(DATASOURCE_SERVICE) private datasourceService: DatasourceLazyService,

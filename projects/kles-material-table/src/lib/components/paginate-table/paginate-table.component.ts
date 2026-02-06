@@ -24,8 +24,4 @@ export class PaginateTableComponent implements OnInit {
     ngOnInit(): void {
         this.paginatorService.register(this.paginator);
     }
-
-    onPage(e: PageEvent) {
-        this.table?.scrollbar.toTop('instant');
-    }
 }

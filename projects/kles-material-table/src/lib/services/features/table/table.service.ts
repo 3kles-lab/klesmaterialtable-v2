@@ -1,12 +1,14 @@
 import { Inject, Injectable } from '@angular/core';
 import { FormArray, FormGroup } from '@angular/forms';
 import { ColumnsService } from '../columns/columns.service';
-import { DATASOURCE_SERVICE, HEADER_SERVICE, LINES_SERVICE, SELECTION_SERVICE } from '../../../token';
+import { DATASOURCE_SERVICE, HEADER_SERVICE, LINES_SERVICE, SCROLLBAR_ORCHESTRATOR_SERVICE, SELECTION_SERVICE } from '../../../token';
 import { KlesForm } from './form';
 import { IDatasourceService } from '../datasource/datasource.service';
 import { IHeaderService } from '../header/header.service';
 import { ILinesService } from '../lines/lines.service';
 import { ISelectionService } from '../selection/selection.service';
+import { LoadingOrchestratorService } from '../loading/loading-orchestrator.service';
+import { IScrollbarOrchestratorService } from '../scrollbar/scrollbar-orchestrator.service';
 
 export interface ITableService {
     readonly form: FormGroup<{
@@ -34,13 +36,25 @@ export class TableService implements ITableService {
         private fm: KlesForm,
         @Inject(HEADER_SERVICE) private headerService: IHeaderService,
         @Inject(SELECTION_SERVICE) private selectionService: ISelectionService,
+        private loadingOrchestratorService: LoadingOrchestratorService,
+        @Inject(SCROLLBAR_ORCHESTRATOR_SERVICE) private scrollbarOrchestratorService: IScrollbarOrchestratorService,
     ) {
+        this.orchestrators();
+        this.features();
+        this.form = this.fm.form;
+    }
+
+    private orchestrators() {
+        this.scrollbarOrchestratorService.register();
+        this.loadingOrchestratorService.register();
+    }
+
+    private features() {
         this.columnsService.register();
         this.fm.init();
         this.datasourceService.register();
         this.headerService.register();
         this.linesService.register();
         this.selectionService.register();
-        this.form = this.fm.form;
     }
 }

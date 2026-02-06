@@ -38,6 +38,8 @@ import {
     SORT_CONFIG,
     SORT_SERVICE,
     TABLE_SERVICE,
+    SCROLLBAR_ORCHESTRATOR_SERVICE,
+    // SCROLLBAR_ORCHESTRATOR_SERVICE,
 } from '../token';
 import { KlesColumnConfig } from '../core/table/column.interface';
 import { ColumnsService } from '../services/features/columns/columns.service';
@@ -55,6 +57,10 @@ import { SelectionLazyService, SelectionService } from '../services/features/sel
 import { LinesLazyService, LinesService } from '../services/features/lines/lines.service';
 import { TableService } from '../services/features/table/table.service';
 import { LoaderLazyService, LoaderService } from '../services/features/loader/loader.service';
+import { LoadingOrchestratorService } from '../services/features/loading/loading-orchestrator.service';
+import { ScrollbarLazyOrchestratorService, ScrollbarOrchestratorService } from '../services/features/scrollbar/scrollbar-orchestrator.service';
+import { FooterService } from '../services/features/footer/footer.service';
+// import { ScrollbarLazyOrchestratorService, ScrollbarOrchestratorService } from '../services/features/scrollbar/scrollbar-orchestrator.service';
 
 @Directive({
     selector: '[appDynamicTableLoader]',
@@ -159,6 +165,23 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
                 : []),
         ];
 
+        const orchestratorProviders = [
+            LoadingOrchestratorService,
+            ...(this.tableConfig().lazy
+                ? [
+                      {
+                          provide: SCROLLBAR_ORCHESTRATOR_SERVICE,
+                          useClass: ScrollbarLazyOrchestratorService,
+                      },
+                  ]
+                : [
+                      {
+                          provide: SCROLLBAR_ORCHESTRATOR_SERVICE,
+                          useClass: ScrollbarOrchestratorService,
+                      },
+                  ]),
+        ];
+
         const datasourceProvider = this.tableConfig().lazy
             ? [
                   {
@@ -177,7 +200,7 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
             LoadingService,
             KlesForm,
             ColumnsService,
-
+            FooterService,
             ScrollbarService,
             SelectionLoaderService,
             PaginatorService,
@@ -245,7 +268,13 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
                   ]),
         ];
 
-        const providers: Array<Provider | StaticProvider> = [storeProviders, configProviders, datasourceProvider, featureProviders];
+        const providers: Array<Provider | StaticProvider> = [
+            storeProviders,
+            configProviders,
+            datasourceProvider,
+            featureProviders,
+            orchestratorProviders,
+        ];
 
         return Injector.create({
             parent: this.viewContainerRef.injector,

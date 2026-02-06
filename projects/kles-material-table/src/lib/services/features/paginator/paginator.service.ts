@@ -1,5 +1,5 @@
-import { DestroyRef, Inject, inject, Injectable, Optional, Signal, signal } from '@angular/core';
-import { MatPaginator } from '@angular/material/paginator';
+import { DestroyRef, EventEmitter, Inject, inject, Injectable, Optional, Signal, signal } from '@angular/core';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { PaginatorStore } from '../../store/paginator-store.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DATASOURCE_SERVICE, PAGINATOR_CONFIG } from '../../../token';
@@ -10,6 +10,7 @@ import { IPaginatorConfig } from '../../../core/table/config.interface';
 export class PaginatorService {
     private _paginator: MatPaginator;
     private _disabled = signal(false);
+    private _pageChanged = new EventEmitter<PageEvent>();
     private readonly destroyRef = inject(DestroyRef);
 
     constructor(
@@ -31,12 +32,17 @@ export class PaginatorService {
 
             this._paginator.page.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
                 this.paginatorStore?.setPage({ page: event.pageIndex, perPage: event.pageSize });
+                this._pageChanged.next(event);
             });
         }
     }
 
     public get paginator(): MatPaginator {
         return this._paginator;
+    }
+
+    public pageChanged(): EventEmitter<PageEvent> {
+        return this._pageChanged;
     }
 
     public setPageIndex(index: number): void {

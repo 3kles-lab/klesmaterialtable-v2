@@ -12,6 +12,7 @@ import { ILinesService } from './services/features/lines/lines.service';
 import { ITableService } from './services/features/table/table.service';
 import { IHeaderService } from './services/features/header/header.service';
 import { ILoader } from './services/features/loader/loader.service';
+import { IScrollbarOrchestratorService } from './services/features/scrollbar/scrollbar-orchestrator.service';
 
 export const SELECTION_CONFIG = new InjectionToken<SelectionConfig<any>>('SELECTION_CONFIG');
 
@@ -33,5 +34,6 @@ export const LINES_SERVICE = new InjectionToken<ILinesService>('LINES_SERVICE');
 export const DATASOURCE_SERVICE = new InjectionToken<IDatasourceService>('DATASOURCE_SERVICE');
 export const SELECTION_SERVICE = new InjectionToken<ISelectionService>('SELECTION_SERVICE');
 export const SORT_SERVICE = new InjectionToken<ISortService>('SORT_SERVICE');
+export const SCROLLBAR_ORCHESTRATOR_SERVICE = new InjectionToken<IScrollbarOrchestratorService>('SCROLLBAR_ORCHESTRATOR_SERVICE');
 
 export const TABLE_SERVICE = new InjectionToken<ITableService>('TABLE_SERVICE');

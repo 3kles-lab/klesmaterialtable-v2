@@ -1,4 +1,4 @@
-<form [formGroup]="tableService.form" (ngSubmit)="submit()">
+<form #form [formGroup]="tableService.form" (ngSubmit)="submit()">
     <!-- [fixedLayout]="true" -->
     <table
         mat-table
@@ -14,6 +14,7 @@
         [cdkDropListAutoScrollStep]="dragDropRowService.autoScrollStep"
         [cdkDropListSortPredicate]="dragDropRowService.sortPredicate"
         [cdkDropListConnectedTo]="dragDropRowService.connectedTo"
+        class="mat-elevation-z1"
     >
         <colgroup>
             @for (column of columns(); track column.columnDef) {
@@ -73,7 +74,9 @@
 
         <tr mat-header-row *matHeaderRowDef="columnsService.displayedColumns(); sticky: true"></tr>
         <tr mat-row *matRowDef="let row; columns: columnsService.displayedColumns()" cdkDrag [cdkDragData]="row"></tr>
-        <tr mat-footer-row *matFooterRowDef="columnsService.displayedColumns(); sticky: true"></tr>
+        @if (footer()) {
+            <tr mat-footer-row *matFooterRowDef="columnsService.displayedColumns(); sticky: true"></tr>
+        }
 
         <tr *matNoDataRow [attr.colspan]="columnsService.displayedColumns().length">
             @if (!loadingService.loading()) {
@@ -84,7 +87,7 @@
 </form>
 
 @if (loadingService.loading()) {
-    <div class="table-overlay" [style.--header-h.px]="headerHeightPx">
+    <div class="table-overlay" [style.--header-h.px]="headerHeightPx" [style.--scroll-h.px]="scrollHeightPx" [style.--footer-h.px]="footerHeightPx">
         <mat-spinner></mat-spinner>
     </div>
 }

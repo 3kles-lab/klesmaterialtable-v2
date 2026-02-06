@@ -42,6 +42,7 @@ import { ISelectionService } from '../../services/features/selection/selection.s
 import { FooterFieldPipe } from '../../pipes/footer-field.pipe';
 import { KlesColumnConfig } from '../../core/table/column.interface';
 import { ILoader } from '../../services/features/loader/loader.service';
+import { FooterService } from '../../services/features/footer/footer.service';
 
 @Component({
     selector: 'kles-table',
@@ -72,35 +73,41 @@ import { ILoader } from '../../services/features/loader/loader.service';
 export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy {
     @ViewChild(MatTable) table!: MatTable<FormGroup>;
     @ViewChild(MatSort, { static: true }) matSort: MatSort;
+    @ViewChild('form', { static: true }) form!: ElementRef<HTMLElement>;
 
     headerHeightPx = 56;
-    private ro?: ResizeObserver;
+    scrollHeightPx = 0;
+    footerHeightPx = 0;
 
     dataSource: IKlesDataSource;
     columns: Signal<KlesColumnConfig[]>;
+    footer: Signal<boolean>;
+
+    private ro?: ResizeObserver;
+    private rafId?: number;
+    private _cleanup?: () => void;
 
     constructor(
+        private host: ElementRef<HTMLElement>,
         private connectorService: KlesTableConnectorService,
         @Inject(LOADER_SERVICE) private loader: ILoader<any>,
         @Inject(DATASOURCE_SERVICE) private datasourceService: IDatasourceService,
         @Inject(TABLE_SERVICE) public tableService: ITableService,
         @Inject(ROW_DRAG_DROP) public dragDropRowService: DragDropService,
-        @Inject(LINES_SERVICE) private linesService: ILinesService,
         @Inject(SELECTION_SERVICE) private selectionService: ISelectionService,
         public columnsService: ColumnsService,
         public loadingService: LoadingService,
         private paginatorService: PaginatorService,
-        private host: ElementRef<HTMLElement>,
         private scrollbarService: ScrollbarService,
+        private footerService: FooterService,
         @Inject(SORT_SERVICE) private sortService: ISortService,
         @Optional() private filterService: FilterService,
     ) {
         this.columns = this.columnsService.columns;
-        console.log(this.columns());
+        this.footer = this.footerService.footer;
         this.dataSource = this.datasourceService.datasource;
         this.connectorService.connect(this);
         this.filterService?.register();
-        this.scrollbarService.register(this.host.nativeElement);
     }
 
     @HostBinding('class.loading')
@@ -178,6 +185,8 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
 
     ngOnInit(): void {
         this.sortService.register(this.matSort);
+        const el = this.form.nativeElement;
+        this.scrollbarService.register(el);
     }
 
     ngAfterViewInit(): void {
@@ -185,7 +194,8 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
     }
 
     ngOnDestroy(): void {
-        this.ro?.disconnect();
+        // this.ro?.disconnect();
+        this._cleanup?.();
         this.scrollbarService.unregister();
     }
 
@@ -194,15 +204,51 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
     }
 
     private calculHeaderHeight() {
+        const form = this.form?.nativeElement as HTMLElement | null;
         const header = this.host.nativeElement.querySelector('.mat-mdc-header-row') as HTMLElement | null;
         const footer = this.host.nativeElement.querySelector('.mat-mdc-footer-row') as HTMLElement | null;
 
-        const update = () => {
+        const compute = () => {
+            this.scrollHeightPx = Math.max(0, form?.offsetHeight - form?.clientHeight || 0);
             this.headerHeightPx = Math.ceil(header?.getBoundingClientRect().height ?? 0);
+            this.footerHeightPx = Math.max(0, footer?.getBoundingClientRect().height ?? 0);
         };
 
-        update();
-        this.ro = new ResizeObserver(update);
-        this.ro.observe(header);
+        const scheduleCompute = () => {
+            if (this.rafId) {
+                cancelAnimationFrame(this.rafId);
+            }
+            this.rafId = requestAnimationFrame(() => {
+                compute();
+                this.rafId = requestAnimationFrame(compute);
+            });
+        };
+
+        scheduleCompute();
+
+        this.ro = new ResizeObserver(scheduleCompute);
+        if (form) {
+            this.ro.observe(form);
+        }
+
+        if (header) {
+            this.ro.observe(header);
+        }
+
+        if (footer) {
+            this.ro.observe(footer);
+        }
+
+        form.addEventListener('scroll', scheduleCompute, { passive: true });
+        window.addEventListener('resize', scheduleCompute, { passive: true });
+
+        this._cleanup = () => {
+            form.removeEventListener('scroll', scheduleCompute);
+            window.removeEventListener('resize', scheduleCompute);
+            this.ro?.disconnect();
+            if (this.rafId) {
+                cancelAnimationFrame(this.rafId);
+            }
+        };
     }
 }

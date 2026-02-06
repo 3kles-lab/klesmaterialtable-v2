@@ -1,13 +1,11 @@
 import { DestroyRef, EventEmitter, inject, Inject, Injectable } from '@angular/core';
 import { LOADER_SERVICE } from '../../../token';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { LoadingService } from '../loading/loading.service';
-import { ScrollbarService } from '../scrollbar/scrollbar.service';
 import { KlesForm } from '../table/form';
 import { RowFormFactory } from '../table/row-factory.service';
 import { ColumnsService } from '../columns/columns.service';
 import { PaginatorService } from '../paginator/paginator.service';
-import { Subject } from 'rxjs';
+import { filter, Subject } from 'rxjs';
 import { LoaderLazyService, LoaderService } from '../loader/loader.service';
 
 export interface ILinesService {
@@ -28,8 +26,6 @@ export class LinesService implements ILinesService {
         private fm: KlesForm,
         private columnsService: ColumnsService,
         private rowFactory: RowFormFactory,
-        private loadingService: LoadingService,
-        private scrollbarService: ScrollbarService,
     ) {}
 
     public register() {
@@ -47,16 +43,11 @@ export class LinesService implements ILinesService {
     private load() {
         this.loader
             .load()
-            .pipe(takeUntilDestroyed(this.destroyRef))
+            .pipe(
+                takeUntilDestroyed(this.destroyRef),
+                filter((response) => !response.loading),
+            )
             .subscribe((response) => {
-                if (response.loading) {
-                    this.scrollbarService.toTop('instant');
-                    this.loadingService.start();
-                    return;
-                }
-
-                this.loadingService.stop();
-
                 this.fm.setRows(
                     this.rowFactory.createRows(
                         this.columnsService.columns().map((col) => ({ ...col.cell, name: col.columnDef })),
@@ -81,8 +72,6 @@ export class LinesLazyService implements ILinesService {
         private fm: KlesForm,
         private columnsService: ColumnsService,
         private rowFactory: RowFormFactory,
-        private loadingService: LoadingService,
-        private scrollbarService: ScrollbarService,
         private paginatorService: PaginatorService,
     ) {}
 
@@ -105,16 +94,11 @@ export class LinesLazyService implements ILinesService {
     private load() {
         this.loader
             .load()
-            .pipe(takeUntilDestroyed(this.destroyRef))
+            .pipe(
+                takeUntilDestroyed(this.destroyRef),
+                filter((response) => !response.loading),
+            )
             .subscribe((response) => {
-                if (response.loading) {
-                    this.scrollbarService.toTop('instant');
-                    this.loadingService.start();
-                    return;
-                }
-
-                this.loadingService.stop();
-
                 this.fm.setRows(
                     this.rowFactory.createRows(
                         this.columnsService.columns().map((col) => ({ ...col.cell, name: col.columnDef })),

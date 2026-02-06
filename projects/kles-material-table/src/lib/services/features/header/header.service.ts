@@ -116,7 +116,6 @@ export class HeaderLazyService implements IHeaderService {
                 map((entries) => Object.fromEntries(entries)),
             )
             .subscribe((value) => {
-                console.log(value);
                 this.filterStore?.setFilters(value);
             });
     }
@@ -134,8 +133,7 @@ export class HeaderLazyService implements IHeaderService {
             )
             .subscribe((header) => {
                 //TODO maj header
-                console.log('header', header);
-                console.log('mak lazy header');
+                console.log('header todo', header);
             });
     }
 }

@@ -8,14 +8,17 @@
 }
 
 :host(.loading) {
-    min-height: 250px;
-    overflow-y: hidden;
+    min-height: 350px;
+    // overflow-y: hidden;
 }
 
 form {
     display: flex;
     flex-direction: column;
     flex-grow: 1;
+    position: relative;
+    overflow: auto;
+    
 }
 
 table {
@@ -59,10 +62,10 @@ th[appResizableColumn] .resize-handle {
     left: 0;
     right: 0;
     top: var(--header-h, 56px);
-    bottom: 0;
-    padding-bottom: var(--footer-h, 0px);
+    // bottom: 0;
+    bottom: calc(var(--scroll-h, 0px) + var(--footer-h, 0px));
     display: grid;
     place-items: center;
     background: rgba(139, 147, 154, 0.15);
-    z-index: 5;
+    z-index: 500;
 }
