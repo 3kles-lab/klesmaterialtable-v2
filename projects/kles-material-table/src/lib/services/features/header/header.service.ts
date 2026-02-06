@@ -42,6 +42,7 @@ export class HeaderService implements IHeaderService {
                     .get(k)!
                     .valueChanges.pipe(
                         debounceTime(300),
+                        distinctUntilChanged(),
                         startWith(this.fm.getHeader().get(k)!.value),
                         map((value) => [k, value] as const),
                     ),
@@ -108,6 +109,7 @@ export class HeaderLazyService implements IHeaderService {
                     .get(k)!
                     .valueChanges.pipe(
                         debounceTime(300),
+                        distinctUntilChanged(),
                         startWith(this.fm.getHeader().get(k)!.value),
                         map((value) => [k, value] as const),
                     ),
