@@ -11,6 +11,7 @@ import { LoadingApi } from './core/api/loading';
 import { SelectionApi } from './core/api/selection';
 import { FormApi } from './core/api/form';
 import { FooterApi } from './core/api/footer';
+import { ArrayUiState, GroupUiState } from '@3kles/kles-material-dynamicforms';
 
 @Component({
     selector: 'kles-dynamic-table',
@@ -68,7 +69,11 @@ export class KlesTableComponent implements OnInit, KlesTableApi {
         return this.connectorService.footer;
     }
 
-    get ui() {
+    get ui(): GroupUiState<{
+        header: GroupUiState;
+        rows: ArrayUiState;
+        footer: GroupUiState;
+    }> {
         return this.connectorService.ui;
     }
 }

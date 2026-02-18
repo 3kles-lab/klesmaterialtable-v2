@@ -10,7 +10,7 @@ import { MatTable, MatTableModule } from '@angular/material/table';
 import { ITable } from '../../core/table/table.interface';
 
 import { CdkTableModule } from '@angular/cdk/table';
-import { KlesMaterialDynamicformsModule } from '@3kles/kles-material-dynamicforms';
+import { ArrayUiState, GroupUiState, KlesMaterialDynamicformsModule } from '@3kles/kles-material-dynamicforms';
 import { HeaderFieldPipe } from '../../pipes/header-field.pipe';
 import { CellFieldPipe } from '../../pipes/cell-field.pipe';
 import { MatSort, MatSortModule } from '@angular/material/sort';
@@ -44,7 +44,6 @@ import { ILoader } from '../../services/features/loader/loader.service';
 import { FooterService } from '../../services/features/footer/footer.service';
 import { FooterApi } from '../../core/api/footer';
 import { UiFieldPipe } from '../../pipes/ui-field.pipe';
-
 
 @Component({
     selector: 'kles-table',
@@ -191,8 +190,12 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
         };
     }
 
-    get ui(){
-        return this.tableService.ui
+    get ui(): GroupUiState<{
+        header: GroupUiState;
+        rows: ArrayUiState;
+        footer: GroupUiState;
+    }> {
+        return this.tableService.ui;
     }
 
     refresh() {

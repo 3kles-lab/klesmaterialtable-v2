@@ -7,6 +7,7 @@ import { SortApi } from './core/api/sort';
 import { LoadingApi } from './core/api/loading';
 import { SelectionApi } from './core/api/selection';
 import { FooterApi } from './core/api/footer';
+import { ArrayUiState, GroupUiState } from '@3kles/kles-material-dynamicforms';
 
 @Injectable()
 export class KlesTableConnectorService {
@@ -51,7 +52,11 @@ export class KlesTableConnectorService {
         return this.table?.footer;
     }
 
-    get ui(){
+    get ui(): GroupUiState<{
+        header: GroupUiState;
+        rows: ArrayUiState;
+        footer: GroupUiState;
+    }> {
         return this.table?.ui;
     }
 

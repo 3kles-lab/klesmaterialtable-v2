@@ -1,3 +1,4 @@
+import { ArrayUiState, GroupUiState } from '@3kles/kles-material-dynamicforms';
 import { ColumnApi } from './column';
 import { FooterApi } from './footer';
 import { FormApi } from './form';
@@ -17,6 +18,10 @@ export interface KlesTableApi {
     get selection(): SelectionApi;
     get form(): FormApi;
     get footer(): FooterApi;
-    get ui(): any;
+    get ui(): GroupUiState<{
+        header: GroupUiState;
+        rows: ArrayUiState;
+        footer: GroupUiState;
+    }>;
     // event
 }

@@ -1,3 +1,4 @@
+import { ArrayUiState, GroupUiState } from '@3kles/kles-material-dynamicforms';
 import { ColumnApi } from '../api/column';
 import { FooterApi } from '../api/footer';
 import { LoadingApi } from '../api/loading';
@@ -15,5 +16,9 @@ export interface ITable {
     footer: FooterApi;
     loading: LoadingApi;
     refresh();
-    ui: any;
+    ui: GroupUiState<{
+        header: GroupUiState;
+        rows: ArrayUiState;
+        footer: GroupUiState;
+    }>;
 }
