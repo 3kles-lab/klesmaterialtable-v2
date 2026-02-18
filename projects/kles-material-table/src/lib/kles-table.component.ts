@@ -67,4 +67,8 @@ export class KlesTableComponent implements OnInit, KlesTableApi {
     get footer(): FooterApi {
         return this.connectorService.footer;
     }
+
+    get ui() {
+        return this.connectorService.ui;
+    }
 }

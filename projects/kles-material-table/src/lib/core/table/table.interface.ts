@@ -15,4 +15,5 @@ export interface ITable {
     footer: FooterApi;
     loading: LoadingApi;
     refresh();
+    ui: any;
 }

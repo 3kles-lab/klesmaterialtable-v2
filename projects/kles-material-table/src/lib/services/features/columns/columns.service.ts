@@ -20,14 +20,6 @@ export class ColumnsService {
         this.updateColumn(columnDef, { visible });
     }
 
-    public setCellIndeterminate(columnDef: string, indeterminate: boolean): void {
-        this.updateColumn(columnDef, { cell: { indeterminate } });
-    }
-
-    public setHeaderCellIndeterminate(columnDef: string, indeterminate: boolean): void {
-        this.updateColumn(columnDef, { headerCell: { indeterminate } });
-    }
-
     public toggleVisible(columnDef: string): void {
         const visible = this._columns().find((col) => col.columnDef === columnDef)?.visible;
         this.updateColumn(columnDef, { visible: visible === undefined ? false : !visible });

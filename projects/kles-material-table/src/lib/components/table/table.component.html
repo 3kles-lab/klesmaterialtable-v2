@@ -37,7 +37,12 @@
                                 : tableService.form.controls.header.status
                     "
                 >
-                    <ng-container klesDynamicField [field]="column | headerField" [group]="tableService.form.controls.header"></ng-container>
+                    <ng-container
+                        klesDynamicField
+                        [field]="column | headerField"
+                        [group]="tableService.form.controls.header"
+                        [ui]="tableService.ui.states.header"
+                    ></ng-container>
                 </th>
 
                 <td
@@ -49,7 +54,7 @@
                     "
                 >
                     <div class="cell" [style.--align]="column.align">
-                        <ng-container klesDynamicField [field]="column | cellField" [group]="row"></ng-container>
+                        <ng-container klesDynamicField [field]="column | cellField" [group]="row" [ui]="row | uiField"></ng-container>
                     </div>
                 </td>
 
@@ -66,21 +71,27 @@
                     "
                 >
                     @if (column.footerCell) {
-                        <ng-container klesDynamicField [field]="column | footerField" [group]="tableService.form.controls.footer"> </ng-container>
+                        <ng-container
+                            klesDynamicField
+                            [field]="column | footerField"
+                            [group]="tableService.form.controls.footer"
+                            [ui]="tableService.ui.states.footer"
+                        >
+                        </ng-container>
                     }
                 </td>
             </ng-container>
         }
 
-        <tr mat-header-row *matHeaderRowDef="columnsService.displayedColumns(); sticky: true"></tr>
-        <tr mat-row *matRowDef="let row; columns: columnsService.displayedColumns()" cdkDrag [cdkDragData]="row"></tr>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns(); sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns()" cdkDrag [cdkDragData]="row"></tr>
         <!-- @if (showFooter()) {
             <tr mat-footer-row *matFooterRowDef="columnsService.displayedColumns(); sticky: true"></tr>
         } -->
 
-        <tr mat-footer-row *matFooterRowDef="columnsService.displayedColumns(); sticky: true" [style.display]="showFooter() ? '' : 'none'"></tr>
+        <tr mat-footer-row *matFooterRowDef="displayedColumns(); sticky: true" [style.display]="showFooter() ? '' : 'none'"></tr>
 
-        <tr *matNoDataRow [attr.colspan]="columnsService.displayedColumns().length">
+        <tr *matNoDataRow [attr.colspan]="displayedColumns().length">
             @if (!loadingService.loading()) {
                 no data TODO
             }

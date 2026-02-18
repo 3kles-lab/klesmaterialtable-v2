@@ -17,6 +17,6 @@ export interface KlesTableApi {
     get selection(): SelectionApi;
     get form(): FormApi;
     get footer(): FooterApi;
-
+    get ui(): any;
     // event
 }

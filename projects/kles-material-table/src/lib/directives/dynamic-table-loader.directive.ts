@@ -111,6 +111,7 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
                 injector.destroy();
             }
         });
+        
     }
 
     private clearComponent() {

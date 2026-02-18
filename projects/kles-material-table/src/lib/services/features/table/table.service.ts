@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@angular/core';
-import { FormArray, FormGroup } from '@angular/forms';
+import { AbstractControl, FormArray, FormGroup } from '@angular/forms';
 import { ColumnsService } from '../columns/columns.service';
 import { DATASOURCE_SERVICE, HEADER_SERVICE, LINES_SERVICE, SCROLLBAR_ORCHESTRATOR_SERVICE, SELECTION_SERVICE } from '../../../token';
 import { KlesForm } from './form';
@@ -9,6 +9,7 @@ import { ILinesService } from '../lines/lines.service';
 import { ISelectionService } from '../selection/selection.service';
 import { LoadingOrchestratorService } from '../loading/loading-orchestrator.service';
 import { IScrollbarOrchestratorService } from '../scrollbar/scrollbar-orchestrator.service';
+import { AbstractUiState, ArrayUiState, GroupUiState } from '@3kles/kles-material-dynamicforms';
 
 export interface ITableService {
     readonly form: FormGroup<{
@@ -16,16 +17,32 @@ export interface ITableService {
         rows: FormArray<FormGroup<any>>;
         footer: FormGroup<{}>;
     }>;
+    readonly ui: GroupUiState<{
+        header: GroupUiState;
+        rows: ArrayUiState;
+        footer: GroupUiState;
+    }>;
+
+    readonly uiStore: WeakMap<AbstractControl<any, any, any>, AbstractUiState<any, any>>;
+
     trackBy: (_: number, row: FormGroup) => any;
 }
 
 @Injectable()
 export class TableService implements ITableService {
-    public form: FormGroup<{
+    public readonly form: FormGroup<{
         header: FormGroup<{}>;
         rows: FormArray<FormGroup<any>>;
         footer: FormGroup<{}>;
     }>;
+
+    public readonly ui: GroupUiState<{
+        header: GroupUiState;
+        rows: ArrayUiState;
+        footer: GroupUiState;
+    }>;
+
+    public readonly uiStore: WeakMap<AbstractControl<any, any, any>, AbstractUiState<any, any>>;
 
     trackBy = (_: number, row: FormGroup) => row.get('_id')?.value ?? row;
 
@@ -42,6 +59,8 @@ export class TableService implements ITableService {
         this.orchestrators();
         this.features();
         this.form = this.fm.form;
+        this.ui = this.fm.ui;
+        this.uiStore = this.fm.uiStore;
     }
 
     private orchestrators() {

@@ -6,7 +6,7 @@ import {
     klesFieldControlFactory,
 } from '@3kles/kles-material-dynamicforms';
 import { IKlesHeaderFieldConfig } from '../../core/table/cell.interface';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewContainerRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
@@ -86,9 +86,12 @@ export class KlesFormDynamicHeaderFilterComponent extends KlesFieldAbstract impl
     filterField: IKlesHeaderFieldConfig;
     // tableOptions: Options<any>;
 
+    constructor() {
+        super();
+        this.filterField = Object.assign({}, { ...this.field, component: this.field.filterComponent, label: null, tooltip: null });
+    }
     ngOnInit(): void {
         super.ngOnInit();
-        this.filterField = Object.assign({}, { ...this.field, component: this.field.filterComponent, label: null, tooltip: null });
     }
 
     stopPropagation(event) {

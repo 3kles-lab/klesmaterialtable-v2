@@ -24,31 +24,35 @@ export class KlesTableConnectorService {
     }
 
     get scrollbar(): ScrollbarApi {
-        return this.table.scrollbar;
+        return this.table?.scrollbar;
     }
 
     get column(): ColumnApi {
-        return this.table.column;
+        return this.table?.column;
     }
 
     get pagination(): PaginationApi | undefined {
-        return this.table.pagination;
+        return this.table?.pagination;
     }
 
     get sort(): SortApi {
-        return this.table.sort;
+        return this.table?.sort;
     }
 
     get loading(): LoadingApi {
-        return this.table.loading;
+        return this.table?.loading;
     }
 
     get selection(): SelectionApi {
-        return this.table.selection;
+        return this.table?.selection;
     }
 
     get footer(): FooterApi {
-        return this.table.footer;
+        return this.table?.footer;
+    }
+
+    get ui(){
+        return this.table?.ui;
     }
 
     public refresh() {

@@ -16,7 +16,7 @@ import { CellFieldPipe } from '../../pipes/cell-field.pipe';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { DragDropService } from '../../services/features/dragdrop/dragdrop.service';
-import { DATASOURCE_SERVICE, LINES_SERVICE, LOADER_SERVICE, ROW_DRAG_DROP, SELECTION_SERVICE, SORT_SERVICE, TABLE_SERVICE } from '../../token';
+import { DATASOURCE_SERVICE, LOADER_SERVICE, ROW_DRAG_DROP, SELECTION_SERVICE, SORT_SERVICE, TABLE_SERVICE } from '../../token';
 import { ResolveNgStylePipe } from '../../pipes/ng-style.pipe';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ResizableColumnDirective } from '../../directives/resizable-column.directive';
@@ -37,13 +37,14 @@ import { IDatasourceService } from '../../services/features/datasource/datasourc
 import { IKlesDataSource } from '../../core/datasource/datasource.interface';
 import { LoadingApi } from '../../core/api/loading';
 import { ITableService } from '../../services/features/table/table.service';
-import { ILinesService } from '../../services/features/lines/lines.service';
 import { ISelectionService } from '../../services/features/selection/selection.service';
 import { FooterFieldPipe } from '../../pipes/footer-field.pipe';
 import { KlesColumnConfig } from '../../core/table/column.interface';
 import { ILoader } from '../../services/features/loader/loader.service';
 import { FooterService } from '../../services/features/footer/footer.service';
 import { FooterApi } from '../../core/api/footer';
+import { UiFieldPipe } from '../../pipes/ui-field.pipe';
+
 
 @Component({
     selector: 'kles-table',
@@ -63,6 +64,7 @@ import { FooterApi } from '../../core/api/footer';
         KlesMaterialDynamicformsModule,
         HeaderFieldPipe,
         CellFieldPipe,
+        UiFieldPipe,
         FooterFieldPipe,
         DragDropModule,
         ResolveNgStylePipe,
@@ -82,6 +84,7 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
 
     dataSource: IKlesDataSource;
     columns: Signal<KlesColumnConfig[]>;
+    displayedColumns: Signal<string[]>;
     showFooter: Signal<boolean>;
 
     private ro?: ResizeObserver;
@@ -105,6 +108,7 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
         @Optional() private filterService: FilterService,
     ) {
         this.columns = this.columnsService.columns;
+        this.displayedColumns = this.columnsService.displayedColumns;
         this.showFooter = this.footerService.footer;
         this.dataSource = this.datasourceService.datasource;
         this.connectorService.connect(this);
@@ -185,6 +189,10 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
             hide: () => this.footerService.hide(),
             show: () => this.footerService.show(),
         };
+    }
+
+    get ui(){
+        return this.tableService.ui
     }
 
     refresh() {

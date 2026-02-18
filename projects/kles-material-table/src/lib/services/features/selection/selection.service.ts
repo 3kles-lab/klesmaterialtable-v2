@@ -10,7 +10,6 @@ import { SelectionLoaderService } from './selection-loader.service';
 import { ScrollbarService } from '../scrollbar/scrollbar.service';
 import { LoadingService } from '../loading/loading.service';
 import { DatasourceService } from '../datasource/datasource.service';
-import { ColumnsService } from '../columns/columns.service';
 import { IKlesSelectionModel } from '../../../core/selection/selection-model.interface';
 import { KlesSelectionModelState } from '../../../core/selection/selection-state.enum';
 import { ILinesService } from '../lines/lines.service';
@@ -56,7 +55,6 @@ export class SelectionService<T> extends AbstractSelectionService<T> {
         private selectionLoaderService: SelectionLoaderService<T>,
         private scrollbarService: ScrollbarService,
         private loadingService: LoadingService,
-        private columnsService: ColumnsService,
         @Inject(DATASOURCE_SERVICE) private datasourceService: DatasourceService,
         @Inject(LINES_SERVICE) private linesService: ILinesService,
     ) {
@@ -233,14 +231,14 @@ export class SelectionService<T> extends AbstractSelectionService<T> {
                     .filter((group) => group.controls[this.selectionLoaderService.key]?.enabled)
                     .every((group) => this.selectionModel.isSelected(group))
             ) {
-                this.columnsService.setHeaderCellIndeterminate(this.selectionLoaderService.key, false);
+                this.fm.getUiHeader().get(this.selectionLoaderService.key)?.patchValue({ indeterminate: false });
                 this.fm.getHeader().controls[this.selectionLoaderService.key]?.patchValue(true, { emitEvent: false });
             } else {
-                this.columnsService.setHeaderCellIndeterminate(this.selectionLoaderService.key, true);
+                this.fm.getUiHeader().get(this.selectionLoaderService.key)?.patchValue({ indeterminate: true });
                 this.fm.getHeader().controls[this.selectionLoaderService.key]?.patchValue(false, { emitEvent: false });
             }
         } else {
-            this.columnsService.setHeaderCellIndeterminate(this.selectionLoaderService.key, false);
+            this.fm.getUiHeader().get(this.selectionLoaderService.key)?.patchValue({ indeterminate: false });
             this.fm.getHeader().controls[this.selectionLoaderService.key]?.patchValue(false, { emitEvent: false });
         }
     }
@@ -256,7 +254,6 @@ export class SelectionLazyService<T> extends AbstractSelectionService<T> {
         private fm: KlesForm,
         private selectionLoaderService: SelectionLoaderService<T>,
         private scrollbarService: ScrollbarService,
-        private columnsService: ColumnsService,
         private loadingService: LoadingService,
         @Inject(DATASOURCE_SERVICE) private datasourceService: DatasourceService,
         @Inject(LINES_SERVICE) private linesService: ILinesService,
@@ -349,10 +346,11 @@ export class SelectionLazyService<T> extends AbstractSelectionService<T> {
                 if (response.loading) {
                     //mettre la ligne avec un spinner
                 } else {
-                    this.columnsService.setHeaderCellIndeterminate(
-                        this.selectionLoaderService.key,
-                        response.count > 0 && this.linesService.total() > response.count,
-                    );
+                    this.fm
+                        .getUiHeader()
+                        .get(this.selectionLoaderService.key)
+                        ?.patchValue({ indeterminate: response.count > 0 && this.linesService.total() > response.count });
+
                     //         if (footer) {
                     //             this.fm.getFooter().patchValue(footer, { emitEvent: false });
                     //         }
