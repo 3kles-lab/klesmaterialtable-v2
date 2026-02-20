@@ -4,7 +4,7 @@ import { PaginatorStore } from '../../store/paginator-store.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DATASOURCE_SERVICE, PAGINATOR_CONFIG } from '../../../token';
 import { IDatasourceService } from '../datasource/datasource.service';
-import { IPaginatorConfig } from '../../../core/table/config.interface';
+import { PaginatorConfig } from '../../../core/table/config.interface';
 
 @Injectable()
 export class PaginatorService {
@@ -14,7 +14,7 @@ export class PaginatorService {
     private readonly destroyRef = inject(DestroyRef);
 
     constructor(
-        @Optional() @Inject(PAGINATOR_CONFIG) private config: IPaginatorConfig,
+        @Optional() @Inject(PAGINATOR_CONFIG) private config: PaginatorConfig,
         @Optional() protected paginatorStore: PaginatorStore | null,
         @Inject(DATASOURCE_SERVICE) private datasourceService: IDatasourceService,
     ) {}

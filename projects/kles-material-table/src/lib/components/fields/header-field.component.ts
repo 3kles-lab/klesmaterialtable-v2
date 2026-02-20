@@ -49,7 +49,7 @@ import { MatSortModule, SortHeaderArrowPosition } from '@angular/material/sort';
         </div>
         @if (field.filterComponent && filterField) {
             <div (click)="stopPropagation($event)" class="filterHeader">
-                <ng-container klesDynamicField [group]="group" [field]="filterField"> </ng-container>
+                <ng-container klesDynamicField [group]="group" [field]="filterField" [ui]="ui"> </ng-container>
 
                 @if (field.filterClearable && group.get(field.name).value) {
                     <div class="icon-button">

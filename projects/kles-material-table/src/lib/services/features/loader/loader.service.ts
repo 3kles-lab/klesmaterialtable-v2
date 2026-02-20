@@ -2,7 +2,7 @@ import { Inject, Injectable, Optional } from '@angular/core';
 import { auditTime, catchError, combineLatest, concat, map, Observable, of, ReplaySubject, shareReplay, startWith, Subject, switchMap } from 'rxjs';
 import { LOADER_CONFIG } from '../../../token';
 import { PaginatorStore } from '../../store/paginator-store.service';
-import { ILoaderConfig } from '../../../core/table/config.interface';
+import { LoaderConfig } from '../../../core/table/config.interface';
 import { SortStore } from '../../store/sort-store.service';
 import { FilterStore } from '../../store/filter-store.service';
 import { LinesLazyLoader, LinesLoader } from '../../../core/table/loader.interface';
@@ -18,7 +18,7 @@ export class LoaderService<T, R> implements ILoader<R> {
 
     private _loader$: Observable<{ total: number; items: R[]; loading: boolean; error?: any; header?: any }>;
 
-    constructor(@Inject(LOADER_CONFIG) private readonly loaderConfig: ILoaderConfig<T, R>) {
+    constructor(@Inject(LOADER_CONFIG) private readonly loaderConfig: LoaderConfig<T, R>) {
         this.init();
     }
 
@@ -59,7 +59,7 @@ export class LoaderLazyService<T, R> implements ILoader<R> {
     private _loader$: Observable<{ total: number; items: R[]; loading: boolean; error?: any; header?: any }>;
 
     constructor(
-        @Inject(LOADER_CONFIG) private readonly loaderConfig: ILoaderConfig<T, R>,
+        @Inject(LOADER_CONFIG) private readonly loaderConfig: LoaderConfig<T, R>,
         @Optional() private paginatorStore: PaginatorStore | null,
         @Optional() private sortStore: SortStore | null,
         @Optional() private filterStore: FilterStore | null,

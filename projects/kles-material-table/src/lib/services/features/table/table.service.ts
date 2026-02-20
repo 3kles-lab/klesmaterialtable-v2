@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@angular/core';
+import { EventEmitter, Inject, Injectable } from '@angular/core';
 import { AbstractControl, FormArray, FormGroup } from '@angular/forms';
 import { ColumnsService } from '../columns/columns.service';
 import { DATASOURCE_SERVICE, HEADER_SERVICE, LINES_SERVICE, SCROLLBAR_ORCHESTRATOR_SERVICE, SELECTION_SERVICE } from '../../../token';

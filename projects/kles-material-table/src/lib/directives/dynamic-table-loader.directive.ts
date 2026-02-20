@@ -15,7 +15,7 @@ import {
 } from '@angular/core';
 import { TableComponent } from '../components/table/table.component';
 import { isDestroyable } from '../utils';
-import { KlesTableConfig } from '../core/table/config.interface';
+import { ExtraRowConfig, KlesTableConfig } from '../core/table/config.interface';
 import { PaginateTableComponent } from '../components/paginate-table/paginate-table.component';
 import { PaginatorStore } from '../services/store/paginator-store.service';
 import { SortLazyService, SortService } from '../services/features/sort/sort.service';
@@ -39,6 +39,7 @@ import {
     SORT_SERVICE,
     TABLE_SERVICE,
     SCROLLBAR_ORCHESTRATOR_SERVICE,
+    EXTRA_ROWS,
     // SCROLLBAR_ORCHESTRATOR_SERVICE,
 } from '../token';
 import { KlesColumnConfig } from '../core/table/column.interface';
@@ -60,6 +61,10 @@ import { LoaderLazyService, LoaderService } from '../services/features/loader/lo
 import { LoadingOrchestratorService } from '../services/features/loading/loading-orchestrator.service';
 import { ScrollbarLazyOrchestratorService, ScrollbarOrchestratorService } from '../services/features/scrollbar/scrollbar-orchestrator.service';
 import { FooterService } from '../services/features/footer/footer.service';
+import { KlesExtraCellFieldConfig } from '../core/table/cell.interface';
+import { ExtraRowService } from '../services/features/extra-row/extra-row.service';
+import { RenderService } from '../services/features/render/render.service';
+import { ExpandedRowStore } from '../services/store/expanded-row-store.service';
 // import { ScrollbarLazyOrchestratorService, ScrollbarOrchestratorService } from '../services/features/scrollbar/scrollbar-orchestrator.service';
 
 @Directive({
@@ -111,7 +116,6 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
                 injector.destroy();
             }
         });
-        
     }
 
     private clearComponent() {
@@ -122,11 +126,15 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
     }
 
     private initInjector(): DestroyableInjector {
-        const storeProviders = [SortStore, FilterStore, ...(this.tableConfig().paginator ? [PaginatorStore] : [])];
+        const storeProviders = [SortStore, FilterStore, ...(this.tableConfig().paginator ? [PaginatorStore] : []), ExpandedRowStore];
         const configProviders = [
             {
                 provide: COLUMNS,
                 useValue: signal<KlesColumnConfig[]>(this.tableConfig().columns || []),
+            },
+            {
+                provide: EXTRA_ROWS,
+                useValue: signal<ExtraRowConfig[]>(this.tableConfig().extraRows ?? []),
             },
             {
                 provide: FOOTER,
@@ -198,6 +206,8 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
               ];
 
         const featureProviders = [
+            RenderService,
+            ExtraRowService,
             LoadingService,
             KlesForm,
             ColumnsService,

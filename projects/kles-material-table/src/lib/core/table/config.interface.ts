@@ -1,12 +1,13 @@
 import { Type } from '@angular/core';
-import { AsyncValidatorFn, FormGroup, ValidatorFn } from '@angular/forms';
+import { AsyncValidatorFn, FormGroup, UntypedFormGroup, ValidatorFn } from '@angular/forms';
 import { MatPaginatorIntl, MatPaginatorSelectConfig } from '@angular/material/paginator';
 import { Sort } from '@angular/material/sort';
 import { KlesColumnConfig } from './column.interface';
 import { LinesLazyLoader, LinesLoader } from './loader.interface';
 import { SelectionConfig } from './selection-config.interface';
+import { KlesExtraCellFieldConfig } from './cell.interface';
 
-export interface IDefaultTableConfig {
+export interface DefaultTableConfig {
     id?: string;
     columns: KlesColumnConfig[];
     lineValidations?: ValidatorFn[]; //TODO
@@ -15,20 +16,20 @@ export interface IDefaultTableConfig {
     sortConfig?: Sort;
 }
 
-export interface IPaginatorConfig {
+export interface PaginatorConfig {
     paginator?: boolean;
     customMatPaginatorIntl?: Type<MatPaginatorIntl>;
     pageSize?: number;
     pageSizeOptions?: number[];
     showFirstLastButtons?: boolean;
-    selectConfig?: MatPaginatorSelectConfig
+    selectConfig?: MatPaginatorSelectConfig;
 }
 
-export interface IInfiniteScrollConfig {
+export interface InfiniteScrollConfig {
     infinite?: boolean; //TODO
 }
 
-export interface IDragDropConfig {
+export interface DragDropConfig {
     enable?: boolean;
     options?: {
         autoScrollStep?: number;
@@ -46,12 +47,25 @@ export interface IDragDropConfig {
     };
 }
 
-export type IDragDrop = {
-    dragDropRows?: IDragDropConfig;
-    drapDropColumns?: IDragDropConfig; //TODO
-};
+export interface DragDrop {
+    dragDropRows?: DragDropConfig;
+    drapDropColumns?: DragDropConfig; //TODO
+}
 
-export type ILoaderConfig<T, R> = { lazy: true; lines: LinesLazyLoader<T, R> } | { lazy?: false | undefined; lines: LinesLoader<T, R> };
+export type ExtraRowMode = 'expand' | 'always';
+
+export interface ExtraRowConfig {
+    cells: KlesExtraCellFieldConfig[];
+    mode?: ExtraRowMode;
+    when?: (index: number, rowData: FormGroup) => boolean;
+}
+
+export interface ExtraRow {
+    extraRows?: ExtraRowConfig[];
+    multiUnfold?: boolean;
+}
+
+export type LoaderConfig<T, R> = { lazy: true; lines: LinesLazyLoader<T, R> } | { lazy?: false | undefined; lines: LinesLoader<T, R> };
 
 export type Selection<T> = {
     selection?: SelectionConfig<T>;
@@ -59,8 +73,9 @@ export type Selection<T> = {
 
 type Exclusive<T, U> = (T & { [K in keyof U]?: never }) | (U & { [K in keyof T]?: never });
 
-export type KlesTableConfig<T = any, R = any> = IDefaultTableConfig &
-    Exclusive<IPaginatorConfig, IInfiniteScrollConfig> &
-    ILoaderConfig<T, R> &
-    IDragDrop &
-    Selection<T>;
+export type KlesTableConfig<T = any, R = any> = DefaultTableConfig &
+    Exclusive<PaginatorConfig, InfiniteScrollConfig> &
+    LoaderConfig<T, R> &
+    DragDrop &
+    Selection<T> &
+    ExtraRow;

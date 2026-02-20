@@ -3,7 +3,6 @@ import { AbstractControl, FormControl, FormGroup } from '@angular/forms';
 import {
     AbstractUiState,
     componentMapper,
-    ControlUiState,
     GroupUiState,
     IKlesFieldConfig,
     klesFieldControlFactory,

@@ -1,7 +1,8 @@
 import { IKlesFieldConfig } from '@3kles/kles-material-dynamicforms';
 import { Type } from '@angular/core';
-import { AbstractControl, FormArray, FormControlStatus, FormGroup } from '@angular/forms';
+import { FormArray, FormControlStatus, FormGroup } from '@angular/forms';
 import { Observable } from 'rxjs';
+import { Span } from '../../enums/span.enum';
 
 type B = Omit<IKlesFieldConfig, 'name'>;
 type C = Omit<IKlesFieldConfig, 'name' | 'value'>;
@@ -29,4 +30,10 @@ export interface IKlesCellFieldConfig extends C {
 
 export interface IKlesFooterFieldConfig extends B {
     style?: IStyle;
+}
+
+export interface KlesExtraCellFieldConfig extends IKlesCellFieldConfig {
+    columnDef: string;
+    colspan?: number | Span;
+    rowspan?: number;
 }

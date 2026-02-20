@@ -1,5 +1,18 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, ElementRef, HostBinding, Inject, OnDestroy, OnInit, Optional, Signal, ViewChild } from '@angular/core';
+import {
+    AfterViewInit,
+    Component,
+    DestroyRef,
+    ElementRef,
+    HostBinding,
+    inject,
+    Inject,
+    OnDestroy,
+    OnInit,
+    Optional,
+    Signal,
+    ViewChild,
+} from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -12,7 +25,7 @@ import { ITable } from '../../core/table/table.interface';
 import { CdkTableModule } from '@angular/cdk/table';
 import { ArrayUiState, GroupUiState, KlesMaterialDynamicformsModule } from '@3kles/kles-material-dynamicforms';
 import { HeaderFieldPipe } from '../../pipes/header-field.pipe';
-import { CellFieldPipe } from '../../pipes/cell-field.pipe';
+import { CellFieldPipe, ExtraCellFieldPipe } from '../../pipes/cell-field.pipe';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { DragDropService } from '../../services/features/dragdrop/dragdrop.service';
@@ -44,6 +57,15 @@ import { ILoader } from '../../services/features/loader/loader.service';
 import { FooterService } from '../../services/features/footer/footer.service';
 import { FooterApi } from '../../core/api/footer';
 import { UiFieldPipe } from '../../pipes/ui-field.pipe';
+import { SpanPipe } from '../../pipes/span.pipe';
+import { ExtraRowService } from '../../services/features/extra-row/extra-row.service';
+import { ExtraRowConfig } from '../../core/table/config.interface';
+import { KlesDynamicCellDirective } from '../../directives/dynamic-cell.directive';
+
+import { RenderService } from '../../services/features/render/render.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { KlesFormDynamicExpandCellComponent } from '../fields/cell-expand-field.component';
+import { ExpandedRowStore } from '../../services/store/expanded-row-store.service';
 
 @Component({
     selector: 'kles-table',
@@ -65,11 +87,15 @@ import { UiFieldPipe } from '../../pipes/ui-field.pipe';
         CellFieldPipe,
         UiFieldPipe,
         FooterFieldPipe,
+        SpanPipe,
+        ExtraCellFieldPipe,
         DragDropModule,
         ResolveNgStylePipe,
         MatProgressSpinnerModule,
         ResizableColumnDirective,
         MatIconModule,
+        KlesDynamicCellDirective,
+        KlesFormDynamicExpandCellComponent,
     ],
 })
 export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy {
@@ -86,7 +112,11 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
     displayedColumns: Signal<string[]>;
     showFooter: Signal<boolean>;
 
+    multiTemplateDataRows: Signal<boolean>;
+    extraRows: Signal<(ExtraRowConfig & { displayedColumns: string[] })[]>;
+
     private ro?: ResizeObserver;
+    private readonly destroyRef = inject(DestroyRef);
     private rafId?: number;
     private _cleanup?: () => void;
 
@@ -103,13 +133,19 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
         private paginatorService: PaginatorService,
         private scrollbarService: ScrollbarService,
         private footerService: FooterService,
+        private extraRowService: ExtraRowService,
+        private renderService: RenderService,
         @Inject(SORT_SERVICE) private sortService: ISortService,
         @Optional() private filterService: FilterService,
+        private expandedRowStore: ExpandedRowStore,
     ) {
         this.columns = this.columnsService.columns;
         this.displayedColumns = this.columnsService.displayedColumns;
         this.showFooter = this.footerService.footer;
         this.dataSource = this.datasourceService.datasource;
+        this.multiTemplateDataRows = this.extraRowService.multiTemplateDataRows;
+        this.extraRows = this.extraRowService.rows;
+
         this.connectorService.connect(this);
         this.filterService?.register();
     }
@@ -206,6 +242,17 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
         this.sortService.register(this.matSort);
         const el = this.form.nativeElement;
         this.scrollbarService.register(el);
+
+        this.renderService
+            .render()
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(() => {
+                this.table?.renderRows();
+            });
+
+        this.expandedRowStore.expandedIds$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+            this.table?.renderRows();
+        });
     }
 
     ngAfterViewInit(): void {
@@ -213,7 +260,6 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
     }
 
     ngOnDestroy(): void {
-        // this.ro?.disconnect();
         this._cleanup?.();
         this.scrollbarService.unregister();
     }

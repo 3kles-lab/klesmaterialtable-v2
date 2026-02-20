@@ -1,12 +1,12 @@
 import { Inject, Injectable, Optional } from '@angular/core';
 import { CdkDrag, CdkDragDrop } from '@angular/cdk/drag-drop';
-import { IDragDropConfig } from '../../../core/table/config.interface';
+import { DragDropConfig } from '../../../core/table/config.interface';
 import { PaginatorStore } from '../../store/paginator-store.service';
 import { DRAG_DROP_CONFIG } from '../../../token';
 import { FormArray, FormGroup } from '@angular/forms';
 
 export abstract class DragDropBase {
-    constructor(protected config: IDragDropConfig) {}
+    constructor(protected config: DragDropConfig) {}
 
     get enable() {
         return this.config?.enable || false;
@@ -39,7 +39,7 @@ export abstract class DragDropBase {
 
 @Injectable()
 export class DragDropService extends DragDropBase {
-    constructor(@Optional() @Inject(DRAG_DROP_CONFIG) protected config: IDragDropConfig, @Optional() private paginatorStore: PaginatorStore | null) {
+    constructor(@Optional() @Inject(DRAG_DROP_CONFIG) protected config: DragDropConfig, @Optional() private paginatorStore: PaginatorStore | null) {
         super(config);
     }
 
@@ -63,7 +63,7 @@ export class DragDropService extends DragDropBase {
 
 @Injectable()
 export class DragDropLazyService extends DragDropBase {
-    constructor(@Optional() @Inject(DRAG_DROP_CONFIG) protected config: IDragDropConfig) {
+    constructor(@Optional() @Inject(DRAG_DROP_CONFIG) protected config: DragDropConfig) {
         super(config);
     }
 

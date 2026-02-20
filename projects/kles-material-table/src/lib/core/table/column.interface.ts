@@ -19,9 +19,9 @@ export interface KlesColumnConfig {
     headerCell: IKlesHeaderFieldConfig;
     cell: IKlesCellFieldConfig;
     footerCell?: IKlesFooterFieldConfig; //TODO
-    canUnfold?: boolean; //TODO
     align?: AlignCell;
     width?: string;
     minWidth?: string;
     maxWidth?: string;
+    canExpand?: boolean;
 }

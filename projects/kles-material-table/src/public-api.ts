@@ -21,5 +21,6 @@ export * from './lib/components/fields/header-field.component';
 export * from './lib/token';
 
 export * from './lib/enums/align.enum';
+export * from './lib/enums/span.enum';
 
 export * from './lib/core/api/table';

@@ -7,6 +7,7 @@ import { ColumnsService } from '../columns/columns.service';
 import { PaginatorService } from '../paginator/paginator.service';
 import { filter, Subject } from 'rxjs';
 import { LoaderLazyService, LoaderService } from '../loader/loader.service';
+import { ExtraRowService } from '../extra-row/extra-row.service';
 
 export interface ILinesService {
     register(): void;
@@ -26,6 +27,7 @@ export class LinesService implements ILinesService {
         private fm: KlesForm,
         private columnsService: ColumnsService,
         private rowFactory: RowFormFactory,
+        private extraRowService: ExtraRowService,
     ) {}
 
     public register() {
@@ -50,7 +52,10 @@ export class LinesService implements ILinesService {
             .subscribe((response) => {
                 this.fm.setRows(
                     this.rowFactory.createRows(
-                        this.columnsService.columns().map((col) => ({ ...col.cell, name: col.columnDef })),
+                        this.columnsService
+                            .columns()
+                            .map((col) => ({ ...col.cell, name: col.columnDef }))
+                            .concat(this.extraRowService.extraColumns().map((col) => ({ ...col, name: col.columnDef }))),
                         response.items,
                     ),
                 );
@@ -72,6 +77,7 @@ export class LinesLazyService implements ILinesService {
         private fm: KlesForm,
         private columnsService: ColumnsService,
         private rowFactory: RowFormFactory,
+        private extraRowService: ExtraRowService,
         private paginatorService: PaginatorService,
     ) {}
 
@@ -101,7 +107,10 @@ export class LinesLazyService implements ILinesService {
             .subscribe((response) => {
                 this.fm.setRows(
                     this.rowFactory.createRows(
-                        this.columnsService.columns().map((col) => ({ ...col.cell, name: col.columnDef })),
+                        this.columnsService
+                            .columns()
+                            .map((col) => ({ ...col.cell, name: col.columnDef }))
+                            .concat(this.extraRowService.extraColumns().map((col) => ({ ...col, name: col.columnDef }))),
                         response.items,
                     ),
                 );
