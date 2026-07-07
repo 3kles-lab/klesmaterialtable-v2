@@ -36,7 +36,7 @@ export abstract class AbstractSelectionService<T> implements ISelectionService {
         return this.selectionConfig?.selectionMode || false;
     }
 
-    public selectionModel: IKlesSelectionModel<FormGroup>;
+    public selectionModel!: IKlesSelectionModel<FormGroup>;
 
     abstract register(): void;
     abstract count(): Signal<number>;
@@ -59,7 +59,7 @@ export class SelectionService<T> extends AbstractSelectionService<T> {
         @Inject(LINES_SERVICE) private linesService: ILinesService,
     ) {
         super(selectionConfig);
-        this.selectionModel = new KlesSelectionModel<FormGroup>(selectionConfig.selectionMode);
+        this.selectionModel = new KlesSelectionModel<FormGroup>(selectionConfig?.selectionMode);
     }
 
     public register(): void {
@@ -90,13 +90,13 @@ export class SelectionService<T> extends AbstractSelectionService<T> {
                 this.fm.getRows().controls.forEach((group) => {
                     if (group.controls[this.selectionLoaderService.key]?.value === true) {
                         this.selectionModel.select(group, { emitEvent: false }); // event false to avoid multiple send event
-                    } else if (this.selectionConfig.isSelected != undefined && this.selectionConfig.isSelected(group)) {
+                    } else if (this.selectionConfig?.isSelected != undefined && this.selectionConfig.isSelected(group)) {
                         this.selectionModel.select(group, { emitEvent: false }); // event false to avoid multiple send event
                         group.controls[this.selectionLoaderService.key]?.patchValue(true, { emitEvent: false });
                     } else {
                         this.selectionModel.deselect(group, { emitEvent: false }); // event false to avoid multiple send event
                     }
-                    if (this.selectionConfig.isDisabled && this.selectionConfig.isDisabled(group)) {
+                    if (this.selectionConfig?.isDisabled && this.selectionConfig.isDisabled(group)) {
                         group.controls[this.selectionLoaderService.key]?.disable({ emitEvent: false });
                     }
                 });
@@ -107,7 +107,7 @@ export class SelectionService<T> extends AbstractSelectionService<T> {
     private listenHeaderSelection(): void {
         this.fm
             .getHeader()
-            .controls[this.key].valueChanges.pipe(
+            .controls[this.key]?.valueChanges.pipe(
                 takeUntilDestroyed(this.destroyRef),
                 switchMap((value) => {
                     return this.selectionLoaderService.selectAll(!!value, this.fm.getHeader().getRawValue());
@@ -189,11 +189,11 @@ export class SelectionService<T> extends AbstractSelectionService<T> {
 
     private listenSelection(): void {
         this.selectionModel.changed.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((changed) => {
-            changed.removed.forEach((group: FormGroup) => {
+            changed.removed?.forEach((group: FormGroup) => {
                 group.controls[this.selectionLoaderService.key].patchValue(false, { emitEvent: false });
             });
 
-            changed.added.forEach((group: FormGroup) => {
+            changed.added?.forEach((group: FormGroup) => {
                 group.controls[this.selectionLoaderService.key].patchValue(true, { emitEvent: false });
             });
             this.fm.getRows().updateValueAndValidity({ emitEvent: false });
@@ -349,7 +349,9 @@ export class SelectionLazyService<T> extends AbstractSelectionService<T> {
                     this.fm
                         .getUiHeader()
                         .get(this.selectionLoaderService.key)
-                        ?.patchValue({ indeterminate: response.count > 0 && this.linesService.total() > response.count });
+                        ?.patchValue({
+                            indeterminate: response.count != undefined ? response.count > 0 && this.linesService.total() > response.count : false,
+                        });
 
                     //         if (footer) {
                     //             this.fm.getFooter().patchValue(footer, { emitEvent: false });
@@ -364,10 +366,10 @@ export class SelectionLazyService<T> extends AbstractSelectionService<T> {
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(() => {
                 this.fm.getRows().controls.forEach((group) => {
-                    if (this.selectionConfig.isSelected != undefined && this.selectionConfig.isSelected(group)) {
+                    if (this.selectionConfig?.isSelected != undefined && this.selectionConfig.isSelected(group)) {
                         group.controls[this.selectionLoaderService.key]?.patchValue(true, { emitEvent: false });
                     }
-                    if (this.selectionConfig.isDisabled && this.selectionConfig.isDisabled(group)) {
+                    if (this.selectionConfig?.isDisabled && this.selectionConfig.isDisabled(group)) {
                         group.controls[this.selectionLoaderService.key]?.disable({ emitEvent: false });
                     }
                 });

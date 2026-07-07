@@ -6,17 +6,13 @@ import { LoaderConfig } from '../../../core/table/config.interface';
 import { SortStore } from '../../store/sort-store.service';
 import { FilterStore } from '../../store/filter-store.service';
 import { LinesLazyLoader, LinesLoader } from '../../../core/table/loader.interface';
-
-export interface ILoader<R> {
-    load(): Observable<{ total: number; items: R[]; loading: boolean; error?: any; header?: any }>;
-    refresh(): void;
-}
+import { ILoader } from './loader.interface';
 
 @Injectable()
 export class LoaderService<T, R> implements ILoader<R> {
     private _refresh$ = new Subject<void>();
 
-    private _loader$: Observable<{ total: number; items: R[]; loading: boolean; error?: any; header?: any }>;
+    private _loader$!: Observable<{ total: number; items: R[]; loading: boolean; error?: any; header?: any }>;
 
     constructor(@Inject(LOADER_CONFIG) private readonly loaderConfig: LoaderConfig<T, R>) {
         this.init();
@@ -56,7 +52,7 @@ export class LoaderService<T, R> implements ILoader<R> {
 export class LoaderLazyService<T, R> implements ILoader<R> {
     private _refresh$ = new Subject<void>();
 
-    private _loader$: Observable<{ total: number; items: R[]; loading: boolean; error?: any; header?: any }>;
+    private _loader$!: Observable<{ total: number; items: R[]; loading: boolean; error?: any; header?: any }>;
 
     constructor(
         @Inject(LOADER_CONFIG) private readonly loaderConfig: LoaderConfig<T, R>,
@@ -76,8 +72,8 @@ export class LoaderLazyService<T, R> implements ILoader<R> {
         this._loader$ = combineLatest([
             this._refresh$.pipe(startWith(void 0)),
             this.loaderConfig.lines.params?.() || of({} as T),
-            this.paginatorStore?.page$ || of(null),
-            this.sortStore?.sort$ || of(null),
+            this.paginatorStore?.page$ || of(undefined),
+            this.sortStore?.sort$ || of(undefined),
             this.filterStore?.filters$ || of({}),
         ]).pipe(
             auditTime(0),
@@ -86,7 +82,7 @@ export class LoaderLazyService<T, R> implements ILoader<R> {
                     of({ loading: true, total: 0, items: [] }),
                     linesLoader.loader(params, { filters, pagination, sort }).pipe(
                         catchError((err) => {
-                            return of({ error: err, items: [], total: 0 });
+                            return of({ error: err, items: [] as R[], total: 0 });
                         }),
                         map((response) => {
                             return { ...response, loading: false };

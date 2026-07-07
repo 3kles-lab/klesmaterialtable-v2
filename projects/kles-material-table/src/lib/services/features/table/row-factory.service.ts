@@ -18,21 +18,27 @@ export class RowFormFactory {
         if (field.type) {
             control =
                 componentMapper.find((c) => c.type === field.type)?.factory({ ...field, value }) || klesFieldControlFactory({ ...field, value });
-            ui = componentMapper.find((c) => c.type === field.type)?.ui({ ...field, value }) || klesFieldUiFactory({ ...field, value });
+            ui = componentMapper.find((c) => c.type === field.type)?.ui?.({ ...field, value }) || klesFieldUiFactory({ ...field, value });
         } else {
             control =
                 componentMapper.find((c) => c.component === field.component)?.factory({ ...field, value }) ||
                 klesFieldControlFactory({ ...field, value });
-            ui = componentMapper.find((c) => c.component === field.component)?.ui({ ...field, value }) || klesFieldUiFactory({ ...field, value });
+            ui = componentMapper.find((c) => c.component === field.component)?.ui?.({ ...field, value }) || klesFieldUiFactory({ ...field, value });
         }
         return { control, ui };
     }
 
-    createRow(fields: IKlesFieldConfig[], record: any): { formGroup: FormGroup; groupUi: GroupUiState } {
+    createRow(
+        fields: IKlesFieldConfig[],
+        record: any,
+        meta: { depth: number; parentId: string | null } = { depth: 0, parentId: null },
+    ): { formGroup: FormGroup; groupUi: GroupUiState } {
         const data = { _id: crypto.randomUUID(), ...record };
 
         const controls: Record<string, any> = {
-            _id: new FormControl(data._id),
+            _id: new FormControl(data._id, { nonNullable: true }),
+            _depth: new FormControl(meta.depth),
+            _parentId: new FormControl(meta.parentId),
         };
 
         const uis: Record<string, any> = {};
@@ -45,7 +51,11 @@ export class RowFormFactory {
         return { formGroup: new FormGroup<any>(controls), groupUi: new GroupUiState(uis) };
     }
 
-    createRows(fields: IKlesFieldConfig[], records: any[]): { formGroup: FormGroup; groupUi: GroupUiState }[] {
-        return records.map((r) => this.createRow(fields, r));
+    createRows(
+        fields: IKlesFieldConfig[],
+        records: any[],
+        meta: { depth: number; parentId: string | null } = { depth: 0, parentId: null },
+    ): { formGroup: FormGroup; groupUi: GroupUiState }[] {
+        return records.map((r) => this.createRow(fields, r, meta));
     }
 }

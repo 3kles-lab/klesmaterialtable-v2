@@ -19,48 +19,39 @@ export interface ITableService {
     }>;
     readonly ui: GroupUiState<{
         header: GroupUiState;
-        rows: ArrayUiState;
+        rows: ArrayUiState<any, any, any>;
         footer: GroupUiState;
     }>;
 
-    readonly uiStore: WeakMap<AbstractControl<any, any, any>, AbstractUiState<any, any>>;
+    klesForm: KlesForm;
 
     trackBy: (_: number, row: FormGroup) => any;
 }
 
 @Injectable()
 export class TableService implements ITableService {
-    public readonly form: FormGroup<{
-        header: FormGroup<{}>;
-        rows: FormArray<FormGroup<any>>;
-        footer: FormGroup<{}>;
-    }>;
-
-    public readonly ui: GroupUiState<{
-        header: GroupUiState;
-        rows: ArrayUiState;
-        footer: GroupUiState;
-    }>;
-
-    public readonly uiStore: WeakMap<AbstractControl<any, any, any>, AbstractUiState<any, any>>;
-
     trackBy = (_: number, row: FormGroup) => row.get('_id')?.value ?? row;
 
     constructor(
-        private columnsService: ColumnsService,
-        @Inject(DATASOURCE_SERVICE) private datasourceService: IDatasourceService,
-        @Inject(LINES_SERVICE) private linesService: ILinesService,
-        private fm: KlesForm,
-        @Inject(HEADER_SERVICE) private headerService: IHeaderService,
-        @Inject(SELECTION_SERVICE) private selectionService: ISelectionService,
-        private loadingOrchestratorService: LoadingOrchestratorService,
-        @Inject(SCROLLBAR_ORCHESTRATOR_SERVICE) private scrollbarOrchestratorService: IScrollbarOrchestratorService,
+        public readonly klesForm: KlesForm,
+        private readonly columnsService: ColumnsService,
+        @Inject(DATASOURCE_SERVICE) private readonly datasourceService: IDatasourceService,
+        @Inject(LINES_SERVICE) private readonly linesService: ILinesService,
+        @Inject(HEADER_SERVICE) private readonly headerService: IHeaderService,
+        @Inject(SELECTION_SERVICE) private readonly selectionService: ISelectionService,
+        private readonly loadingOrchestratorService: LoadingOrchestratorService,
+        @Inject(SCROLLBAR_ORCHESTRATOR_SERVICE) private readonly scrollbarOrchestratorService: IScrollbarOrchestratorService,
     ) {
         this.orchestrators();
         this.features();
-        this.form = this.fm.form;
-        this.ui = this.fm.ui;
-        this.uiStore = this.fm.uiStore;
+    }
+
+    public get ui() {
+        return this.klesForm.ui;
+    }
+
+    public get form() {
+        return this.klesForm.form;
     }
 
     private orchestrators() {
@@ -70,7 +61,7 @@ export class TableService implements ITableService {
 
     private features() {
         this.columnsService.register();
-        this.fm.init();
+        this.klesForm.init();
         this.datasourceService.register();
         this.headerService.register();
         this.linesService.register();

@@ -4,18 +4,26 @@ import { IKlesDataSource } from '../../../core/datasource/datasource.interface';
 import { KlesForm } from '../table/form';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { startWith } from 'rxjs';
+import { ColumnsService } from '../columns/columns.service';
+import { CellValueChangeService } from '../cell/cell-valuechange.service';
 
 export interface IDatasourceService {
     get datasource(): IKlesDataSource;
     register(): void;
 }
 
+//TODO Abstract Datasource service
+
 @Injectable()
 export class DatasourceService implements IDatasourceService {
-    private _datasource: KlesDataSource;
+    private _datasource!: KlesDataSource;
     private readonly destroyRef = inject(DestroyRef);
 
-    constructor(private fm: KlesForm) {}
+    constructor(
+        private fm: KlesForm,
+        private columnsService: ColumnsService,
+        private cellValueChangeService: CellValueChangeService,
+    ) {}
 
     public register() {
         this.createDataSource();
@@ -31,21 +39,29 @@ export class DatasourceService implements IDatasourceService {
     }
 
     private listen() {
-        this.fm
-            .getRows()
-            .valueChanges.pipe(takeUntilDestroyed(this.destroyRef), startWith(null))
-            .subscribe(() => {
-                this._datasource.data = this.fm.rows;
+        this.fm.rowsStructureChanged$.pipe(takeUntilDestroyed(this.destroyRef), startWith(void 0)).subscribe(() => {
+            this._datasource.data = this.fm.rows;
+        });
+
+        this.datasource
+            .connect()
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((rows) => {
+                this.cellValueChangeService.refresh(rows, this.columnsService.getVisible());
             });
     }
 }
 
 @Injectable()
 export class DatasourceLazyService implements IDatasourceService {
-    private _datasource: KlesLazyDataSource;
+    private _datasource!: KlesLazyDataSource;
     private readonly destroyRef = inject(DestroyRef);
 
-    constructor(private fm: KlesForm) {}
+    constructor(
+        private fm: KlesForm,
+        private columnsService: ColumnsService,
+        private cellValueChangeService: CellValueChangeService,
+    ) {}
 
     public register() {
         this.createDataSource();
@@ -60,11 +76,15 @@ export class DatasourceLazyService implements IDatasourceService {
     }
 
     private listen() {
-        this.fm
-            .getRows()
-            .valueChanges.pipe(takeUntilDestroyed(this.destroyRef), startWith(null))
-            .subscribe(() => {
-                this._datasource.data = this.fm.rows;
+        this.fm.rowsStructureChanged$.pipe(takeUntilDestroyed(this.destroyRef), startWith(void 0)).subscribe(() => {
+            this._datasource.data = this.fm.rows;
+        });
+
+        this.datasource
+            .connect()
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((rows) => {
+                this.cellValueChangeService.refresh(rows, this.columnsService.getVisible());
             });
     }
 }

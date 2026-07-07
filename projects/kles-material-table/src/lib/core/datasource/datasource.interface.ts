@@ -10,7 +10,7 @@ export interface IKlesDataSource extends DataSource<FormGroup> {
     set paginator(paginator: MatPaginator | null | undefined);
     get sort(): MatSort | null | undefined;
     set sort(sort: MatSort | null | undefined);
-    get filter(): string;
+    get filter(): string | undefined;
     set filter(f: string);
     connect(): Observable<readonly FormGroup[]>;
 }

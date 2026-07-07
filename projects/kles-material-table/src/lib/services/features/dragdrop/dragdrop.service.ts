@@ -6,7 +6,7 @@ import { DRAG_DROP_CONFIG } from '../../../token';
 import { FormArray, FormGroup } from '@angular/forms';
 
 export abstract class DragDropBase {
-    constructor(protected config: DragDropConfig) {}
+    constructor(protected config?: DragDropConfig) {}
 
     get enable() {
         return this.config?.enable || false;
@@ -31,7 +31,7 @@ export abstract class DragDropBase {
     }
 
     get previewMatchSize() {
-        return this.config.options?.dragPreview?.matchSize || true;
+        return this.config?.options?.dragPreview?.matchSize || true;
     }
 
     abstract listDropped(event: CdkDragDrop<FormArray<FormGroup>>): void;
@@ -39,15 +39,19 @@ export abstract class DragDropBase {
 
 @Injectable()
 export class DragDropService extends DragDropBase {
-    constructor(@Optional() @Inject(DRAG_DROP_CONFIG) protected config: DragDropConfig, @Optional() private paginatorStore: PaginatorStore | null) {
+    constructor(
+        @Optional() @Inject(DRAG_DROP_CONFIG) protected config?: DragDropConfig,
+        @Optional() private paginatorStore?: PaginatorStore | null,
+    ) {
         super(config);
     }
 
     listDropped(event: CdkDragDrop<FormArray<FormGroup>>) {
         if (event.previousContainer === event.container) {
             const faRows = event.container.data;
-            const currentIndex = event.currentIndex + (this.paginatorStore?.snapshot().page * this.paginatorStore?.snapshot().perPage || 0);
-            const previousIndex = event.previousIndex + (this.paginatorStore?.snapshot().page * this.paginatorStore?.snapshot().perPage || 0);
+
+            const currentIndex = event.currentIndex + (this.paginatorStore?.snapshot().page ?? 0) * (this.paginatorStore?.snapshot().perPage ?? 0);
+            const previousIndex = event.previousIndex + (this.paginatorStore?.snapshot().page ?? 0) * (this.paginatorStore?.snapshot().perPage ?? 0);
 
             if (previousIndex >= 0) {
                 const ctrl = faRows.at(previousIndex);
@@ -63,7 +67,7 @@ export class DragDropService extends DragDropBase {
 
 @Injectable()
 export class DragDropLazyService extends DragDropBase {
-    constructor(@Optional() @Inject(DRAG_DROP_CONFIG) protected config: DragDropConfig) {
+    constructor(@Optional() @Inject(DRAG_DROP_CONFIG) protected config?: DragDropConfig) {
         super(config);
     }
 

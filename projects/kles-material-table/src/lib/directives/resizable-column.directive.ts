@@ -1,5 +1,6 @@
 import { computed, Directive, effect, ElementRef, HostBinding, input, NgZone, OnChanges, OnInit, Renderer2, SimpleChanges } from '@angular/core';
 import { KlesColumnConfig } from '../core/table/column.interface';
+import { EventsService } from '../services/features/events/events.service';
 
 @Directive({
     selector: 'th[appResizableColumn]',
@@ -20,6 +21,7 @@ export class ResizableColumnDirective implements OnInit, OnChanges {
     private cleanupMove?: () => void;
     private cleanupUp?: () => void;
 
+    private currentWidth: number = 0;
     private child: any;
 
     @HostBinding('attr.appResizableColumn')
@@ -27,7 +29,12 @@ export class ResizableColumnDirective implements OnInit, OnChanges {
         return this.column().columnDef;
     }
 
-    constructor(private el: ElementRef<HTMLElement>, private renderer: Renderer2, private zone: NgZone) {}
+    constructor(
+        private readonly el: ElementRef<HTMLElement>,
+        private readonly renderer: Renderer2,
+        private readonly zone: NgZone,
+        private readonly eventsService: EventsService,
+    ) {}
 
     ngOnInit() {
         if (this.column().resizable) {
@@ -62,16 +69,38 @@ export class ResizableColumnDirective implements OnInit, OnChanges {
         const th = this.el.nativeElement;
         this.startX = clientX;
         this.startWidth = th.getBoundingClientRect().width;
+        this.currentWidth = this.startWidth;
+
+        this.zone.run(() => {
+            this.eventsService.emit('columnResizeStart', {
+                columnDef: this.column().columnDef,
+                width: this.startWidth,
+                previousWidth: this.startWidth,
+            });
+        });
 
         this.zone.runOutsideAngular(() => {
             const doc = th.ownerDocument;
 
             const onMove = (ev: MouseEvent | TouchEvent) => {
-                const x = ev instanceof MouseEvent ? ev.clientX : ev.touches?.[0]?.clientX ?? this.startX;
+                const x = ev instanceof MouseEvent ? ev.clientX : (ev.touches?.[0]?.clientX ?? this.startX);
 
                 const delta = x - this.startX;
                 const next = Math.min(this.maxWidth(), Math.max(this.minWidth(), this.startWidth + delta));
+
+                if (next === this.currentWidth) {
+                    return;
+                }
+
+                const previousWidth = this.currentWidth;
+                this.currentWidth = next;
                 this.applyWidth(next);
+
+                this.eventsService.emit('columnResize', {
+                    columnDef: this.column().columnDef,
+                    width: next,
+                    previousWidth,
+                });
             };
 
             const onUp = () => this.stopResize();
@@ -88,6 +117,16 @@ export class ResizableColumnDirective implements OnInit, OnChanges {
         this.cleanupUp?.();
         this.cleanupMove = undefined;
         this.cleanupUp = undefined;
+
+        if (this.currentWidth > 0) {
+            this.zone.run(() => {
+                this.eventsService.emit('columnResizeEnd', {
+                    columnDef: this.column().columnDef,
+                    width: this.currentWidth,
+                    previousWidth: this.startWidth,
+                });
+            });
+        }
     }
 
     private applyWidth(px: number) {

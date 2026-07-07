@@ -6,22 +6,27 @@ export interface FormApi {
     footer: FooterApi;
 }
 
+type Id = string | number;
+
 interface HeaderApi {
-    set(value: { [key: string]: any }): void;
+    setValue(value: { [key: string]: any }, options?: { emitEvent?: boolean; onlySelf?: boolean }): void;
+    patchValue(value: { [key: string]: any }, options?: { emitEvent?: boolean; onlySelf?: boolean }): void;
     get(): FormGroup;
-    clear(): void;
+    clear(value?: any, options?: { emitEvent?: boolean }): void;
 }
 
 interface FooterApi {
-    set(value: { [key: string]: any }): void;
+    setValue(value: { [key: string]: any }, options?: { emitEvent?: boolean; onlySelf?: boolean }): void;
+    patchValue(value: { [key: string]: any }, options?: { emitEvent?: boolean; onlySelf?: boolean }): void;
     get(): FormGroup;
-    clear(): void;
+    clear(value?: any, options?: { emitEvent?: boolean }): void;
 }
 
 interface RowsApi {
-    create(value: { [key: string]: any }): FormGroup;
-    update(_id: string, value: { [key: string]: any }): FormGroup;
-    delete(_id: string): void;
+    create(value: { [key: string]: any }, index?: number, options?: { emitEvent?: boolean }): FormGroup;
+    patch(_id: Id, value: { [key: string]: any }, options?: { emitEvent?: boolean; onlySelf?: boolean }): FormGroup | undefined;
+    reset(_id: Id, value?: { [key: string]: any }, options?: { emitEvent?: boolean; onlySelf?: boolean; overwriteDefaultValue?: boolean }): void;
+    remove(_id: Id, options?: { emitEvent?: boolean }): void;
     list(): FormArray<FormGroup>;
-    get(_id: string): FormGroup;
+    get(_id: Id): FormGroup | undefined;
 }

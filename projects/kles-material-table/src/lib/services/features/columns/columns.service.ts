@@ -1,12 +1,16 @@
 import { computed, Inject, Injectable, Signal, WritableSignal } from '@angular/core';
 import { COLUMNS } from '../../../token';
 import { KlesColumnConfig } from '../../../core/table/column.interface';
+import { EventsService } from '../events/events.service';
 
 @Injectable()
 export class ColumnsService {
-    public displayedColumns: Signal<string[]>;
+    public displayedColumns: Signal<string[]> | undefined;
 
-    constructor(@Inject(COLUMNS) private _columns: WritableSignal<KlesColumnConfig[]>) {}
+    constructor(
+        @Inject(COLUMNS) private _columns: WritableSignal<KlesColumnConfig[]>,
+        private readonly eventsService: EventsService,
+    ) {}
 
     public register() {
         this.setDisplayedColumns();
@@ -16,13 +20,25 @@ export class ColumnsService {
         return this._columns.asReadonly();
     }
 
+    public getVisible(): string[] {
+        return this.columns()
+            .filter((column) => column.visible !== false)
+            .map((column) => column.columnDef);
+    }
+
     public setVisible(columnDef: string, visible: boolean): void {
         this.updateColumn(columnDef, { visible });
+
+        this.eventsService.emit('columnVisibilityChange', {
+            columnDef,
+            columns: this.getVisible(),
+            visible,
+        });
     }
 
     public toggleVisible(columnDef: string): void {
         const visible = this._columns().find((col) => col.columnDef === columnDef)?.visible;
-        this.updateColumn(columnDef, { visible: visible === undefined ? false : !visible });
+        this.setVisible(columnDef, visible === undefined ? false : !visible);
     }
 
     public changeWidth(columnDef: string, options: { width?: string; maxWidth?: string; minWidth?: string }) {
@@ -39,7 +55,7 @@ export class ColumnsService {
 
     public toggleResizable(columnDef: string): void {
         const resizable = this._columns().find((col) => col.columnDef === columnDef)?.resizable;
-        this.updateColumn(columnDef, { resizable: resizable === undefined ? true : !resizable });
+        this.setResizable(columnDef, resizable === undefined ? true : !resizable);
     }
 
     public setSticky(columnDef: string, options: { sticky?: boolean; stickyEnd?: boolean }) {
@@ -50,18 +66,25 @@ export class ColumnsService {
     }
 
     public setColumnPosition(columnDef: string, position: number) {
+        const previousIndex = this._columns().findIndex((c) => c.columnDef === columnDef);
+
         this._columns.update((columns) => {
-            const actualIndex = columns.findIndex((c) => c.columnDef === columnDef);
-            if (actualIndex >= 0 && position >= 0 && actualIndex != position) {
+            if (previousIndex >= 0 && position >= 0 && previousIndex != position) {
                 const currentElement = columns.at(position);
-                const [val] = columns.splice(actualIndex, 1);
-                const newCurrentElementPosition = columns.findIndex((c) => c.columnDef === currentElement.columnDef);
+                const [val] = columns.splice(previousIndex, 1);
+                const newCurrentElementPosition = columns.findIndex((c) => c.columnDef === currentElement?.columnDef);
                 columns.splice(newCurrentElementPosition, 0, val);
 
                 return [...columns];
             } else {
                 return columns;
             }
+        });
+
+        this.eventsService.emit('columnOrderChange', {
+            previousIndex: previousIndex,
+            columns: this.getVisible(),
+            currentIndex: position,
         });
     }
 

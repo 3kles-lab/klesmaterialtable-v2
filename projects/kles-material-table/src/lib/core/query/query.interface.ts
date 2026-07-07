@@ -7,4 +7,4 @@ export type Pagination = {
 
 export type Filters = Record<string, unknown>;
 
-export type Query = { pagination?: Pagination; sort?: Sort; filters?: Filters };
+export type Query = { pagination?: Pagination ; sort?: Sort ; filters?: Filters };

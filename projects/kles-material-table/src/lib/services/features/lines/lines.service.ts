@@ -20,7 +20,7 @@ export class LinesService implements ILinesService {
     private readonly destroyRef = inject(DestroyRef);
     private _loaded = new EventEmitter<void>();
 
-    private _total: number;
+    private _total: number | undefined;
 
     constructor(
         @Inject(LOADER_SERVICE) private loader: LoaderService<any, any>,
@@ -35,7 +35,7 @@ export class LinesService implements ILinesService {
     }
 
     public total() {
-        return this._total;
+        return this._total ?? 0;
     }
 
     public loaded(): EventEmitter<void> {
@@ -54,7 +54,7 @@ export class LinesService implements ILinesService {
                     this.rowFactory.createRows(
                         this.columnsService
                             .columns()
-                            .map((col) => ({ ...col.cell, name: col.columnDef }))
+                            .map((col) => ({ ...col.cell.field, name: col.columnDef }))
                             .concat(this.extraRowService.extraColumns().map((col) => ({ ...col, name: col.columnDef }))),
                         response.items,
                     ),
@@ -69,7 +69,7 @@ export class LinesService implements ILinesService {
 export class LinesLazyService implements ILinesService {
     private readonly destroyRef = inject(DestroyRef);
     private _refresh$ = new Subject<void>();
-    private _total: number;
+    private _total?: number;
     private _loaded = new EventEmitter<void>();
 
     constructor(
@@ -86,7 +86,7 @@ export class LinesLazyService implements ILinesService {
     }
 
     public total() {
-        return this._total;
+        return this._total ?? 0;
     }
 
     public loaded(): EventEmitter<void> {
@@ -109,7 +109,7 @@ export class LinesLazyService implements ILinesService {
                     this.rowFactory.createRows(
                         this.columnsService
                             .columns()
-                            .map((col) => ({ ...col.cell, name: col.columnDef }))
+                            .map((col) => ({ ...col.cell.field, name: col.columnDef }))
                             .concat(this.extraRowService.extraColumns().map((col) => ({ ...col, name: col.columnDef }))),
                         response.items,
                     ),

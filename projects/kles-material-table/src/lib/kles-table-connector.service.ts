@@ -8,24 +8,39 @@ import { LoadingApi } from './core/api/loading';
 import { SelectionApi } from './core/api/selection';
 import { FooterApi } from './core/api/footer';
 import { ArrayUiState, GroupUiState } from '@3kles/kles-material-dynamicforms';
+import { EventsApi } from './core/api/events';
+import { BehaviorSubject, Observable } from 'rxjs';
 
 @Injectable()
 export class KlesTableConnectorService {
-    private table?: ITable;
+    private _connected$ = new BehaviorSubject<boolean>(false);
+    private _table?: ITable;
+
+    public readonly connected$: Observable<boolean> = this._connected$.asObservable();
 
     constructor() {}
 
     public connect(table: ITable) {
-        this.table = table;
+        this._table = table;
+        this._connected$.next(true);
         return () => {
-            if (this.table === table) {
-                this.table = undefined;
+            if (this._table === table) {
+                this._table = undefined;
+                this._connected$.next(false);
             }
         };
     }
 
+    public get table(): ITable {
+        if (!this._table) {
+            throw new Error('KlesTableConnectorService: table is not connected');
+        }
+
+        return this._table;
+    }
+
     get scrollbar(): ScrollbarApi {
-        return this.table?.scrollbar;
+        return this.table.scrollbar;
     }
 
     get column(): ColumnApi {
@@ -33,23 +48,27 @@ export class KlesTableConnectorService {
     }
 
     get pagination(): PaginationApi | undefined {
-        return this.table?.pagination;
+        return this.table.pagination;
     }
 
     get sort(): SortApi {
-        return this.table?.sort;
+        return this.table.sort;
     }
 
     get loading(): LoadingApi {
-        return this.table?.loading;
+        return this.table.loading;
     }
 
     get selection(): SelectionApi {
-        return this.table?.selection;
+        return this.table.selection;
     }
 
     get footer(): FooterApi {
-        return this.table?.footer;
+        return this.table.footer;
+    }
+
+    get form() {
+        return this.table.form;
     }
 
     get ui(): GroupUiState<{
@@ -57,10 +76,14 @@ export class KlesTableConnectorService {
         rows: ArrayUiState;
         footer: GroupUiState;
     }> {
-        return this.table?.ui;
+        return this.table.ui;
+    }
+
+    get events(): EventsApi {
+        return this.table.events;
     }
 
     public refresh() {
-        this.table.refresh();
+        this.table?.refresh();
     }
 }

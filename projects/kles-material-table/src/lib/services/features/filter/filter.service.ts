@@ -34,41 +34,51 @@ export class FilterService {
                 .filter((f) => searchString[f] && filterableColumn.includes(f))
                 .every((key) => {
                     let keyValue = data?.controls[key]?.value;
-                    const column: KlesColumnConfig = this.columnsService.columns().find((col) => col.columnDef === key);
+                    const column: KlesColumnConfig | undefined = this.columnsService.columns().find((col) => col.columnDef === key);
 
-                    if (column.headerCell.filterPredicate) {
-                        return column.headerCell.filterPredicate(keyValue, searchString[key]) || false;
-                    }
+                    if (column) {
+                        if (column.headerCell.filterPredicate) {
+                            return column.headerCell.filterPredicate(keyValue, searchString[key]) || false;
+                        }
 
-                    if (keyValue && typeof keyValue === 'object' && column.cell.property) {
-                        keyValue = keyValue[column.cell.property];
-                    }
-                    if (searchString[key] && typeof searchString[key] === 'object') {
-                        if (Array.isArray(searchString[key])) {
-                            if (!searchString[key].length) {
-                                return true;
-                            }
-                            const list =
-                                column.headerCell.property || column.cell.property
-                                    ? (searchString[key] as Array<any>).map((m) =>
-                                          m[column.headerCell.property || column.cell.property].toLowerCase(),
-                                      )
-                                    : (searchString[key] as Array<any>).map((m) => m.toLowerCase());
-                            return keyValue && list.includes(keyValue.toString().trim().toLowerCase());
-                        } else {
-                            if (column.headerCell.property || column.cell.property) {
-                                searchString[key] = searchString[key][column.headerCell.property || column.cell.property];
+                        if (keyValue != null && typeof keyValue === 'object' && column.cell.field.property) {
+                            keyValue = keyValue[column.cell.field.property];
+                        }
+                        if (searchString?.[key] && typeof searchString[key] === 'object') {
+                            if (Array.isArray(searchString[key])) {
+                                if (!searchString[key].length) {
+                                    return true;
+                                }
+
+                                const list = (searchString[key] as Array<any>)
+                                    .map((m) => {
+                                        const subkey = column.headerCell.field?.property ?? column.cell.field.property;
+                                        if (subkey) {
+                                            return m?.[subkey] ?? m;
+                                        }
+                                        return m;
+                                    })
+                                    .map((value) => {
+                                        return typeof value === 'string' ? value?.trim().toLowerCase() : value;
+                                    });
+
+                                return keyValue != undefined && list.includes(keyValue.toString().trim().toLowerCase());
+                            } else {
+                                const subKey = column.headerCell.field?.property ?? column.cell.field.property;
+                                if (subKey) {
+                                    searchString[key] = searchString[key][subKey];
+                                }
                             }
                         }
                     }
-                    if (!keyValue && searchString[key].length === 0) {
+                    if (keyValue === null && searchString?.[key].length === 0) {
                         return true;
-                    } else if (!keyValue) {
+                    } else if (keyValue === null) {
                         return false;
-                    } else if (!searchString[key]) {
+                    } else if (searchString?.[key] === null) {
                         return true;
                     }
-                    return keyValue && keyValue.toString().trim().toLowerCase().indexOf(searchString[key].toString().toLowerCase()) !== -1;
+                    return keyValue !== null && keyValue.toString().trim().toLowerCase().indexOf(searchString?.[key].toString().toLowerCase()) !== -1;
                 });
         };
     }

@@ -38,30 +38,33 @@
                                 : tableService.form.controls.header.status
                     "
                 >
-                    <ng-container
-                        klesDynamicField
-                        [field]="column | headerField"
-                        [group]="tableService.form.controls.header"
-                        [ui]="tableService.ui.states.header"
-                    ></ng-container>
+                    <div class="cell">
+                        <kles-header [header]="column | header" [group]="tableService.form.controls.header">
+                            <ng-container
+                                klesDynamicField
+                                [field]="column | headerField"
+                                [group]="tableService.form.controls.header"
+                                [ui]="tableService.ui.states.header"
+                            ></ng-container>
+                        </kles-header>
+                    </div>
                 </th>
 
                 <td
                     mat-cell
-                    *cdkCellDef="let row; let index = index"
+                    *cdkCellDef="let row; let index = index; let dataIndex = dataIndex"
                     [ngStyle]="
                         column.cell?.style?.ngStyle
                             | resolveNgStyle: row.controls[column.columnDef].value : row.controls[column.columnDef].status : row.value : row.status
                     "
+                    (click)="cellService.onClick($event, row, dataIndex ?? index, column.columnDef)"
+                    (dblclick)="cellService.onDoubleClick($event, row, dataIndex ?? index, column.columnDef)"
+                    (contextmenu)="cellService.onContextMenu($event, row, dataIndex ?? index, column.columnDef)"
                 >
                     <div class="cell" [style.--align]="column.align">
-                        <ng-container
-                            klesDynamicCell
-                            [field]="column | cellField"
-                            [group]="row"
-                            [ui]="row | uiField"
-                            [column]="column"
-                        ></ng-container>
+                        <kles-cell [group]="row" [ui]="row | uiField" [column]="column">
+                            <ng-container klesDynamicField [field]="column | cellField" [group]="row" [ui]="row | uiField"></ng-container>
+                        </kles-cell>
                     </div>
                 </td>
 
@@ -91,7 +94,18 @@
         }
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns(); sticky: true"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns()" cdkDrag [cdkDragData]="row"></tr>
+
+        <tr
+            mat-row
+            *matRowDef="let row; let index = index; let dataIndex = dataIndex; columns: displayedColumns()"
+            cdkDrag
+            [cdkDragData]="row"
+            (click)="rowService.onClick($event, row, dataIndex ?? index)"
+            (dblclick)="rowService.onDoubleClick($event, row, dataIndex ?? index)"
+            (contextmenu)="rowService.onContextMenu($event, row, dataIndex ?? index)"
+            (mouseenter)="rowService.onMouseEnter($event, row, dataIndex ?? index)"
+            (mouseleave)="rowService.onMouseLeave($event, row, dataIndex ?? index)"
+        ></tr>
 
         @if (multiTemplateDataRows()) {
             @for (extraRow of extraRows(); track extraRow) {
@@ -115,7 +129,15 @@
                         </td>
                     </ng-container>
                 }
-                <tr mat-row *matRowDef="let row; columns: extraRow.displayedColumns; when: extraRow.when"></tr>
+                <tr
+                    mat-row
+                    *matRowDef="let row; let index = index; let dataIndex = dataIndex; columns: extraRow.displayedColumns; when: extraRow.when"
+                    (click)="rowService.onClick($event, row, dataIndex ?? index)"
+                    (dblclick)="rowService.onDoubleClick($event, row, dataIndex ?? index)"
+                    (contextmenu)="rowService.onContextMenu($event, row, dataIndex ?? index)"
+                    (mouseenter)="rowService.onMouseEnter($event, row, dataIndex ?? index)"
+                    (mouseleave)="rowService.onMouseLeave($event, row, dataIndex ?? index)"
+                ></tr>
             }
         }
 

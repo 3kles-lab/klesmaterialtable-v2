@@ -12,12 +12,12 @@ export class KlesDataSource extends MatTableDataSource<FormGroup, MatPaginator> 
 }
 
 export class KlesLazyDataSource implements IKlesDataSource {
-    private _paginator: MatPaginator;
-    private _sort: MatSort;
+    private _paginator: MatPaginator | undefined;
+    private _sort: MatSort | undefined;
     private _rows$ = new BehaviorSubject<FormGroup[]>([]);
-    private _filter: string = null;
+    private _filter: string | undefined = undefined;
 
-    get sort(): MatSort {
+    get sort(): MatSort | undefined {
         return this._sort;
     }
 
@@ -25,7 +25,7 @@ export class KlesLazyDataSource implements IKlesDataSource {
         this._sort = sort;
     }
 
-    get paginator(): MatPaginator {
+    get paginator(): MatPaginator | undefined {
         return this._paginator;
     }
 
@@ -37,14 +37,14 @@ export class KlesLazyDataSource implements IKlesDataSource {
         this._rows$.next(data);
     }
 
-    get filter(): string {
+    get filter(): string | undefined{
         return this._filter;
     }
     set filter(f: string) {
         this._filter = f;
     }
 
-    connect(): Observable<readonly FormGroup[]> {
+    connect(): Observable<FormGroup[]> {
         return this._rows$;
     }
 

@@ -65,13 +65,29 @@ import { KlesExtraCellFieldConfig } from '../core/table/cell.interface';
 import { ExtraRowService } from '../services/features/extra-row/extra-row.service';
 import { RenderService } from '../services/features/render/render.service';
 import { ExpandedRowStore } from '../services/store/expanded-row-store.service';
+import { TreeService } from '../services/features/tree/tree.service';
+import { LoaderChildrensService } from '../services/features/loader/loader-childrens.service';
+import { EventsService } from '../services/features/events/events.service';
+import { RowService } from '../services/features/row/row.service';
+import { CellService } from '../services/features/cell/cell.service';
+import { CellValueChangeService } from '../services/features/cell/cell-valuechange.service';
 // import { ScrollbarLazyOrchestratorService, ScrollbarOrchestratorService } from '../services/features/scrollbar/scrollbar-orchestrator.service';
 
 @Directive({
     selector: '[appDynamicTableLoader]',
 })
 export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
-    tableConfig = input.required<KlesTableConfig>();
+    tableConfig = input.required<KlesTableConfig, KlesTableConfig>({
+        transform: (v) => {
+            v.columns = v.columns.map((col) => {
+                if (col.headerCell.field) {
+                    col.headerCell.field.subscriptSizing = col.headerCell.field.subscriptSizing ?? 'dynamic';
+                }
+                return col;
+            });
+            return v;
+        },
+    });
     private componentRef: ComponentRef<any> | null = null;
 
     constructor(private viewContainerRef: ViewContainerRef) {
@@ -206,6 +222,7 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
               ];
 
         const featureProviders = [
+            TreeService,
             RenderService,
             ExtraRowService,
             LoadingService,
@@ -213,8 +230,13 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
             ColumnsService,
             FooterService,
             ScrollbarService,
+            EventsService,
+            RowService,
+            CellService,
+            CellValueChangeService,
             SelectionLoaderService,
             PaginatorService,
+            LoaderChildrensService, //TODO
             {
                 provide: TABLE_SERVICE,
                 useClass: TableService,

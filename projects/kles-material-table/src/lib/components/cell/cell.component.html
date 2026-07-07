@@ -1,0 +1,19 @@
+@if (column().canExpand) {
+    <button matIconButton class="expand-button" (click)="expandRow(); stopPropagation($event)">
+        @if (this.expandedRow()) {
+            <mat-icon>keyboard_arrow_down</mat-icon>
+        } @else {
+            <mat-icon>chevron_right</mat-icon>
+        }
+    </button>
+}
+@if (hasChildren() && column().canExpandNode) {
+    <button matIconButton class="expand-button" (click)="expandNode(); stopPropagation($event)">
+        @if (this.expandedNode()) {
+            <mat-icon>keyboard_arrow_down</mat-icon>
+        } @else {
+            <mat-icon>chevron_right</mat-icon>
+        }
+    </button>
+}
+<div class="cell-field"><ng-content></ng-content></div>

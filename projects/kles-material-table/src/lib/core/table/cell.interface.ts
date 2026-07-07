@@ -1,5 +1,4 @@
 import { IKlesFieldConfig } from '@3kles/kles-material-dynamicforms';
-import { Type } from '@angular/core';
 import { FormArray, FormControlStatus, FormGroup } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { Span } from '../../enums/span.enum';
@@ -15,21 +14,25 @@ interface IStyle {
     ngStyle?: NgStyleInput;
 }
 
-export interface IKlesHeaderFieldConfig extends B {
-    filterComponent?: Type<any>; //filter component for header
+export interface IKlesHeaderFieldConfig {
+    field?: B;
+    label?: string;
+    tooltip?: string;
     filterClearable?: boolean; //active button to clear filter
     filterPredicate?: (value: any, filter: any) => boolean; //override default predicate only for this field
     sortPredicate?: (data: any) => string | number; //override default sort predicate only for this field
     style?: IStyle;
 }
 
-export interface IKlesCellFieldConfig extends C {
+export interface IKlesCellFieldConfig {
     executeAfterChange?: (property?: string, row?: any, group?: FormGroup<any> | FormArray<any>) => Observable<any>;
     style?: IStyle;
+    field: C;
 }
 
-export interface IKlesFooterFieldConfig extends B {
+export interface IKlesFooterFieldConfig {
     style?: IStyle;
+    field: B;
 }
 
 export interface KlesExtraCellFieldConfig extends IKlesCellFieldConfig {

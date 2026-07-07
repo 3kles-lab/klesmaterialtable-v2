@@ -6,6 +6,8 @@ import { PaginationApi } from '../api/pagination';
 import { ScrollbarApi } from '../api/scrollbar';
 import { SelectionApi } from '../api/selection';
 import { SortApi } from '../api/sort';
+import { FormApi } from '../api/form';
+import { EventsApi } from '../api/events';
 
 export interface ITable {
     scrollbar: ScrollbarApi;
@@ -15,10 +17,13 @@ export interface ITable {
     sort: SortApi;
     footer: FooterApi;
     loading: LoadingApi;
-    refresh();
+    form: FormApi;
+    events: EventsApi;
     ui: GroupUiState<{
         header: GroupUiState;
         rows: ArrayUiState;
         footer: GroupUiState;
     }>;
+
+    refresh(): void;
 }

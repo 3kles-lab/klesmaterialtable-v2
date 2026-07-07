@@ -1,9 +1,10 @@
 import { DestroyRef, inject, Inject, Injectable } from '@angular/core';
-import { ILoader, LoaderService } from '../loader/loader.service';
+
 import { LOADER_SERVICE } from '../../../token';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
 import { LoadingService } from './loading.service';
+import { ILoader } from '../loader/loader.interface';
 
 @Injectable()
 export class LoadingOrchestratorService {

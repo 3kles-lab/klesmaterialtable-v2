@@ -53,19 +53,26 @@ import { ITableService } from '../../services/features/table/table.service';
 import { ISelectionService } from '../../services/features/selection/selection.service';
 import { FooterFieldPipe } from '../../pipes/footer-field.pipe';
 import { KlesColumnConfig } from '../../core/table/column.interface';
-import { ILoader } from '../../services/features/loader/loader.service';
+import { ILoader } from '../../services/features/loader/loader.interface';
 import { FooterService } from '../../services/features/footer/footer.service';
 import { FooterApi } from '../../core/api/footer';
 import { UiFieldPipe } from '../../pipes/ui-field.pipe';
 import { SpanPipe } from '../../pipes/span.pipe';
 import { ExtraRowService } from '../../services/features/extra-row/extra-row.service';
 import { ExtraRowConfig } from '../../core/table/config.interface';
-import { KlesDynamicCellDirective } from '../../directives/dynamic-cell.directive';
 
 import { RenderService } from '../../services/features/render/render.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { KlesFormDynamicExpandCellComponent } from '../fields/cell-expand-field.component';
 import { ExpandedRowStore } from '../../services/store/expanded-row-store.service';
+import { KlesCellComponent } from '../cell/cell.component';
+import { KlesHeaderComponent } from '../header/header.component';
+import { HeaderPipe } from '../../pipes/header.pipe';
+import { FormApi } from '../../core/api/form';
+import { RowFormFactory } from '../../services/features/table/row-factory.service';
+import { EventsApi } from '../../core/api/events';
+import { EventsService } from '../../services/features/events/events.service';
+import { RowService } from '../../services/features/row/row.service';
+import { CellService } from '../../services/features/cell/cell.service';
 
 @Component({
     selector: 'kles-table',
@@ -94,14 +101,15 @@ import { ExpandedRowStore } from '../../services/store/expanded-row-store.servic
         MatProgressSpinnerModule,
         ResizableColumnDirective,
         MatIconModule,
-        KlesDynamicCellDirective,
-        KlesFormDynamicExpandCellComponent,
+        KlesCellComponent,
+        KlesHeaderComponent,
+        HeaderPipe,
     ],
 })
 export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy {
     @ViewChild(MatTable) table!: MatTable<FormGroup>;
-    @ViewChild(MatSort, { static: true }) matSort: MatSort;
-    @ViewChild('form', { static: true }) form!: ElementRef<HTMLElement>;
+    @ViewChild(MatSort, { static: true }) matSort!: MatSort;
+    @ViewChild('form', { static: true }) formElemRef!: ElementRef<HTMLElement>;
 
     headerHeightPx = 56;
     scrollHeightPx = 0;
@@ -109,7 +117,7 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
 
     dataSource: IKlesDataSource;
     columns: Signal<KlesColumnConfig[]>;
-    displayedColumns: Signal<string[]>;
+    displayedColumns: Signal<string[]> | undefined;
     showFooter: Signal<boolean>;
 
     multiTemplateDataRows: Signal<boolean>;
@@ -121,23 +129,27 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
     private _cleanup?: () => void;
 
     constructor(
-        private host: ElementRef<HTMLElement>,
-        private connectorService: KlesTableConnectorService,
-        @Inject(LOADER_SERVICE) private loader: ILoader<any>,
-        @Inject(DATASOURCE_SERVICE) private datasourceService: IDatasourceService,
-        @Inject(TABLE_SERVICE) public tableService: ITableService,
-        @Inject(ROW_DRAG_DROP) public dragDropRowService: DragDropService,
-        @Inject(SELECTION_SERVICE) private selectionService: ISelectionService,
-        public columnsService: ColumnsService,
-        public loadingService: LoadingService,
-        private paginatorService: PaginatorService,
-        private scrollbarService: ScrollbarService,
-        private footerService: FooterService,
-        private extraRowService: ExtraRowService,
-        private renderService: RenderService,
-        @Inject(SORT_SERVICE) private sortService: ISortService,
-        @Optional() private filterService: FilterService,
-        private expandedRowStore: ExpandedRowStore,
+        private readonly host: ElementRef<HTMLElement>,
+        private readonly connectorService: KlesTableConnectorService,
+        @Inject(LOADER_SERVICE) private readonly loader: ILoader<any>,
+        @Inject(DATASOURCE_SERVICE) private readonly datasourceService: IDatasourceService,
+        @Inject(TABLE_SERVICE) public readonly tableService: ITableService,
+        @Inject(ROW_DRAG_DROP) public readonly dragDropRowService: DragDropService,
+        @Inject(SELECTION_SERVICE) private readonly selectionService: ISelectionService,
+        public readonly columnsService: ColumnsService,
+        public readonly loadingService: LoadingService,
+        private readonly paginatorService: PaginatorService,
+        private readonly scrollbarService: ScrollbarService,
+        private readonly footerService: FooterService,
+        private readonly extraRowService: ExtraRowService,
+        private readonly renderService: RenderService,
+        @Inject(SORT_SERVICE) private readonly sortService: ISortService,
+        @Optional() private readonly filterService: FilterService,
+        private readonly expandedRowStore: ExpandedRowStore,
+        private readonly rowFactory: RowFormFactory,
+        private readonly eventsService: EventsService,
+        public readonly rowService: RowService,
+        public readonly cellService: CellService,
     ) {
         this.columns = this.columnsService.columns;
         this.displayedColumns = this.columnsService.displayedColumns;
@@ -153,6 +165,55 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
     @HostBinding('class.loading')
     get isLoadingClass() {
         return this.loadingService.loading();
+    }
+
+    get events(): EventsApi {
+        return {
+            listen: () => this.eventsService.events$,
+        };
+    }
+
+    get form(): FormApi {
+        return {
+            header: {
+                clear: (value, options) => this.tableService.klesForm.getHeader().reset(value, options),
+                get: () => this.tableService.klesForm.getHeader(),
+                setValue: (value, options) => this.tableService.klesForm.getHeader().setValue(value, options),
+                patchValue: (value, options) => this.tableService.klesForm.getHeader().patchValue(value, options),
+            },
+            footer: {
+                clear: (value, options) => this.tableService.klesForm.getFooter().reset(value, options),
+                get: () => this.tableService.klesForm.getFooter(),
+                setValue: (value, options) => this.tableService.klesForm.getFooter().setValue(value, options),
+                patchValue: (value, options) => this.tableService.klesForm.getFooter().patchValue(value, options),
+            },
+            rows: {
+                list: () => this.tableService.klesForm.getRows(),
+                get: (_id) => this.tableService.klesForm.getRows().controls.find((row) => row.value._id === _id),
+                create: (value, index, options) => {
+                    return this.tableService.klesForm.insertRow(
+                        this.rowFactory.createRow(
+                            this.columnsService
+                                .columns()
+                                .map((col) => ({ ...col.cell.field, name: col.columnDef }))
+                                .concat(this.extraRowService.extraColumns().map((col) => ({ ...col, name: col.columnDef }))),
+                            value,
+                        ),
+                        index,
+                        options,
+                    ).formGroup;
+                },
+                patch: (_id, value, options) => {
+                    return this.tableService.klesForm.updateRow(_id, value, options);
+                },
+                remove: (_id, options) => {
+                    this.tableService.klesForm.deleteRowById(_id, options);
+                },
+                reset: (_id, value, options) => {
+                    this.tableService.klesForm.resetRow(_id, value, options);
+                },
+            },
+        };
     }
 
     get scrollbar(): ScrollbarApi {
@@ -188,6 +249,7 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
             enable: () => this.paginatorService.enable(),
             disable: () => this.paginatorService.disable(),
             setPageSizeOptions: (option) => this.paginatorService.setPageSizeOptions(option),
+            page: this.paginatorService.pageChanged(),
         };
     }
 
@@ -240,7 +302,7 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
 
     ngOnInit(): void {
         this.sortService.register(this.matSort);
-        const el = this.form.nativeElement;
+        const el = this.formElemRef.nativeElement;
         this.scrollbarService.register(el);
 
         this.renderService
@@ -269,12 +331,12 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
     }
 
     private calculHeaderHeight() {
-        const form = this.form?.nativeElement as HTMLElement | null;
+        const formNativeElem = this.formElemRef?.nativeElement as HTMLElement | null;
         const header = this.host.nativeElement.querySelector('.mat-mdc-header-row') as HTMLElement | null;
         const footer = this.host.nativeElement.querySelector('.mat-mdc-footer-row') as HTMLElement | null;
 
         const compute = () => {
-            this.scrollHeightPx = Math.max(0, form?.offsetHeight - form?.clientHeight || 0);
+            this.scrollHeightPx = Math.max(0, (formNativeElem?.offsetHeight ?? 0) - (formNativeElem?.clientHeight ?? 0));
             this.headerHeightPx = Math.ceil(header?.getBoundingClientRect().height ?? 0);
             this.footerHeightPx = Math.max(0, footer?.getBoundingClientRect().height ?? 0);
         };
@@ -292,8 +354,8 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
         scheduleCompute();
 
         this.ro = new ResizeObserver(scheduleCompute);
-        if (form) {
-            this.ro.observe(form);
+        if (formNativeElem) {
+            this.ro.observe(formNativeElem);
         }
 
         if (header) {
@@ -304,16 +366,18 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
             this.ro.observe(footer);
         }
 
-        form.addEventListener('scroll', scheduleCompute, { passive: true });
-        window.addEventListener('resize', scheduleCompute, { passive: true });
+        if (formNativeElem) {
+            formNativeElem.addEventListener('scroll', scheduleCompute, { passive: true });
+            window.addEventListener('resize', scheduleCompute, { passive: true });
 
-        this._cleanup = () => {
-            form.removeEventListener('scroll', scheduleCompute);
-            window.removeEventListener('resize', scheduleCompute);
-            this.ro?.disconnect();
-            if (this.rafId) {
-                cancelAnimationFrame(this.rafId);
-            }
-        };
+            this._cleanup = () => {
+                formNativeElem.removeEventListener('scroll', scheduleCompute);
+                window.removeEventListener('resize', scheduleCompute);
+                this.ro?.disconnect();
+                if (this.rafId) {
+                    cancelAnimationFrame(this.rafId);
+                }
+            };
+        }
     }
 }

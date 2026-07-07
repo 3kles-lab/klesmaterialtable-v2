@@ -9,6 +9,6 @@ import { KlesColumnConfig } from '../core/table/column.interface';
 export class FooterFieldPipe implements PipeTransform {
     transform(col: KlesColumnConfig | null | undefined): IKlesFieldConfig | null {
         if (!col) return null;
-        return { name: col.columnDef, ...col.footerCell };
+        return { name: col.columnDef, ...col.footerCell.field };
     }
 }

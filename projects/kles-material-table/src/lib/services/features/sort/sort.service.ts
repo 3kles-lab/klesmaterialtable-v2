@@ -6,20 +6,24 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatasourceLazyService, DatasourceService } from '../datasource/datasource.service';
 import { DATASOURCE_SERVICE } from '../../../token';
 import { ColumnsService } from '../columns/columns.service';
+import { KlesColumnConfig } from '../../../core/table/column.interface';
+import { EventsService } from '../events/events.service';
 
 export interface ISortService {
     sort: MatSort;
-    register(s: MatSort);
-    setDirection(direction: SortDirection);
-    setActive(active: string);
+    register(s: MatSort): void;
+    setDirection(direction: SortDirection): void;
+    setActive(active: string): void;
     sortChange(): EventEmitter<Sort>;
 }
 
 @Injectable()
 export abstract class AbstractSortService implements ISortService {
-    protected _sort: MatSort;
+    protected _sort!: MatSort;
     protected _sortChange = new EventEmitter<Sort>();
     protected readonly destroyRef = inject(DestroyRef);
+
+    constructor(protected readonly eventsService: EventsService) {}
 
     public get sort(): MatSort {
         return this._sort;
@@ -29,6 +33,11 @@ export abstract class AbstractSortService implements ISortService {
         this._sort = s;
         this._sort.sortChange.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
             this._sortChange.emit(event);
+
+            this.eventsService.emit('sortChange', {
+                active: event.active,
+                direction: event.direction,
+            });
         });
     }
 
@@ -57,8 +66,9 @@ export class SortService extends AbstractSortService {
         @Optional() private sortStore: SortStore | null,
         private columnsService: ColumnsService,
         @Inject(DATASOURCE_SERVICE) private datasourceService: DatasourceService,
+        readonly eventsService: EventsService,
     ) {
-        super();
+        super(eventsService);
     }
 
     public register(s: MatSort) {
@@ -77,7 +87,7 @@ export class SortService extends AbstractSortService {
         });
     }
 
-    private sortingDataAccessor = (item: AbstractControl, property) => {
+    private sortingDataAccessor = (item: AbstractControl, property: string) => {
         if (!item.value) {
             return undefined;
         }
@@ -92,7 +102,7 @@ export class SortService extends AbstractSortService {
         return value;
     };
 
-    private sortDataPredicate(columns: any[]) {
+    private sortDataPredicate(columns: KlesColumnConfig[]) {
         return (data: FormGroup[], sort: MatSort): FormGroup[] => {
             const active = sort.active;
             const direction = sort.direction;
@@ -100,11 +110,12 @@ export class SortService extends AbstractSortService {
             if (!active || direction == '') {
                 return data;
             }
+
             const column = columns.find((col) => col.columnDef === active);
 
             return data.sort((a, b) => {
-                let valueA: string | number;
-                let valueB: string | number;
+                let valueA: any;
+                let valueB: any;
                 if (column?.headerCell.sortPredicate) {
                     valueA = column?.headerCell.sortPredicate(a);
                     valueB = column?.headerCell.sortPredicate(b);
@@ -112,9 +123,12 @@ export class SortService extends AbstractSortService {
                     valueA = this.sortingDataAccessor(a, active);
                     valueB = this.sortingDataAccessor(b, active);
 
-                    if (column?.cell?.property) {
-                        valueA = valueA?.[column.cell?.property];
-                        valueB = valueB?.[column.cell?.property];
+                    if (column) {
+                        const key = column.cell?.field.property;
+                        if (key) {
+                            valueA = valueA?.[key];
+                            valueB = valueB?.[key];
+                        }
                     }
                 }
 
@@ -153,8 +167,9 @@ export class SortLazyService extends AbstractSortService {
     constructor(
         @Optional() private sortStore: SortStore | null,
         @Inject(DATASOURCE_SERVICE) private datasourceService: DatasourceLazyService,
+        readonly eventsService: EventsService,
     ) {
-        super();
+        super(eventsService);
     }
 
     public register(s: MatSort) {

@@ -5,10 +5,11 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DATASOURCE_SERVICE, PAGINATOR_CONFIG } from '../../../token';
 import { IDatasourceService } from '../datasource/datasource.service';
 import { PaginatorConfig } from '../../../core/table/config.interface';
+import { EventsService } from '../events/events.service';
 
 @Injectable()
 export class PaginatorService {
-    private _paginator: MatPaginator;
+    private _paginator: MatPaginator | undefined;
     private _disabled = signal(false);
     private _pageChanged = new EventEmitter<PageEvent>();
     private readonly destroyRef = inject(DestroyRef);
@@ -17,6 +18,7 @@ export class PaginatorService {
         @Optional() @Inject(PAGINATOR_CONFIG) private config: PaginatorConfig,
         @Optional() protected paginatorStore: PaginatorStore | null,
         @Inject(DATASOURCE_SERVICE) private datasourceService: IDatasourceService,
+        private readonly eventsService: EventsService,
     ) {}
 
     public register(paginator: MatPaginator) {
@@ -33,11 +35,19 @@ export class PaginatorService {
             this._paginator.page.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
                 this.paginatorStore?.setPage({ page: event.pageIndex, perPage: event.pageSize });
                 this._pageChanged.next(event);
+
+                this.eventsService.emit('pageChange', {
+                    pageIndex: event.pageIndex,
+                    previousPageIndex: event.previousPageIndex,
+                    pageSize: event.pageSize,
+                    totalItems: event.length,
+                    sourceEvent: event,
+                });
             });
         }
     }
 
-    public get paginator(): MatPaginator {
+    public get paginator(): MatPaginator | undefined {
         return this._paginator;
     }
 
@@ -61,7 +71,9 @@ export class PaginatorService {
     }
 
     public setPageSizeOptions(option: number[]): void {
-        this._paginator.pageSizeOptions = option;
+        if (this._paginator) {
+            this._paginator.pageSizeOptions = option;
+        }
     }
 
     public setlength(length: number) {
@@ -91,14 +103,16 @@ export class PaginatorService {
     }
 
     private setSizeIndex(size: number, index: number): void {
-        const prev = this._paginator.pageIndex;
-        this._paginator.pageSize = size;
-        this._paginator.pageIndex = index;
-        this._paginator.page.emit({
-            pageIndex: this._paginator.pageIndex,
-            pageSize: this._paginator.pageSize,
-            length: this._paginator.length,
-            previousPageIndex: prev,
-        });
+        if (this._paginator) {
+            const prev = this._paginator.pageIndex;
+            this._paginator.pageSize = size;
+            this._paginator.pageIndex = index;
+            this._paginator.page.emit({
+                pageIndex: this._paginator.pageIndex,
+                pageSize: this._paginator.pageSize,
+                length: this._paginator.length,
+                previousPageIndex: prev,
+            });
+        }
     }
 }

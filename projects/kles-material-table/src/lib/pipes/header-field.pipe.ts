@@ -10,14 +10,11 @@ import { SortHeaderArrowPosition } from '@angular/material/sort';
 export class HeaderFieldPipe implements PipeTransform {
     transform(
         col: KlesColumnConfig | null | undefined,
-    ): (IKlesFieldConfig & { filterable?: boolean; sortable?: boolean; sortArrowPosition?: SortHeaderArrowPosition }) | null {
+    ): (IKlesFieldConfig) | null {
         if (!col) return null;
         return {
             name: col.columnDef,
-            filterable: col.filterable,
-            sortable: col.sortable,
-            sortArrowPosition: col.sortArrowPosition,
-            ...col.headerCell,
+            ...col.headerCell.field,
         };
     }
 }

@@ -1,3 +1,6 @@
+import { EventEmitter } from "@angular/core";
+import { PageEvent } from "@angular/material/paginator";
+
 export interface PaginationApi {
     setPageIndex(value: number): void;
     setPageSize(value: number): void;
@@ -6,4 +9,5 @@ export interface PaginationApi {
     lastPage(): void;
     enable(): void;
     disable(): void;
+    page: EventEmitter<PageEvent>;
 }

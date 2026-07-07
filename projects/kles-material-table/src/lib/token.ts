@@ -11,9 +11,9 @@ import { ISortService } from './services/features/sort/sort.service';
 import { ILinesService } from './services/features/lines/lines.service';
 import { ITableService } from './services/features/table/table.service';
 import { IHeaderService } from './services/features/header/header.service';
-import { ILoader } from './services/features/loader/loader.service';
-import { IScrollbarOrchestratorService } from './services/features/scrollbar/scrollbar-orchestrator.service';
 
+import { IScrollbarOrchestratorService } from './services/features/scrollbar/scrollbar-orchestrator.service';
+import { ILoader } from './services/features/loader/loader.interface';
 
 export const SELECTION_CONFIG = new InjectionToken<SelectionConfig<any>>('SELECTION_CONFIG');
 

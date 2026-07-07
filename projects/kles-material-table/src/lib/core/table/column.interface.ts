@@ -10,7 +10,6 @@ export interface KlesColumnConfig {
     visible?: boolean;
     visibleWhen?: Signal<boolean>;
     disabled?: boolean;
-    name?: string;
     ngClass?: any;
     filterable?: boolean;
     sortable?: boolean;
@@ -24,4 +23,5 @@ export interface KlesColumnConfig {
     minWidth?: string;
     maxWidth?: string;
     canExpand?: boolean;
+    canExpandNode?: boolean;
 }
