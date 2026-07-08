@@ -176,14 +176,6 @@ export interface TreePayload<TValue = unknown> extends RowPayload<TValue> {
 /**
  * Lazy loading.
  */
-export interface LazyQueryChangePayload {
-    pageIndex: number;
-    pageSize: number;
-
-    sort?: SortPayload;
-    filters?: Record<string, unknown>;
-    search?: string;
-}
 
 export interface LoadSuccessPayload<TValue = unknown> {
     rows: FormGroup[];
@@ -203,11 +195,9 @@ export interface LoadErrorPayload {
 export interface StateChangePayload {
     columns: string[];
     filters: Record<string, unknown>;
-
     sort?: SortPayload;
     pageIndex?: number;
     pageSize?: number;
-    search?: string;
 }
 
 /**
@@ -240,5 +230,5 @@ export interface ValidationErrorPayload<TValue = unknown> {
     rawValue?: TValue;
 
     errors: ValidationErrors | null;
-    controlsErrors?: Record<string, ValidationErrors | null>;
+    controlsErrors?: Record<string, ValidationErrors | null | undefined>;
 }

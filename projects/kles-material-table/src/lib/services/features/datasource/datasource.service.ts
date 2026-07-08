@@ -6,6 +6,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { startWith } from 'rxjs';
 import { ColumnsService } from '../columns/columns.service';
 import { CellValueChangeService } from '../cell/cell-valuechange.service';
+import { ValidationService } from '../validation/validation.service';
 
 export interface IDatasourceService {
     get datasource(): IKlesDataSource;
@@ -23,6 +24,7 @@ export class DatasourceService implements IDatasourceService {
         private fm: KlesForm,
         private columnsService: ColumnsService,
         private cellValueChangeService: CellValueChangeService,
+        private validationService: ValidationService,
     ) {}
 
     public register() {
@@ -47,7 +49,8 @@ export class DatasourceService implements IDatasourceService {
             .connect()
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((rows) => {
-                this.cellValueChangeService.refresh(rows, this.columnsService.getVisible());
+                this.cellValueChangeService.listen(rows, this.columnsService.getVisible());
+                this.validationService.listen(rows, this.columnsService.getVisible());
             });
     }
 }
@@ -61,6 +64,7 @@ export class DatasourceLazyService implements IDatasourceService {
         private fm: KlesForm,
         private columnsService: ColumnsService,
         private cellValueChangeService: CellValueChangeService,
+        private validationService: ValidationService,
     ) {}
 
     public register() {
@@ -84,7 +88,8 @@ export class DatasourceLazyService implements IDatasourceService {
             .connect()
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((rows) => {
-                this.cellValueChangeService.refresh(rows, this.columnsService.getVisible());
+                this.cellValueChangeService.listen(rows, this.columnsService.getVisible());
+                this.validationService.listen(rows, this.columnsService.getVisible());
             });
     }
 }

@@ -71,6 +71,8 @@ import { EventsService } from '../services/features/events/events.service';
 import { RowService } from '../services/features/row/row.service';
 import { CellService } from '../services/features/cell/cell.service';
 import { CellValueChangeService } from '../services/features/cell/cell-valuechange.service';
+import { ValidationService } from '../services/features/validation/validation.service';
+
 // import { ScrollbarLazyOrchestratorService, ScrollbarOrchestratorService } from '../services/features/scrollbar/scrollbar-orchestrator.service';
 
 @Directive({
@@ -234,6 +236,7 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
             RowService,
             CellService,
             CellValueChangeService,
+            ValidationService,
             SelectionLoaderService,
             PaginatorService,
             LoaderChildrensService, //TODO

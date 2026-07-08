@@ -5,9 +5,10 @@ import { KlesForm } from '../table/form';
 import { RowFormFactory } from '../table/row-factory.service';
 import { ColumnsService } from '../columns/columns.service';
 import { PaginatorService } from '../paginator/paginator.service';
-import { filter, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
 import { LoaderLazyService, LoaderService } from '../loader/loader.service';
 import { ExtraRowService } from '../extra-row/extra-row.service';
+import { EventsService } from '../events/events.service';
 
 export interface ILinesService {
     register(): void;
@@ -28,6 +29,7 @@ export class LinesService implements ILinesService {
         private columnsService: ColumnsService,
         private rowFactory: RowFormFactory,
         private extraRowService: ExtraRowService,
+        private readonly eventsService: EventsService,
     ) {}
 
     public register() {
@@ -45,22 +47,37 @@ export class LinesService implements ILinesService {
     private load() {
         this.loader
             .load()
-            .pipe(
-                takeUntilDestroyed(this.destroyRef),
-                filter((response) => !response.loading),
-            )
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((response) => {
-                this.fm.setRows(
-                    this.rowFactory.createRows(
-                        this.columnsService
-                            .columns()
-                            .map((col) => ({ ...col.cell.field, name: col.columnDef }))
-                            .concat(this.extraRowService.extraColumns().map((col) => ({ ...col, name: col.columnDef }))),
-                        response.items,
-                    ),
-                );
-                this._total = response.items.length;
-                this._loaded.next();
+                if (response.loading) {
+                    this.eventsService.emit('loadStart');
+                } else {
+                    if (response.error) {
+                        this.eventsService.emit('loadError', {
+                            error: response.error,
+                            message: response.error?.message,
+                        });
+                    } else {
+                        this.fm.setRows(
+                            this.rowFactory.createRows(
+                                this.columnsService
+                                    .columns()
+                                    .map((col) => ({ ...col.cell.field, name: col.columnDef }))
+                                    .concat(this.extraRowService.extraColumns().map((col) => ({ ...col, name: col.columnDef }))),
+                                response.items ?? [],
+                            ),
+                        );
+                        this._total = response.items?.length ?? 0;
+                        this._loaded.next();
+
+                        this.eventsService.emit('loadSuccess', {
+                            total: this._total,
+                            values: response.items,
+                            rawValues: this.fm.getRows().getRawValue(),
+                            rows: this.fm.getRows().controls,
+                        });
+                    }
+                }
             });
     }
 }
@@ -79,6 +96,7 @@ export class LinesLazyService implements ILinesService {
         private rowFactory: RowFormFactory,
         private extraRowService: ExtraRowService,
         private paginatorService: PaginatorService,
+        private readonly eventsService: EventsService,
     ) {}
 
     public register() {
@@ -100,23 +118,38 @@ export class LinesLazyService implements ILinesService {
     private load() {
         this.loader
             .load()
-            .pipe(
-                takeUntilDestroyed(this.destroyRef),
-                filter((response) => !response.loading),
-            )
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((response) => {
-                this.fm.setRows(
-                    this.rowFactory.createRows(
-                        this.columnsService
-                            .columns()
-                            .map((col) => ({ ...col.cell.field, name: col.columnDef }))
-                            .concat(this.extraRowService.extraColumns().map((col) => ({ ...col, name: col.columnDef }))),
-                        response.items,
-                    ),
-                );
-                this.paginatorService.setlength(response.total ?? 0);
-                this._total = response.total ?? 0;
-                this._loaded.next();
+                if (response.loading) {
+                    this.eventsService.emit('loadStart');
+                } else {
+                    if (response.error) {
+                        this.eventsService.emit('loadError', {
+                            error: response.error,
+                            message: response.error?.message,
+                        });
+                    } else {
+                        this.fm.setRows(
+                            this.rowFactory.createRows(
+                                this.columnsService
+                                    .columns()
+                                    .map((col) => ({ ...col.cell.field, name: col.columnDef }))
+                                    .concat(this.extraRowService.extraColumns().map((col) => ({ ...col, name: col.columnDef }))),
+                                response.items,
+                            ),
+                        );
+                        this.paginatorService.setlength(response.total ?? 0);
+                        this._total = response.total ?? 0;
+                        this._loaded.next();
+
+                        this.eventsService.emit('loadSuccess', {
+                            total: this._total ?? 0,
+                            values: response.items,
+                            rawValues: this.fm.getRows().getRawValue(),
+                            rows: this.fm.getRows().controls,
+                        });
+                    }
+                }
             });
     }
 }

@@ -12,7 +12,7 @@ export class CellValueChangeService {
 
     constructor(private readonly eventsService: EventsService) {}
 
-    public refresh(visibleRows: FormGroup[], visibleColumns: string[]): void {
+    public listen(visibleRows: FormGroup[], visibleColumns: string[]): void {
         const expectedKeys = new Set<string>();
         visibleRows.forEach((row, rowIndex) => {
             visibleColumns.forEach((column) => {

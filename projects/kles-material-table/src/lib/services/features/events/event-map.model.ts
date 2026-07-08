@@ -8,7 +8,6 @@ import {
     ColumnVisibilityChangePayload,
     ExpansionPayload,
     FilterChangePayload,
-    LazyQueryChangePayload,
     LoadErrorPayload,
     LoadSuccessPayload,
     PageChangePayload,
@@ -109,22 +108,16 @@ export interface TableEventMap<TValue = unknown> {
     /**
      * Loading / lazy
      */
-    loadStart: void; //TODO
-    loadSuccess: LoadSuccessPayload<TValue>; //TODO
-    loadError: LoadErrorPayload; //TODO
-    loadCancel: void; //TODO
+    loadStart: void;
+    loadSuccess: LoadSuccessPayload<TValue>;
+    loadError: LoadErrorPayload;
 
-    reload: void; //TODO
-    refresh: void; //TODO
-
-    lazyQueryChange: LazyQueryChangePayload; //TODO
+    refresh: void;
 
     /**
      * Error / validation
      */
-    error: LoadErrorPayload; //TODO
 
-    validationError: ValidationErrorPayload<TValue>; //TODO
-    rowValidationError: ValidationErrorPayload<TValue>; //TODO
-    cellValidationError: ValidationErrorPayload<TValue>; //TODO
+    rowValidationError: ValidationErrorPayload<TValue>;
+    cellValidationError: ValidationErrorPayload<TValue>;
 }

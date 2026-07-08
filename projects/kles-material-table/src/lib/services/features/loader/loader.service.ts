@@ -7,6 +7,7 @@ import { SortStore } from '../../store/sort-store.service';
 import { FilterStore } from '../../store/filter-store.service';
 import { LinesLazyLoader, LinesLoader } from '../../../core/table/loader.interface';
 import { ILoader } from './loader.interface';
+import { EventsService } from '../events/events.service';
 
 @Injectable()
 export class LoaderService<T, R> implements ILoader<R> {
@@ -14,7 +15,10 @@ export class LoaderService<T, R> implements ILoader<R> {
 
     private _loader$!: Observable<{ total: number; items: R[]; loading: boolean; error?: any; header?: any }>;
 
-    constructor(@Inject(LOADER_CONFIG) private readonly loaderConfig: LoaderConfig<T, R>) {
+    constructor(
+        @Inject(LOADER_CONFIG) private readonly loaderConfig: LoaderConfig<T, R>,
+        private readonly eventsService: EventsService,
+    ) {
         this.init();
     }
 
@@ -45,6 +49,7 @@ export class LoaderService<T, R> implements ILoader<R> {
 
     public refresh() {
         this._refresh$.next();
+        this.eventsService.emit('refresh');
     }
 }
 
@@ -59,6 +64,7 @@ export class LoaderLazyService<T, R> implements ILoader<R> {
         @Optional() private paginatorStore: PaginatorStore | null,
         @Optional() private sortStore: SortStore | null,
         @Optional() private filterStore: FilterStore | null,
+        private readonly eventsService: EventsService,
     ) {
         this.init();
     }
@@ -96,5 +102,6 @@ export class LoaderLazyService<T, R> implements ILoader<R> {
 
     public refresh() {
         this._refresh$.next();
+        this.eventsService.emit('refresh');
     }
 }
