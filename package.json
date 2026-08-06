@@ -1,14 +1,6 @@
 {
-  "name": "@3kles/kles-material-table",
+  "name": "@3kles/kles-material-table-v2",
   "version": "21.0.0",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/3kles-lab/KlesMaterialTable"
-  },
-  "bugs": {
-    "url": "https://github.com/3kles-lab/KlesMaterialTable/issues"
-  },
-  "homepage": "https://github.com/3kles-lab/KlesMaterialTable",
   "author": "3Kles Lab",
   "license": "ISC",
   "scripts": {
