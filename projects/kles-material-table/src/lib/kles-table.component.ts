@@ -113,7 +113,6 @@ export class KlesTableComponent<TValue = unknown> implements OnInit, KlesTableAp
     }
 
     private dispatchEvent(event: TableEvent<TValue>): void {
-        console.log('event', event);
         this.tableEvent.emit(event);
 
         switch (event.type) {

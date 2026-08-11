@@ -59,7 +59,7 @@ export class TreeService<T, R> {
                 } else {
                     this.loading.delete(id);
                     // this.loadingService.stop();
-                    console.log( (group.getRawValue()._depth ?? 0) + 1)
+                    // console.log( (group.getRawValue()._depth ?? 0) + 1)
                     this.fm.insertRows(
                         this.rowFactory.createRows(
                             this.columnsService.columns().map((col) => ({ ...col.cell.field, name: col.columnDef })),

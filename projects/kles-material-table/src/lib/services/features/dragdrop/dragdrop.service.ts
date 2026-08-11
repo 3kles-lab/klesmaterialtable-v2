@@ -72,7 +72,7 @@ export class DragDropLazyService extends DragDropBase {
     }
 
     listDropped(event: CdkDragDrop<FormArray<FormGroup>>) {
-        console.log('lazy');
+        
         // TODO appeler un observable + refresh tableau
     }
 }
