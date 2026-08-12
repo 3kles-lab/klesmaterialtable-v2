@@ -1,4 +1,4 @@
-import { DestroyRef, inject, Injectable } from '@angular/core';
+import { DestroyRef, inject, Injectable, signal, Signal } from '@angular/core';
 import { KlesDataSource, KlesLazyDataSource } from '../table/datasource';
 import { IKlesDataSource } from '../../../core/datasource/datasource.interface';
 import { KlesForm } from '../table/form';
@@ -10,6 +10,7 @@ import { ValidationService } from '../validation/validation.service';
 
 export interface IDatasourceService {
     get datasource(): IKlesDataSource;
+    readonly isEmpty: Signal<boolean>;
     register(): void;
 }
 
@@ -19,6 +20,9 @@ export interface IDatasourceService {
 export class DatasourceService implements IDatasourceService {
     private _datasource!: KlesDataSource;
     private readonly destroyRef = inject(DestroyRef);
+
+    private readonly _isEmpty = signal(true);
+    readonly isEmpty = this._isEmpty.asReadonly();
 
     constructor(
         private fm: KlesForm,
@@ -49,6 +53,7 @@ export class DatasourceService implements IDatasourceService {
             .connect()
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((rows) => {
+                this._isEmpty.set(rows.length === 0);
                 this.cellValueChangeService.listen(rows, this.columnsService.getVisible());
                 this.validationService.listen(rows, this.columnsService.getVisible());
             });
@@ -59,6 +64,9 @@ export class DatasourceService implements IDatasourceService {
 export class DatasourceLazyService implements IDatasourceService {
     private _datasource!: KlesLazyDataSource;
     private readonly destroyRef = inject(DestroyRef);
+
+    private readonly _isEmpty = signal(true);
+    readonly isEmpty = this._isEmpty.asReadonly();
 
     constructor(
         private fm: KlesForm,
@@ -88,6 +96,7 @@ export class DatasourceLazyService implements IDatasourceService {
             .connect()
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((rows) => {
+                this._isEmpty.set(rows.length === 0);
                 this.cellValueChangeService.listen(rows, this.columnsService.getVisible());
                 this.validationService.listen(rows, this.columnsService.getVisible());
             });
