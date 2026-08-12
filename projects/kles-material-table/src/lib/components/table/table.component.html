@@ -5,7 +5,6 @@
         [dataSource]="dataSource"
         matSort
         [trackBy]="multiTemplateDataRows() ? null : tableService.trackBy"
-        class="mat-elevation-z2"
         formArrayName="rows"
         cdkDropList
         [cdkDropListData]="tableService.form.controls.rows"

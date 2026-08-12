@@ -7,6 +7,8 @@ import { LinesLazyLoader, LinesLoader } from './loader.interface';
 import { SelectionConfig } from './selection-config.interface';
 import { KlesExtraCellFieldConfig } from './cell.interface';
 
+export type TableElevationLevel = 0 | 1 | 2 | 3 | 4 | 5;
+
 export interface DefaultTableConfig {
     id?: string;
     columns: KlesColumnConfig[];
@@ -14,8 +16,8 @@ export interface DefaultTableConfig {
     lineAsyncValidations?: AsyncValidatorFn[]; //TODO
     footer?: boolean; //TODO
     sortConfig?: Sort;
-
     columnSeparator?: boolean | ColumnSeparatorConfig;
+    elevation?: TableElevationLevel;
 }
 
 export interface PaginatorConfig {

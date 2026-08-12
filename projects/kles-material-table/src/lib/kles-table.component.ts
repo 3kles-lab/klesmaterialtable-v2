@@ -1,4 +1,4 @@
-import { Component, DestroyRef, EventEmitter, HostBinding, inject, input, OnInit, Output } from '@angular/core';
+import { Component, computed, DestroyRef, EventEmitter, HostBinding, inject, input, OnInit, Output } from '@angular/core';
 import { DynamicTableLoaderDirective } from './directives/dynamic-table-loader.directive';
 import { KlesTableConfig } from './core/table/config.interface';
 import { KlesTableConnectorService } from './kles-table-connector.service';
@@ -37,6 +37,12 @@ export class KlesTableComponent<TValue = unknown> implements OnInit, KlesTableAp
 
     @Output() cellClick = new EventEmitter<CellMousePayload<TValue>>();
     @Output() cellValueChange = new EventEmitter<CellValueChangePayload<TValue>>();
+
+    readonly elevationShadow = computed(() => {
+        const level = this.tableConfig().elevation ?? 2;
+
+        return level === 0 ? 'none' : `var(--mat-sys-level${level})`;
+    });
 
     // @Output() selectionChange = new EventEmitter<KlesTableSelectionChangePayload<TValue>>();
 
