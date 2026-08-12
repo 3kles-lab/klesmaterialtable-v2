@@ -14,12 +14,14 @@ export interface ILinesService {
     register(): void;
     total(): number;
     loaded(): EventEmitter<void>;
+    loading(): EventEmitter<void>;
 }
 
 @Injectable()
 export class LinesService implements ILinesService {
     private readonly destroyRef = inject(DestroyRef);
     private _loaded = new EventEmitter<void>();
+    private _loading = new EventEmitter<void>();
 
     private _total: number | undefined;
 
@@ -44,6 +46,10 @@ export class LinesService implements ILinesService {
         return this._loaded;
     }
 
+    public loading(): EventEmitter<void> {
+        return this._loading;
+    }
+
     private load() {
         this.loader
             .load()
@@ -51,6 +57,7 @@ export class LinesService implements ILinesService {
             .subscribe((response) => {
                 if (response.loading) {
                     this.eventsService.emit('loadStart');
+                    this._loading.next();
                 } else {
                     if (response.error) {
                         this.eventsService.emit('loadError', {
@@ -88,6 +95,7 @@ export class LinesLazyService implements ILinesService {
     private _refresh$ = new Subject<void>();
     private _total?: number;
     private _loaded = new EventEmitter<void>();
+    private _loading = new EventEmitter<void>();
 
     constructor(
         @Inject(LOADER_SERVICE) private loader: LoaderLazyService<any, any>,
@@ -111,6 +119,10 @@ export class LinesLazyService implements ILinesService {
         return this._loaded;
     }
 
+    public loading(): EventEmitter<void> {
+        return this._loading;
+    }
+
     public refresh() {
         this._refresh$.next();
     }
@@ -121,6 +133,7 @@ export class LinesLazyService implements ILinesService {
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((response) => {
                 if (response.loading) {
+                    this._loading.next();
                     this.eventsService.emit('loadStart');
                 } else {
                     if (response.error) {

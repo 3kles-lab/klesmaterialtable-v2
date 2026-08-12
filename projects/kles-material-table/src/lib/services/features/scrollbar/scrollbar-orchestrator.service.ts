@@ -31,6 +31,14 @@ export class ScrollbarOrchestratorService implements IScrollbarOrchestratorServi
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(() => {
                 this.scrollbarService.toTop('instant');
+                this.scrollbarService.showScrollbar();
+            });
+
+        this.linesService
+            .loading()
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(() => {
+                this.scrollbarService.hideScrollbar();
             });
 
         this.paginatorService
@@ -68,6 +76,14 @@ export class ScrollbarLazyOrchestratorService implements IScrollbarOrchestratorS
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(() => {
                 this.scrollbarService.toTop('instant');
+                this.scrollbarService.showScrollbar();
+            });
+
+        this.linesService
+            .loading()
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(() => {
+                this.scrollbarService.hideScrollbar();
             });
     }
 }

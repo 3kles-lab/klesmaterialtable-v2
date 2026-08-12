@@ -2,8 +2,9 @@ import { Injectable } from '@angular/core';
 
 @Injectable()
 export class ScrollbarService {
-    private element: HTMLElement;
+    private element: HTMLElement | undefined;
     private default: ScrollBehavior = 'smooth';
+    private readonly hiddenClass = 'scrollbar-hidden';
 
     register(el: HTMLElement) {
         this.element = el;
@@ -13,12 +14,24 @@ export class ScrollbarService {
         this.element = undefined;
     }
 
+    setScrollbarVisible(visible: boolean) {
+        this.element?.classList.toggle(this.hiddenClass, !visible);
+    }
+
+    hideScrollbar() {
+        this.setScrollbarVisible(false);
+    }
+
+    showScrollbar() {
+        this.setScrollbarVisible(true);
+    }
+
     toTop(sb?: ScrollBehavior) {
         this.element?.scrollTo({ top: 0, behavior: sb ?? this.default });
     }
 
     toBottom(sb?: ScrollBehavior) {
-        const top = this.element.scrollHeight;
+        const top = this.element?.scrollHeight;
         this.element?.scrollTo({ top, behavior: sb ?? this.default });
     }
 
@@ -27,7 +40,7 @@ export class ScrollbarService {
     }
 
     toRight(sb?: ScrollBehavior) {
-        const left = this.element.scrollWidth;
+        const left = this.element?.scrollWidth;
         this.element?.scrollTo({ left, behavior: sb ?? this.default });
     }
 
