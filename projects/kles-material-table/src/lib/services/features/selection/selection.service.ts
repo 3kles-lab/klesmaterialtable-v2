@@ -5,14 +5,15 @@ import { KlesSelectionModel } from '../../../core/selection/selection-model';
 import { FormGroup } from '@angular/forms';
 import { KlesForm } from '../table/form';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { auditTime, concatMap, map, merge, switchMap } from 'rxjs';
+import { auditTime, concatMap, map, merge, of, switchMap, withLatestFrom } from 'rxjs';
 import { SelectionLoaderService } from './selection-loader.service';
 import { ScrollbarService } from '../scrollbar/scrollbar.service';
 import { LoadingService } from '../loading/loading.service';
-import { DatasourceLazyService, DatasourceService } from '../datasource/datasource.service';
+import { DatasourceService } from '../datasource/datasource.service';
 import { IKlesSelectionModel } from '../../../core/selection/selection-model.interface';
 import { KlesSelectionModelState } from '../../../core/selection/selection-state.enum';
 import { ILinesService } from '../lines/lines.service';
+import { FilterStore } from '../../store/filter-store.service';
 
 export interface ISelectionService {
     key: string;
@@ -255,8 +256,9 @@ export class SelectionLazyService<T> extends AbstractSelectionService<T> {
         private selectionLoaderService: SelectionLoaderService<T>,
         private scrollbarService: ScrollbarService,
         private loadingService: LoadingService,
-        @Inject(DATASOURCE_SERVICE) private datasourceService: DatasourceLazyService,
+        @Inject(DATASOURCE_SERVICE) private datasourceService: DatasourceService,
         @Inject(LINES_SERVICE) private linesService: ILinesService,
+        @Optional() private filterStore: FilterStore | null,
     ) {
         super(selectionConfig);
     }
@@ -317,21 +319,28 @@ export class SelectionLazyService<T> extends AbstractSelectionService<T> {
             .pipe(
                 takeUntilDestroyed(this.destroyRef),
                 auditTime(0),
+
                 switchMap((rows) => {
                     return merge(
                         ...rows
                             .map((row) => {
                                 return row.controls[this.selectionLoaderService.key]?.valueChanges.pipe(
                                     map((value) => {
-                                        return { row, selected: !!value };
+                                        return {
+                                            row,
+                                            selected: !!value,
+                                        };
                                     }),
                                 );
                             })
                             .filter(Boolean),
                     );
                 }),
-                concatMap(({ row, selected }) => {
-                    return this.selectionLoaderService.select(row, selected).pipe(
+
+                withLatestFrom(this.filterStore?.filters$ ?? of({})),
+
+                concatMap(([{ row, selected }, filters]) => {
+                    return this.selectionLoaderService.select(row, selected, filters).pipe(
                         map((response) => {
                             return {
                                 row,
@@ -341,7 +350,6 @@ export class SelectionLazyService<T> extends AbstractSelectionService<T> {
                     );
                 }),
             )
-
             .subscribe(({ row, response }) => {
                 if (response.loading) {
                     //mettre la ligne avec un spinner
