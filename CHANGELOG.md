@@ -1,3 +1,10 @@
+# [21.1.0](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v21.0.3...v21.1.0) (2026-08-12)
+
+
+### Features
+
+* add column separator config && use color theme ([863ccf3](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/863ccf32350c908e959a029fb0e12fa0bba60378))
+
 ## [21.0.3](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v21.0.2...v21.0.3) (2026-08-12)
 
 
