@@ -57,6 +57,7 @@ export class KlesForm {
 
     public setRows(rows: { formGroup: FormGroup; groupUi: GroupUiState }[]) {
         this.getRows().clear({ emitEvent: false });
+        this.getUiRows().clear();
         rows.forEach((r) => {
             this.uiStore.set(r.formGroup, r.groupUi);
             this.getRows().push(r.formGroup, { emitEvent: false });

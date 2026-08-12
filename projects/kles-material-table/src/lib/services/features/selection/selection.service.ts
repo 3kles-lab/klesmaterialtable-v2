@@ -9,7 +9,7 @@ import { auditTime, concatMap, map, merge, switchMap } from 'rxjs';
 import { SelectionLoaderService } from './selection-loader.service';
 import { ScrollbarService } from '../scrollbar/scrollbar.service';
 import { LoadingService } from '../loading/loading.service';
-import { DatasourceService } from '../datasource/datasource.service';
+import { DatasourceLazyService, DatasourceService } from '../datasource/datasource.service';
 import { IKlesSelectionModel } from '../../../core/selection/selection-model.interface';
 import { KlesSelectionModelState } from '../../../core/selection/selection-state.enum';
 import { ILinesService } from '../lines/lines.service';
@@ -255,7 +255,7 @@ export class SelectionLazyService<T> extends AbstractSelectionService<T> {
         private selectionLoaderService: SelectionLoaderService<T>,
         private scrollbarService: ScrollbarService,
         private loadingService: LoadingService,
-        @Inject(DATASOURCE_SERVICE) private datasourceService: DatasourceService,
+        @Inject(DATASOURCE_SERVICE) private datasourceService: DatasourceLazyService,
         @Inject(LINES_SERVICE) private linesService: ILinesService,
     ) {
         super(selectionConfig);
