@@ -4,6 +4,14 @@
     --kles-table-divider-color: color-mix(in srgb, var(--mat-sys-outline-variant) 65%, transparent);
     --kles-table-divider-strong-color: var(--mat-sys-outline-variant);
 
+    --kles-table-header-background: var(--mat-sys-surface-container-low);
+    --kles-table-header-color: var(--mat-sys-on-surface);
+    --kles-table-header-divider-color: var(--mat-sys-outline-variant);
+
+    --kles-table-row-hover-background: color-mix(in srgb, var(--mat-sys-primary) 7%, var(--mat-sys-surface));
+
+    // --kles-table-header-background: color-mix(in srgb, var(--mat-sys-primary-container) 35%, var(--mat-sys-surface));
+
     overflow: auto;
     display: flex;
     flex-direction: column;
@@ -86,7 +94,7 @@ th[appResizableColumn] .resize-handle {
 :host .mat-mdc-row {
     transition: background-color 120ms ease;
     &:hover {
-        background: var(--mat-sys-surface-container-low);
+        background: var(--kles-table-row-hover-background);
     }
 }
 
@@ -112,3 +120,12 @@ th[appResizableColumn] .resize-handle {
     font-weight: 500;
 }
 
+:host .mat-mdc-header-row,
+:host .mat-mdc-header-cell {
+    background-color: var(--kles-table-header-background);
+    color: var(--kles-table-header-color);
+}
+
+:host .mat-mdc-header-cell {
+    border-bottom-color: var(--kles-table-header-divider-color);
+}
