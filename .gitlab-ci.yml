@@ -1,6 +1,6 @@
 variables:
     NODE_VERSION: '22'
-    LIBRARY_NG: 'kles-material-table-v2'
+    LIBRARY_NG: 'kles-material-table'
 
 stages:
     - prepare
