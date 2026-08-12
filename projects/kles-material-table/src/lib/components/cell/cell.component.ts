@@ -27,11 +27,11 @@ export class KlesCellComponent implements OnInit {
     column = input.required<KlesColumnConfig>();
 
     expandedRow = computed(() => {
-        return (this.column().canExpand ?? false) && (this.ui().get(this.column().columnDef).value().expandedRow ?? false);
+        return (this.column().canExpand ?? false) && (this.ui().get(this.column().columnDef)?.value().expandedRow ?? false);
     });
 
     expandedNode = computed(() => {
-        return (this.column().canExpandNode ?? false) && (this.ui().get(this.column().columnDef).value().expandedNode ?? false);
+        return (this.column().canExpandNode ?? false) && (this.ui().get(this.column().columnDef)?.value().expandedNode ?? false);
     });
 
     hasChildren = computed(() => {
@@ -44,7 +44,7 @@ export class KlesCellComponent implements OnInit {
         this.listen();
     }
 
-    stopPropagation(event) {
+    stopPropagation(event: any) {
         event.stopPropagation();
     }
 
