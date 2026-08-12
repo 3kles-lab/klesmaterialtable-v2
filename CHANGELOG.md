@@ -1,3 +1,10 @@
+## [21.0.3](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v21.0.2...v21.0.3) (2026-08-12)
+
+
+### Bug Fixes
+
+* filters is undefined on select ([b7907fd](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/b7907fd4a7b1e847c1914e75271b2ca345dca3fe))
+
 ## [21.0.2](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v21.0.1...v21.0.2) (2026-08-12)
 
 
