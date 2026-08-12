@@ -1,3 +1,11 @@
+## [21.0.2](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v21.0.1...v21.0.2) (2026-08-12)
+
+
+### Bug Fixes
+
+* change dynamicform version ([3a6f463](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/3a6f463c13392470c81da0716bf3735238c5bc3d))
+* group ui not remove when row is removed ([67d9f50](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/67d9f5070ecb67fee036ecb0f84cc7cb34e2233c))
+
 ## [21.0.1](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v21.0.0...v21.0.1) (2026-08-12)
 
 
