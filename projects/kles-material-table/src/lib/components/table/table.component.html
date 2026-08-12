@@ -27,7 +27,8 @@
                     mat-header-cell
                     *matHeaderCellDef
                     [appResizableColumn]="column"
-                    [style.border-inline-end]="getColumnSeparator(column, 'header')"
+                    [style.border-inline-end]="getColumnSeparator(column, 'header') ?? getStickyStartSeparator(column, 'header')"
+                    [style.border-inline-start]="getStickyEndSeparator(column, 'header')"
                     [ngStyle]="
                         column.headerCell?.style?.ngStyle
                             | resolveNgStyle
@@ -52,7 +53,8 @@
                 <td
                     mat-cell
                     *cdkCellDef="let row; let index = index; let dataIndex = dataIndex"
-                    [style.border-inline-end]="getColumnSeparator(column, 'body')"
+                    [style.border-inline-end]="getColumnSeparator(column, 'body') ?? getStickyStartSeparator(column, 'body')"
+                    [style.border-inline-start]="getStickyEndSeparator(column, 'body')"
                     [ngStyle]="
                         column.cell?.style?.ngStyle
                             | resolveNgStyle: row.controls[column.columnDef].value : row.controls[column.columnDef].status : row.value : row.status
@@ -71,7 +73,8 @@
                 <td
                     mat-footer-cell
                     *matFooterCellDef
-                    [style.border-inline-end]="getColumnSeparator(column, 'footer')"
+                    [style.border-inline-end]="getColumnSeparator(column, 'footer') ?? getStickyStartSeparator(column, 'footer')"
+                    [style.border-inline-start]="getStickyEndSeparator(column, 'footer')"
                     [ngStyle]="
                         column.footerCell?.style?.ngStyle
                             | resolveNgStyle

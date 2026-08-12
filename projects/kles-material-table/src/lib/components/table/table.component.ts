@@ -333,26 +333,86 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
     }
 
     getColumnSeparator(column: KlesColumnConfig, section: TableSection): string | null {
-        if (!column.separator) {
+        const separatorConfig = column.separator;
+
+        if (separatorConfig === false || separatorConfig === undefined) {
             return null;
         }
 
-        const config: ColumnSeparatorConfig = column.separator === true ? {} : column.separator;
+        const config: ColumnSeparatorConfig = separatorConfig === true ? {} : separatorConfig;
 
         if (config[section] === false) {
             return null;
         }
 
         const displayedColumns = this.displayedColumns?.() ?? [];
-        const isLastColumn = displayedColumns.at(-1) === column.columnDef;
+
+        const currentIndex = displayedColumns.indexOf(column.columnDef);
+
+        const nextColumnDef = displayedColumns[currentIndex + 1];
+
+        const nextColumn = this.columns().find((current) => current.columnDef === nextColumnDef);
+
+        const isLastColumn = currentIndex === displayedColumns.length - 1;
+
+        if (column.stickyEnd === true && !(isLastColumn && config.showAfterLastColumn === true)) {
+            return null;
+        }
+
+        if (nextColumn?.stickyEnd === true) {
+            return null;
+        }
 
         if (isLastColumn && config.showAfterLastColumn !== true) {
             return null;
         }
 
+        return this.getSeparatorStyle(column, section);
+    }
+
+    getStickyStartSeparator(column: KlesColumnConfig, section: TableSection): string | null {
+        const isBoundary = this.columnsService.stickyStartBoundary() === column.columnDef;
+
+        if (!isBoundary) {
+            return null;
+        }
+        return this.getColumnSeparator(column, section);
+    }
+
+    // getStickyEndSeparator(column: KlesColumnConfig, section: TableSection): string | null {
+    //     const isBoundary = this.columnsService.stickyEndBoundary() === column.columnDef;
+
+    //     if (!isBoundary) {
+    //         return null;
+    //     }
+
+    //     return this.getSeparatorStyle(column, section);
+    // }
+
+    getStickyEndSeparator(column: KlesColumnConfig, section: TableSection): string | null {
+        if (column.stickyEnd !== true) {
+            return null;
+        }
+
+        return this.getSeparatorStyle(column, section);
+    }
+
+    private getSeparatorStyle(column: KlesColumnConfig, section: TableSection): string | null {
+        const separatorConfig = column.separator;
+
+        if (separatorConfig === false || separatorConfig === undefined) {
+            return null;
+        }
+
+        const config: ColumnSeparatorConfig = separatorConfig === true ? {} : separatorConfig;
+
+        if (config[section] === false) {
+            return null;
+        }
+
         const width = config.width ?? '1px';
         const style = config.style ?? 'solid';
-        const color = config.color ?? 'rgba(196, 198, 208, 1)';
+        const color = config.color ?? 'var(--kles-table-divider-color)';
 
         return `${width} ${style} ${color}`;
     }

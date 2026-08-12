@@ -20,10 +20,20 @@ export class ColumnsService {
         return this._columns.asReadonly();
     }
 
+    public readonly stickyStartBoundary = computed<string | undefined>(() => {
+        return this.getVisibleColumns()
+            .filter((column) => column.sticky === true)
+            .at(-1)?.columnDef;
+    });
+
+    public readonly stickyEndBoundary = computed<string | undefined>(() => {
+        return this.getVisibleColumns()
+            .filter((column) => column.stickyEnd === true)
+            .at(0)?.columnDef;
+    });
+
     public getVisible(): string[] {
-        return this.columns()
-            .filter((column) => column.visible !== false)
-            .map((column) => column.columnDef);
+        return this.getVisibleColumns().map((column) => column.columnDef);
     }
 
     public setVisible(columnDef: string, visible: boolean): void {
@@ -106,16 +116,17 @@ export class ColumnsService {
 
     private setDisplayedColumns(): void {
         this.displayedColumns = computed(() => {
-            return this._columns()
-                .filter((c) => {
-                    if (c.visibleWhen !== undefined) {
-                        return c.visibleWhen();
-                    } else if (c.visible !== undefined) {
-                        return c.visible !== false;
-                    }
-                    return true;
-                })
-                .map((c) => c.columnDef);
+            return this.getVisibleColumns().map((column) => column.columnDef);
+        });
+    }
+
+    private getVisibleColumns(): KlesColumnConfig[] {
+        return this._columns().filter((column) => {
+            if (column.visibleWhen !== undefined) {
+                return column.visibleWhen();
+            }
+
+            return column.visible !== false;
         });
     }
 }
