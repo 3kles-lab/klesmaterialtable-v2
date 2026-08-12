@@ -10,7 +10,7 @@ import {
     selectionConfig,
     Span,
 } from 'kles-material-table';
-import { BehaviorSubject, delay, of } from 'rxjs';
+import { BehaviorSubject, delay, of, throwError } from 'rxjs';
 import {
     ArrayUiState,
     KlesFormCheckboxComponent,
@@ -50,6 +50,14 @@ export class AppComponent implements OnInit, AfterViewInit {
     });
 
     config: KlesTableConfig = {
+        columnSeparator: false/*{
+            width: '4px',
+            style: 'double',
+            color: '#c4c6d0',
+            header: false,
+            body: true,
+            footer: false,
+        }*/,
         columns: [
             {
                 columnDef: '#select',
@@ -209,6 +217,12 @@ export class AppComponent implements OnInit, AfterViewInit {
                     field: {
                         component: KlesFormInputComponent,
                         clearable: true,
+                        validations: [
+                            {
+                                validator: Validators.required,
+                                name: 'required',
+                            },
+                        ],
                     },
                 },
             },
@@ -256,11 +270,12 @@ export class AppComponent implements OnInit, AfterViewInit {
         ],
         paginator: true,
         footer: true,
-        
+
         lines: linesLoader({
             params: () => this.toto,
             loader: (params) => {
                 console.log('normal load');
+                // return throwError(() => new Error('Une erreur est survenue'));
                 return of({
                     items: this.data,
                 }).pipe(delay(100));
@@ -293,6 +308,7 @@ export class AppComponent implements OnInit, AfterViewInit {
             //     return of({ indeterminate: true, selected: false }).pipe(delay(1000));
             // },
         }),
+
         // extraRows: [
         //     {
         //         mode: 'expand',
@@ -374,6 +390,7 @@ export class AppComponent implements OnInit, AfterViewInit {
                 },
             },
         ],
+
         lazy: true,
         // infinite:true,
         paginator: true,
@@ -407,14 +424,17 @@ export class AppComponent implements OnInit, AfterViewInit {
                 return this.toto;
             },
             selectAll: (params, selected, filters) => {
+                console.log('all', filters);
                 return of({ selected: true }).pipe(delay(100));
             },
             select: (params, row, selected, filters) => {
+                console.log('select !!', row);
+                console.log('filters !!', filters);
                 return of({ selected: selected, count: selected ? 1 : 0 });
             },
-            isDisabled: (row) => {
-                return +row.value.test % 2 !== 0;
-            },
+            // isDisabled: (row) => {
+            //     return +row.value.test % 2 !== 0;
+            // },
         }),
         dragDropRows: {
             enable: true,
@@ -431,6 +451,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     ngAfterViewInit(): void {
         //sort api
         // this.klesTable.sort.sortChange().subscribe((value) => console.log(value))
+        // console.log(this.klesLazyTable.selection.selectionModel)
     }
 
     add() {
@@ -482,7 +503,6 @@ export class AppComponent implements OnInit, AfterViewInit {
         /** */
         // footer api
         // this.klesTable.footer.show();
-
         /** */
         // form header api
         // this.klesTable.form.header.clear();
@@ -500,7 +520,6 @@ export class AppComponent implements OnInit, AfterViewInit {
         // this.klesTable.form.footer.clear();
         // this.klesTable.form?.footer.get();
         // this.klesTable.form.footer.set({});
-
         // (this.klesTable.ui.get('rows') as ArrayUiState).at(0).get('#select')?.patchValue({ indeterminate: true });
     }
 
