@@ -2,7 +2,7 @@ import { Type } from '@angular/core';
 import { AsyncValidatorFn, FormGroup, UntypedFormGroup, ValidatorFn } from '@angular/forms';
 import { MatPaginatorIntl, MatPaginatorSelectConfig } from '@angular/material/paginator';
 import { Sort } from '@angular/material/sort';
-import { KlesColumnConfig } from './column.interface';
+import { ColumnSeparatorConfig, KlesColumnConfig } from './column.interface';
 import { LinesLazyLoader, LinesLoader } from './loader.interface';
 import { SelectionConfig } from './selection-config.interface';
 import { KlesExtraCellFieldConfig } from './cell.interface';
@@ -14,6 +14,8 @@ export interface DefaultTableConfig {
     lineAsyncValidations?: AsyncValidatorFn[]; //TODO
     footer?: boolean; //TODO
     sortConfig?: Sort;
+
+    columnSeparator?: boolean | ColumnSeparatorConfig;
 }
 
 export interface PaginatorConfig {

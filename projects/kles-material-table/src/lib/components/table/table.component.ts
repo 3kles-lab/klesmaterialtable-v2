@@ -52,7 +52,7 @@ import { LoadingApi } from '../../core/api/loading';
 import { ITableService } from '../../services/features/table/table.service';
 import { ISelectionService } from '../../services/features/selection/selection.service';
 import { FooterFieldPipe } from '../../pipes/footer-field.pipe';
-import { KlesColumnConfig } from '../../core/table/column.interface';
+import { ColumnSeparatorConfig, KlesColumnConfig } from '../../core/table/column.interface';
 import { ILoader } from '../../services/features/loader/loader.interface';
 import { FooterService } from '../../services/features/footer/footer.service';
 import { FooterApi } from '../../core/api/footer';
@@ -73,6 +73,8 @@ import { EventsApi } from '../../core/api/events';
 import { EventsService } from '../../services/features/events/events.service';
 import { RowService } from '../../services/features/row/row.service';
 import { CellService } from '../../services/features/cell/cell.service';
+
+type TableSection = 'header' | 'body' | 'footer';
 
 @Component({
     selector: 'kles-table',
@@ -328,6 +330,31 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
 
     submit() {
         // TODO
+    }
+
+    getColumnSeparator(column: KlesColumnConfig, section: TableSection): string | null {
+        if (!column.separator) {
+            return null;
+        }
+
+        const config: ColumnSeparatorConfig = column.separator === true ? {} : column.separator;
+
+        if (config[section] === false) {
+            return null;
+        }
+
+        const displayedColumns = this.displayedColumns?.() ?? [];
+        const isLastColumn = displayedColumns.at(-1) === column.columnDef;
+
+        if (isLastColumn && config.showAfterLastColumn !== true) {
+            return null;
+        }
+
+        const width = config.width ?? '1px';
+        const style = config.style ?? 'solid';
+        const color = config.color ?? 'rgba(196, 198, 208, 1)';
+
+        return `${width} ${style} ${color}`;
     }
 
     private calculHeaderHeight() {

@@ -3,6 +3,18 @@ import { AlignCell } from '../../enums/align.enum';
 import { IKlesCellFieldConfig, IKlesFooterFieldConfig, IKlesHeaderFieldConfig } from './cell.interface';
 import { Signal } from '@angular/core';
 
+export type ColumnSeparatorStyle = 'solid' | 'dashed' | 'dotted' | 'double';
+
+export interface ColumnSeparatorConfig {
+    color?: string;
+    width?: string;
+    style?: ColumnSeparatorStyle;
+    header?: boolean;
+    body?: boolean;
+    footer?: boolean;
+    showAfterLastColumn?: boolean;
+}
+
 export interface KlesColumnConfig {
     columnDef: string;
     sticky?: boolean;
@@ -24,4 +36,5 @@ export interface KlesColumnConfig {
     maxWidth?: string;
     canExpand?: boolean;
     canExpandNode?: boolean;
+    separator?: boolean | ColumnSeparatorConfig;
 }
