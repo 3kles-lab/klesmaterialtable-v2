@@ -282,7 +282,7 @@ export class SelectionLazyService<T> extends AbstractSelectionService<T> {
     private listenHeaderSelection(): void {
         this.fm
             .getHeader()
-            .controls[this.key].valueChanges.pipe(
+            .controls[this.key]?.valueChanges.pipe(
                 takeUntilDestroyed(this.destroyRef),
                 switchMap((value) => {
                     return this.selectionLoaderService.selectAll(!!value, this.fm.getHeader().getRawValue());
