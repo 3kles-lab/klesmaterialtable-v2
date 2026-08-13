@@ -12,11 +12,10 @@ export * from './lib/core/table/cell.interface';
 export * from './lib/core/table/column.interface';
 
 export * from './lib/components/table/table.component';
+export * from './lib/components/table/table-intl';
+export * from './lib/components/empty-state/empty-state.component';
 
 export * from './lib/kles-table.component';
-
-
-
 export * from './lib/token';
 
 export * from './lib/enums/align.enum';

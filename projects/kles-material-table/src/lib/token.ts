@@ -1,6 +1,6 @@
 import { InjectionToken, WritableSignal } from '@angular/core';
 import { KlesColumnConfig } from './core/table/column.interface';
-import { ExtraRowConfig, LoaderConfig, PaginatorConfig } from './core/table/config.interface';
+import { EmptyStateConfig, ExtraRowConfig, LoaderConfig, PaginatorConfig } from './core/table/config.interface';
 import { DragDropService } from './services/features/dragdrop/dragdrop.service';
 import { Sort } from '@angular/material/sort';
 
@@ -40,3 +40,5 @@ export const SORT_SERVICE = new InjectionToken<ISortService>('SORT_SERVICE');
 export const SCROLLBAR_ORCHESTRATOR_SERVICE = new InjectionToken<IScrollbarOrchestratorService>('SCROLLBAR_ORCHESTRATOR_SERVICE');
 
 export const TABLE_SERVICE = new InjectionToken<ITableService>('TABLE_SERVICE');
+
+export const EMPTY_STATE_CONFIG = new InjectionToken<boolean | EmptyStateConfig | undefined>('EMPTY_STATE_CONFIG');

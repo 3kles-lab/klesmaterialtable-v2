@@ -73,6 +73,8 @@ import { EventsApi } from '../../core/api/events';
 import { EventsService } from '../../services/features/events/events.service';
 import { RowService } from '../../services/features/row/row.service';
 import { CellService } from '../../services/features/cell/cell.service';
+import { KlesTableEmptyStateComponent } from '../empty-state/empty-state.component';
+import { EmptyStateService } from '../../services/features/empty-state/empty-state.service';
 
 type TableSection = 'header' | 'body' | 'footer';
 
@@ -125,10 +127,14 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
     multiTemplateDataRows: Signal<boolean>;
     extraRows: Signal<(ExtraRowConfig & { displayedColumns: string[] })[]>;
 
+    readonly isEmpty: Signal<boolean>;
+
     private ro?: ResizeObserver;
     private readonly destroyRef = inject(DestroyRef);
     private rafId?: number;
     private _cleanup?: () => void;
+
+    emptyStateComponent = KlesTableEmptyStateComponent;
 
     constructor(
         private readonly host: ElementRef<HTMLElement>,
@@ -152,11 +158,13 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
         private readonly eventsService: EventsService,
         public readonly rowService: RowService,
         public readonly cellService: CellService,
+        public readonly emptyStateService: EmptyStateService,
     ) {
         this.columns = this.columnsService.columns;
         this.displayedColumns = this.columnsService.displayedColumns;
         this.showFooter = this.footerService.footer;
         this.dataSource = this.datasourceService.datasource;
+        this.isEmpty = this.datasourceService.isEmpty;
         this.multiTemplateDataRows = this.extraRowService.multiTemplateDataRows;
         this.extraRows = this.extraRowService.rows;
 
@@ -167,6 +175,11 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
     @HostBinding('class.loading')
     get isLoadingClass() {
         return this.loadingService.loading();
+    }
+
+    @HostBinding('class.empty')
+    get isEmptyClass() {
+        return this.isEmpty() && this.emptyStateService.enabled();
     }
 
     get events(): EventsApi {

@@ -146,17 +146,24 @@
         }
 
         <tr mat-footer-row *matFooterRowDef="displayedColumns(); sticky: true" [style.display]="showFooter() ? '' : 'none'"></tr>
-
-        <tr *matNoDataRow [attr.colspan]="displayedColumns().length">
-            @if (!loadingService.loading()) {
-                <!--no data TODO -->
-            }
-        </tr>
     </table>
 </form>
 
 @if (loadingService.loading()) {
     <div class="table-overlay" [style.--header-h.px]="headerHeightPx" [style.--scroll-h.px]="scrollHeightPx" [style.--footer-h.px]="footerHeightPx">
         <mat-spinner></mat-spinner>
+    </div>
+}
+
+@if (emptyStateService.enabled() && !loadingService.loading() && isEmpty()) {
+    <div
+        class="table-empty-state-overlay"
+        [style.--header-h.px]="headerHeightPx"
+        [style.--scroll-h.px]="scrollHeightPx"
+        [style.--footer-h.px]="footerHeightPx"
+    >
+        <div class="table-empty-state-content">
+            <ng-container *ngComponentOutlet="emptyStateService.component"></ng-container>
+        </div>
     </div>
 }

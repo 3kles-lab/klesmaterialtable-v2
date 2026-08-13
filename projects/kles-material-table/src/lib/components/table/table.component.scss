@@ -3,14 +3,10 @@
 :host {
     --kles-table-divider-color: color-mix(in srgb, var(--mat-sys-outline-variant) 65%, transparent);
     --kles-table-divider-strong-color: var(--mat-sys-outline-variant);
-
     --kles-table-header-background: var(--mat-sys-surface-container-low);
     --kles-table-header-color: var(--mat-sys-on-surface);
     --kles-table-header-divider-color: var(--mat-sys-outline-variant);
-
     --kles-table-row-hover-background: color-mix(in srgb, var(--mat-sys-primary) 7%, var(--mat-sys-surface));
-
-    // --kles-table-header-background: color-mix(in srgb, var(--mat-sys-primary-container) 35%, var(--mat-sys-surface));
 
     overflow: auto;
     display: flex;
@@ -28,8 +24,9 @@
     );
 }
 
-:host(.loading) {
-    min-height: 350px;
+:host(.loading),
+:host(.empty) {
+    min-height: 280px;
 }
 
 form {
@@ -128,4 +125,36 @@ th[appResizableColumn] .resize-handle {
 
 :host .mat-mdc-header-cell {
     border-bottom-color: var(--kles-table-header-divider-color);
+}
+
+.table-empty-state-overlay {
+    position: absolute;
+    inset-inline: 0;
+    top: var(--header-h, 56px);
+    bottom: calc(var(--scroll-h, 0px) + var(--footer-h, 0px));
+    z-index: 400;
+    overflow: hidden;
+    background: var(--mat-sys-surface);
+    display: grid;
+    place-items: center;
+}
+
+.table-empty-state-content {
+    width: 100%;
+    height: 100%;
+}
+
+.scrollbar-hidden {
+    // Firefox
+    scrollbar-width: none;
+
+    // Anciennes versions d'Edge et Internet Explorer
+    -ms-overflow-style: none;
+    overflow-y: hidden;
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+    // Chrome, Edge et Safari
+    display: none;
+    overflow-y: hidden;
 }

@@ -1,0 +1,118 @@
+:host {
+    display: block;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+
+    --kles-empty-state-accent: var(--mat-sys-primary);
+    --kles-empty-state-accent-container: var(--mat-sys-primary-container);
+}
+
+.empty-state {
+    display: grid;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    place-items: center;
+}
+
+.empty-state__panel {
+    display: flex;
+    width: min(100%, 31rem);
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+    color: var(--mat-sys-on-surface-variant);
+}
+
+.empty-state__visual {
+    position: relative;
+    display: grid;
+    width: 4.5rem;
+    height: 4.5rem;
+    flex: 0 0 4.5rem;
+    place-items: center;
+    border-radius: 1.25rem;
+    background: color-mix(in srgb, var(--kles-empty-state-accent-container) 72%, var(--mat-sys-surface));
+}
+
+.empty-state__table-icon {
+    display: grid;
+    width: 2.35rem;
+    height: 2.15rem;
+    overflow: hidden;
+    box-sizing: border-box;
+    grid-template-rows: 0.65rem repeat(3, 1fr);
+    border: 0.125rem solid var(--kles-empty-state-accent);
+    border-radius: 0.35rem;
+}
+
+.empty-state__table-icon span {
+    border-top: 1px solid color-mix(in srgb, var(--kles-empty-state-accent) 45%, transparent);
+}
+
+.empty-state__table-icon .empty-state__table-header {
+    border-top: 0;
+    background: color-mix(in srgb, var(--kles-empty-state-accent) 24%, transparent);
+}
+
+.empty-state__badge {
+    position: absolute;
+    right: -0.2rem;
+    bottom: -0.2rem;
+    display: grid;
+    width: 1.65rem;
+    height: 1.65rem;
+    place-items: center;
+
+    border: 0.2rem solid var(--mat-sys-surface);
+    border-radius: 50%;
+
+    color: var(--mat-sys-on-primary);
+    background: var(--kles-empty-state-accent);
+}
+
+.empty-state__badge mat-icon {
+    width: 1rem;
+    height: 1rem;
+
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.empty-state__content {
+    display: grid;
+    max-width: 25rem;
+    gap: 0.3rem;
+
+    text-align: left;
+}
+
+.empty-state__title {
+    margin: 0;
+
+    color: var(--mat-sys-on-surface);
+    font: var(--mat-sys-title-medium);
+}
+
+.empty-state__description {
+    margin: 0;
+
+    font: var(--mat-sys-body-medium);
+    line-height: 1.45;
+    text-wrap: balance;
+}
+
+@media (max-width: 37.5rem) {
+    .empty-state__panel {
+        flex-direction: column;
+        gap: 0.875rem;
+        padding: 1.25rem;
+
+        text-align: center;
+    }
+
+    .empty-state__content {
+        text-align: center;
+    }
+}

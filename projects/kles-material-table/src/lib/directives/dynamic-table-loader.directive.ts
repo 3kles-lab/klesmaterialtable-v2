@@ -40,6 +40,7 @@ import {
     TABLE_SERVICE,
     SCROLLBAR_ORCHESTRATOR_SERVICE,
     EXTRA_ROWS,
+    EMPTY_STATE_CONFIG,
     // SCROLLBAR_ORCHESTRATOR_SERVICE,
 } from '../token';
 import { KlesColumnConfig } from '../core/table/column.interface';
@@ -72,6 +73,9 @@ import { RowService } from '../services/features/row/row.service';
 import { CellService } from '../services/features/cell/cell.service';
 import { CellValueChangeService } from '../services/features/cell/cell-valuechange.service';
 import { ValidationService } from '../services/features/validation/validation.service';
+import { KlesTableIntl } from '../components/table/table-intl';
+import { KlesTableEmptyStateComponent } from '../components/empty-state/empty-state.component';
+import { EmptyStateService } from '../services/features/empty-state/empty-state.service';
 
 // import { ScrollbarLazyOrchestratorService, ScrollbarOrchestratorService } from '../services/features/scrollbar/scrollbar-orchestrator.service';
 
@@ -145,6 +149,11 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
 
     private initInjector(): DestroyableInjector {
         const storeProviders = [SortStore, FilterStore, ...(this.tableConfig().paginator ? [PaginatorStore] : []), ExpandedRowStore];
+
+        const emptyState = this.tableConfig().emptyState;
+
+        const emptyStateIntl = typeof emptyState === 'object' && emptyState !== null ? emptyState.intl : undefined;
+
         const configProviders = [
             {
                 provide: COLUMNS,
@@ -173,6 +182,7 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
                 provide: SELECTION_CONFIG,
                 useValue: this.tableConfig().selection,
             },
+
             {
                 provide: PAGINATOR_CONFIG,
                 useValue: {
@@ -187,6 +197,18 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
                       {
                           provide: MatPaginatorIntl,
                           useClass: this.tableConfig().customMatPaginatorIntl,
+                      },
+                  ]
+                : []),
+            {
+                provide: EMPTY_STATE_CONFIG,
+                useValue: emptyState,
+            },
+            ...(emptyStateIntl
+                ? [
+                      {
+                          provide: KlesTableIntl,
+                          useClass: emptyStateIntl,
                       },
                   ]
                 : []),
@@ -227,6 +249,7 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
             TreeService,
             RenderService,
             ExtraRowService,
+            EmptyStateService,
             LoadingService,
             KlesForm,
             ColumnsService,

@@ -1,13 +1,20 @@
 import { Type } from '@angular/core';
-import { AsyncValidatorFn, FormGroup, UntypedFormGroup, ValidatorFn } from '@angular/forms';
+import { AsyncValidatorFn, FormGroup, ValidatorFn } from '@angular/forms';
 import { MatPaginatorIntl, MatPaginatorSelectConfig } from '@angular/material/paginator';
 import { Sort } from '@angular/material/sort';
 import { ColumnSeparatorConfig, KlesColumnConfig } from './column.interface';
 import { LinesLazyLoader, LinesLoader } from './loader.interface';
 import { SelectionConfig } from './selection-config.interface';
 import { KlesExtraCellFieldConfig } from './cell.interface';
+import { KlesTableIntl } from '../../components/table/table-intl';
 
 export type TableElevationLevel = 0 | 1 | 2 | 3 | 4 | 5;
+
+export interface EmptyStateConfig {
+    enabled?: boolean;
+    component?: Type<unknown>;
+    intl?: Type<KlesTableIntl>;
+}
 
 export interface DefaultTableConfig {
     id?: string;
@@ -18,6 +25,7 @@ export interface DefaultTableConfig {
     sortConfig?: Sort;
     columnSeparator?: boolean | ColumnSeparatorConfig;
     elevation?: TableElevationLevel;
+    emptyState?: boolean | EmptyStateConfig;
 }
 
 export interface PaginatorConfig {
