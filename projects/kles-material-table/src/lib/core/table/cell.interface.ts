@@ -27,7 +27,7 @@ export interface IKlesHeaderFieldConfig {
 export interface IKlesCellFieldConfig {
     executeAfterChange?: (property?: string, row?: any, group?: FormGroup<any> | FormArray<any>) => Observable<any>;
     style?: IStyle;
-    field: C;
+    field?: C;
 }
 
 export interface IKlesFooterFieldConfig {

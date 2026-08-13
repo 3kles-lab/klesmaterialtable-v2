@@ -27,8 +27,8 @@ export interface KlesColumnConfig {
     sortable?: boolean;
     sortArrowPosition?: SortHeaderArrowPosition;
     resizable?: boolean; //TODO
-    headerCell: IKlesHeaderFieldConfig;
-    cell: IKlesCellFieldConfig;
+    headerCell?: IKlesHeaderFieldConfig;
+    cell?: IKlesCellFieldConfig;
     footerCell?: IKlesFooterFieldConfig; //TODO
     align?: AlignCell;
     width?: string;

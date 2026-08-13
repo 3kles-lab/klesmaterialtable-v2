@@ -69,7 +69,7 @@ export class LinesService implements ILinesService {
                             this.rowFactory.createRows(
                                 this.columnsService
                                     .columns()
-                                    .map((col) => ({ ...col.cell.field, name: col.columnDef }))
+                                    .map((col) => ({ ...col.cell?.field, name: col.columnDef }))
                                     .concat(this.extraRowService.extraColumns().map((col) => ({ ...col, name: col.columnDef }))),
                                 response.items ?? [],
                             ),
@@ -146,7 +146,7 @@ export class LinesLazyService implements ILinesService {
                             this.rowFactory.createRows(
                                 this.columnsService
                                     .columns()
-                                    .map((col) => ({ ...col.cell.field, name: col.columnDef }))
+                                    .map((col) => ({ ...col.cell?.field, name: col.columnDef }))
                                     .concat(this.extraRowService.extraColumns().map((col) => ({ ...col, name: col.columnDef }))),
                                 response.items,
                             ),

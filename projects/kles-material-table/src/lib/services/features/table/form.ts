@@ -156,7 +156,7 @@ export class KlesForm {
     public init() {
         this.columnsService.columns().forEach((column) => {
             let colCellHeader: any = {};
-            if (column.headerCell.field) {
+            if (column.headerCell?.field) {
                 const { pipeTransform, ...tmpCell } = column.headerCell.field;
                 colCellHeader = _.cloneDeep(tmpCell);
                 colCellHeader = { pipeTransform, ...colCellHeader };

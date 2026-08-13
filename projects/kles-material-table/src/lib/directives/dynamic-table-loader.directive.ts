@@ -86,7 +86,7 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
     tableConfig = input.required<KlesTableConfig, KlesTableConfig>({
         transform: (v) => {
             v.columns = v.columns.map((col) => {
-                if (col.headerCell.field) {
+                if (col.headerCell?.field) {
                     col.headerCell.field.subscriptSizing = col.headerCell.field.subscriptSizing ?? 'dynamic';
                 }
                 return { ...col, separator: col.separator ?? v.columnSeparator ?? false };

@@ -14,7 +14,7 @@ export class HeaderFieldPipe implements PipeTransform {
         if (!col) return null;
         return {
             name: col.columnDef,
-            ...col.headerCell.field,
+            ...col.headerCell?.field,
         };
     }
 }

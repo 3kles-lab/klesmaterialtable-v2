@@ -116,7 +116,7 @@ export class SortService extends AbstractSortService {
             return data.sort((a, b) => {
                 let valueA: any;
                 let valueB: any;
-                if (column?.headerCell.sortPredicate) {
+                if (column?.headerCell?.sortPredicate) {
                     valueA = column?.headerCell.sortPredicate(a);
                     valueB = column?.headerCell.sortPredicate(b);
                 } else {
@@ -124,7 +124,7 @@ export class SortService extends AbstractSortService {
                     valueB = this.sortingDataAccessor(b, active);
 
                     if (column) {
-                        const key = column.cell?.field.property;
+                        const key = column.cell?.field?.property;
                         if (key) {
                             valueA = valueA?.[key];
                             valueB = valueB?.[key];

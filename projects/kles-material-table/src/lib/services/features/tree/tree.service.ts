@@ -62,7 +62,7 @@ export class TreeService<T, R> {
                     // console.log( (group.getRawValue()._depth ?? 0) + 1)
                     this.fm.insertRows(
                         this.rowFactory.createRows(
-                            this.columnsService.columns().map((col) => ({ ...col.cell.field, name: col.columnDef })),
+                            this.columnsService.columns().map((col) => ({ ...col.cell?.field, name: col.columnDef })),
                             response.items,
                             { depth: (group.getRawValue()._depth ?? 0) + 1, parentId: id },
                         ),

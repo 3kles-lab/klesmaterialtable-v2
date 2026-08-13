@@ -37,11 +37,11 @@ export class FilterService {
                     const column: KlesColumnConfig | undefined = this.columnsService.columns().find((col) => col.columnDef === key);
 
                     if (column) {
-                        if (column.headerCell.filterPredicate) {
+                        if (column.headerCell?.filterPredicate) {
                             return column.headerCell.filterPredicate(keyValue, searchString[key]) || false;
                         }
 
-                        if (keyValue != null && typeof keyValue === 'object' && column.cell.field.property) {
+                        if (keyValue != null && typeof keyValue === 'object' && column.cell?.field?.property) {
                             keyValue = keyValue[column.cell.field.property];
                         }
                         if (searchString?.[key] && typeof searchString[key] === 'object') {
@@ -52,7 +52,7 @@ export class FilterService {
 
                                 const list = (searchString[key] as Array<any>)
                                     .map((m) => {
-                                        const subkey = column.headerCell.field?.property ?? column.cell.field.property;
+                                        const subkey = column.headerCell?.field?.property ?? column.cell?.field?.property;
                                         if (subkey) {
                                             return m?.[subkey] ?? m;
                                         }
@@ -64,7 +64,7 @@ export class FilterService {
 
                                 return keyValue != undefined && list.includes(keyValue.toString().trim().toLowerCase());
                             } else {
-                                const subKey = column.headerCell.field?.property ?? column.cell.field.property;
+                                const subKey = column.headerCell?.field?.property ?? column.cell?.field?.property;
                                 if (subKey) {
                                     searchString[key] = searchString[key][subKey];
                                 }

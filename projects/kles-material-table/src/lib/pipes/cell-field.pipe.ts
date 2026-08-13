@@ -10,7 +10,7 @@ import { KlesExtraCellFieldConfig } from '../core/table/cell.interface';
 export class CellFieldPipe implements PipeTransform {
     transform(col: KlesColumnConfig | null | undefined): (IKlesFieldConfig & { canExpand?: boolean }) | null {
         if (!col) return null;
-        return { name: col.columnDef, canExpand: col.canExpand, ...col.cell.field };
+        return { name: col.columnDef, canExpand: col.canExpand, ...col.cell?.field };
     }
 }
 
