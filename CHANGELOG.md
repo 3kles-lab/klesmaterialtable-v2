@@ -1,3 +1,18 @@
+# [21.3.0](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v21.2.0...v21.3.0) (2026-08-13)
+
+
+### Bug Fixes
+
+* add isEmpty on datasource service ([72b373c](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/72b373ca7ae280c2ff294b7fb1f4a7c1956f8976))
+* clear code ([61850dd](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/61850dd727a7ca9704c6e371208936a1f3e9ade2))
+* clear code ([5efb593](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/5efb59325f9356595b58a1b305fbf33c94bf460a))
+* hide scrollbar when table is loading ([b2e06c8](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/b2e06c894aa19e6d596abe15c10315f6cb93b2ee))
+
+
+### Features
+
+* add empty table state ([427823e](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/427823e7d7a7f534275b6ff9694cf2ae1f52ec7b))
+
 # [21.2.0](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v21.1.0...v21.2.0) (2026-08-12)
 
 
