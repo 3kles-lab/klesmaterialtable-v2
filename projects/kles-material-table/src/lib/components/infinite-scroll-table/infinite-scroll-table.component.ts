@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TableComponent } from '../table/table.component';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 
 @Component({
@@ -8,7 +7,7 @@ import { ScrollingModule } from '@angular/cdk/scrolling';
     templateUrl: './infinite-scroll-table.component.html',
     // styleUrl: './paginate-table.component.scss',
     standalone: true,
-    imports: [CommonModule, TableComponent, ScrollingModule],
+    imports: [CommonModule, ScrollingModule],
 })
 export class InfiniteScrollTableComponent implements OnInit {
     constructor() {}
