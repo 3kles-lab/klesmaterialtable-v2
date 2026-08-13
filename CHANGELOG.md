@@ -1,3 +1,17 @@
+# [21.2.0](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v21.1.0...v21.2.0) (2026-08-12)
+
+
+### Bug Fixes
+
+* change header and line hover color ([56971ad](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/56971adebed4f851dafdca16a0e84bb3ef439f17))
+* remove duplicate css class ([eaae540](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/eaae540c20022705c04965387eff4370617f230b))
+
+
+### Features
+
+* add elevation property ([be73d6a](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/be73d6a8a67db32af1bc982ef5c144bb6d68d7be))
+* sticky use separator config ([1c846a1](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/1c846a1856156882c91c5f6912691550be9bc821))
+
 # [21.1.0](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v21.0.3...v21.1.0) (2026-08-12)
 
 
