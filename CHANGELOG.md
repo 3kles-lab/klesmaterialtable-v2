@@ -1,3 +1,13 @@
+# [21.4.0](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v21.3.0...v21.4.0) (2026-08-14)
+
+
+### Features
+
+* add row context ([7866532](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/78665322b51330908e65f9cd1285334cd6fdbce1))
+* set headercell and cell optional on column config ([40b3ad3](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/40b3ad3edbf3023105bba159a2f560ce361bf734))
+* upgrade dynamicforms deps ([d82a48c](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/d82a48c4146e90463daed585c9742f7939716a01))
+* upgrade version ([3c71696](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/3c71696c563efc51217decb9f59b3daa6dd9ee6d))
+
 # [21.3.0](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v21.2.0...v21.3.0) (2026-08-13)
 
 
