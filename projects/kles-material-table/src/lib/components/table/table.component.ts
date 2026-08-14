@@ -75,6 +75,7 @@ import { RowService } from '../../services/features/row/row.service';
 import { CellService } from '../../services/features/cell/cell.service';
 import { KlesTableEmptyStateComponent } from '../empty-state/empty-state.component';
 import { EmptyStateService } from '../../services/features/empty-state/empty-state.service';
+import { RowContextPipe } from '../../pipes/row-context.pipe';
 
 type TableSection = 'header' | 'body' | 'footer';
 
@@ -108,6 +109,7 @@ type TableSection = 'header' | 'body' | 'footer';
         KlesCellComponent,
         KlesHeaderComponent,
         HeaderPipe,
+        RowContextPipe
     ],
 })
 export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy {
@@ -210,7 +212,7 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
                         this.rowFactory.createRow(
                             this.columnsService
                                 .columns()
-                                .map((col) => ({ ...col.cell.field, name: col.columnDef }))
+                                .map((col) => ({ ...col.cell?.field, name: col.columnDef }))
                                 .concat(this.extraRowService.extraColumns().map((col) => ({ ...col, name: col.columnDef }))),
                             value,
                         ),

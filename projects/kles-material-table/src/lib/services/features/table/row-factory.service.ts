@@ -8,6 +8,13 @@ import {
     klesFieldControlFactory,
     klesFieldUiFactory,
 } from '@3kles/kles-material-dynamicforms';
+import { KlesRowContext } from '../../../core/table/row-context.interface';
+
+export interface KlesCreatedRow<TSource = unknown> {
+    formGroup: FormGroup;
+    groupUi: GroupUiState;
+    context: KlesRowContext<TSource>;
+}
 
 @Injectable({ providedIn: 'root' })
 export class RowFormFactory {
@@ -28,11 +35,11 @@ export class RowFormFactory {
         return { control, ui };
     }
 
-    createRow(
+    createRow<TSource extends Record<string, any>>(
         fields: IKlesFieldConfig[],
-        record: any,
+        record: TSource,
         meta: { depth: number; parentId: string | null } = { depth: 0, parentId: null },
-    ): { formGroup: FormGroup; groupUi: GroupUiState } {
+    ): KlesCreatedRow<TSource> {
         const data = { _id: crypto.randomUUID(), ...record };
 
         const controls: Record<string, any> = {
@@ -48,14 +55,22 @@ export class RowFormFactory {
             controls[field.name] = control;
             uis[field.name] = ui;
         }
-        return { formGroup: new FormGroup<any>(controls), groupUi: new GroupUiState(uis) };
+        return {
+            formGroup: new FormGroup<any>(controls),
+            groupUi: new GroupUiState(uis),
+            context: {
+                source: record,
+                _id: data._id,
+                meta,
+            },
+        };
     }
 
-    createRows(
+    createRows<TSource extends Record<string, any>>(
         fields: IKlesFieldConfig[],
-        records: any[],
+        records: TSource[],
         meta: { depth: number; parentId: string | null } = { depth: 0, parentId: null },
-    ): { formGroup: FormGroup; groupUi: GroupUiState }[] {
+    ): KlesCreatedRow<TSource>[] {
         return records.map((r) => this.createRow(fields, r, meta));
     }
 }

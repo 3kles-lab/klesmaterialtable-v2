@@ -7,7 +7,7 @@
     "author": "3Kles Lab",
     "license": "ISC",
     "peerDependencies": {
-        "@3kles/kles-material-dynamicforms": "^21.2.1",
+        "@3kles/kles-material-dynamicforms": "^21.3.0",
         "@angular/animations": "^21.0.0",
         "@angular/cdk": "^21.0.0",
         "@angular/common": "^21.0.0",

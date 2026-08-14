@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { AbstractControl, FormArray, FormGroup } from '@angular/forms';
 import { ColumnsService } from '../columns/columns.service';
-import { RowFormFactory } from './row-factory.service';
+import { KlesCreatedRow, RowFormFactory } from './row-factory.service';
 import * as _ from 'lodash';
 import { AbstractUiState, ArrayUiState, GroupUiState } from '@3kles/kles-material-dynamicforms';
 import { Subject } from 'rxjs';
+import { RowContextStore } from '../../store/row-context-store.service';
 
 @Injectable()
 export class KlesForm {
@@ -29,6 +30,7 @@ export class KlesForm {
     constructor(
         private columnsService: ColumnsService,
         private rowFactory: RowFormFactory,
+        private rowContextStore: RowContextStore,
     ) {}
 
     public getRows(): FormArray<FormGroup> {
@@ -55,11 +57,16 @@ export class KlesForm {
         return this.form.get('footer') as FormGroup;
     }
 
-    public setRows(rows: { formGroup: FormGroup; groupUi: GroupUiState }[]) {
+    public setRows(rows: KlesCreatedRow[]) {
+        this.getRows().controls.forEach((row) => {
+            this.rowContextStore.delete(row);
+        });
+
         this.getRows().clear({ emitEvent: false });
         this.getUiRows().clear();
         rows.forEach((r) => {
             this.uiStore.set(r.formGroup, r.groupUi);
+            this.rowContextStore.set(r.formGroup, r.context);
             this.getRows().push(r.formGroup, { emitEvent: false });
             this.getUiRows().push(r.groupUi);
         });
@@ -67,12 +74,13 @@ export class KlesForm {
     }
 
     private insertRowAndNotify(
-        row: { formGroup: FormGroup; groupUi: GroupUiState },
+        row: KlesCreatedRow,
         index?: number,
         options?: { emitEvent?: boolean },
         notify?: boolean,
     ): { formGroup: FormGroup; groupUi: GroupUiState } {
         this.uiStore.set(row.formGroup, row.groupUi);
+        this.rowContextStore.set(row.formGroup, row.context);
         if (index !== undefined) {
             this.getRows().insert(index, row.formGroup, options);
             this.getUiRows().insert(index, row.groupUi);
@@ -88,15 +96,11 @@ export class KlesForm {
         return row;
     }
 
-    public insertRow(
-        row: { formGroup: FormGroup; groupUi: GroupUiState },
-        index?: number,
-        options?: { emitEvent?: boolean },
-    ): { formGroup: FormGroup; groupUi: GroupUiState } {
+    public insertRow(row: KlesCreatedRow, index?: number, options?: { emitEvent?: boolean }): { formGroup: FormGroup; groupUi: GroupUiState } {
         return this.insertRowAndNotify(row, index, options, true);
     }
 
-    public insertRows(rows: { formGroup: FormGroup; groupUi: GroupUiState }[], index?: number) {
+    public insertRows(rows: KlesCreatedRow[], index?: number) {
         rows.forEach((r) => {
             this.insertRowAndNotify(r, index);
         });
@@ -127,7 +131,10 @@ export class KlesForm {
     public deleteRowById(id: number | string, option?: { emitEvent?: boolean }) {
         const index = this.getRows().controls.findIndex((c) => c.getRawValue()._id === id);
         if (index !== -1) {
+            const row = this.getRows().at(index);
+
             this.getRows().removeAt(index, option);
+            this.rowContextStore.delete(row);
             this.getUiRows().removeAt(index);
             this.notifyRowsStructureChanged();
         }

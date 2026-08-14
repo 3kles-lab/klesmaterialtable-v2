@@ -4,5 +4,5 @@ export interface ScrollbarApi {
     toBottom(sb?: ScrollBehavior): void;
     toRight(sb?: ScrollBehavior): void;
     to(top: number, left: number, sb?: ScrollBehavior): void;
-    getTop(): number;
+    getTop(): number | undefined;
 }

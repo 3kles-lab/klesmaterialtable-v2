@@ -76,6 +76,7 @@ import { ValidationService } from '../services/features/validation/validation.se
 import { KlesTableIntl } from '../components/table/table-intl';
 import { KlesTableEmptyStateComponent } from '../components/empty-state/empty-state.component';
 import { EmptyStateService } from '../services/features/empty-state/empty-state.service';
+import { RowContextStore } from '../services/store/row-context-store.service';
 
 // import { ScrollbarLazyOrchestratorService, ScrollbarOrchestratorService } from '../services/features/scrollbar/scrollbar-orchestrator.service';
 
@@ -148,7 +149,7 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
     }
 
     private initInjector(): DestroyableInjector {
-        const storeProviders = [SortStore, FilterStore, ...(this.tableConfig().paginator ? [PaginatorStore] : []), ExpandedRowStore];
+        const storeProviders = [RowContextStore, SortStore, FilterStore, ...(this.tableConfig().paginator ? [PaginatorStore] : []), ExpandedRowStore];
 
         const emptyState = this.tableConfig().emptyState;
 
