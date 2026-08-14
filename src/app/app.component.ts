@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnInit, signal, ViewChild } from '@angular/core';
 import { MaterialModule } from './modules/material.module';
 import {
     AlignCell,
@@ -13,13 +13,19 @@ import {
 import { BehaviorSubject, delay, of, throwError } from 'rxjs';
 import {
     ArrayUiState,
+    IKlesFieldActionEvent,
+    KlesFormActionMenuComponent,
     KlesFormCheckboxComponent,
+    KlesFormGroupComponent,
+    KlesFormIconButtonComponent,
     KlesFormInputComponent,
     KlesFormSelectComponent,
+    KlesFormStatusComponent,
     KlesFormTextComponent,
 } from '@3kles/kles-material-dynamicforms';
 import { FormControlStatus, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { CustomTableIntl } from './table-intl';
 
 // import { ResourceLineLoaderParams } from 'projects/kles-material-table/src/lib/interfaces/resource-loader.interface';
 
@@ -46,11 +52,14 @@ export class AppComponent implements OnInit, AfterViewInit {
             e: 'ceci est une phrase',
             ddd: 'ligne 2 expand key: ' + key,
             eee: 'ceci est une phrase dans une extra row qui prend le maximum de place dispo',
+            provider: { enabled: key % 3 },
         };
     });
 
     config: KlesTableConfig = {
-        columnSeparator: false/*{
+        // emptyState: false,
+
+        columnSeparator: false /*{
             width: '4px',
             style: 'double',
             color: '#c4c6d0',
@@ -74,6 +83,10 @@ export class AppComponent implements OnInit, AfterViewInit {
                         component: KlesFormCheckboxComponent,
                     },
                 },
+                // separator: {
+                //     style: 'double',
+                //     width: '4px',
+                // },
             },
             {
                 columnDef: '_id',
@@ -94,21 +107,21 @@ export class AppComponent implements OnInit, AfterViewInit {
                     //     label: 'toto'
                     // },
                 },
-                cell: {
-                    field: {
-                        component: KlesFormTextComponent,
-                    },
+                // cell: {
+                // field: {
+                //     component: KlesFormTextComponent,
+                // },
 
-                    // style: {
-                    //     ngStyle: (value: string, status: FormControlStatus, row: Record<string, any>, rowStatus: FormControlStatus) => {
-                    //         return {
-                    //             background: row.name === 'remy' ? 'blue' : 'green',
-                    //             'font-weight': 1000,
-                    //             color: 'white',
-                    //         };
-                    //     },
-                    // },
-                },
+                // style: {
+                //     ngStyle: (value: string, status: FormControlStatus, row: Record<string, any>, rowStatus: FormControlStatus) => {
+                //         return {
+                //             background: row.name === 'remy' ? 'blue' : 'green',
+                //             'font-weight': 1000,
+                //             color: 'white',
+                //         };
+                //     },
+                // },
+                // },
                 footerCell: {
                     field: { component: KlesFormTextComponent, value: 'ceci est un footer' },
                     // style: {
@@ -206,6 +219,7 @@ export class AppComponent implements OnInit, AfterViewInit {
                 align: AlignCell.RIGHT,
                 filterable: true,
                 visible: true,
+
                 headerCell: {
                     label: 'D',
                     field: {
@@ -215,8 +229,8 @@ export class AppComponent implements OnInit, AfterViewInit {
                 },
                 cell: {
                     field: {
-                        component: KlesFormInputComponent,
-                        clearable: true,
+                        component: KlesFormTextComponent,
+                        // clearable: true,
                         validations: [
                             {
                                 validator: Validators.required,
@@ -232,6 +246,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
                 filterable: true,
                 visible: true,
+
                 headerCell: {
                     label: 'E',
                     field: {
@@ -249,16 +264,17 @@ export class AppComponent implements OnInit, AfterViewInit {
                 columnDef: 'test',
                 sortable: true,
                 filterable: true,
-                // width: '800px',
-                // stickyEnd:true,
+                align: AlignCell.LEFT,
+                width: '100px',
+                // stickyEnd: true,
                 headerCell: {
                     label: 'Test',
-                    field: {
-                        component: KlesFormSelectComponent,
-                        options: ['2'],
-                        multiple: true,
-                        clearable: true,
-                    },
+                    // field: {
+                    //     component: KlesFormSelectComponent,
+                    //     options: ['2'],
+                    //     multiple: true,
+                    //     clearable: true,
+                    // },
                 },
                 cell: {
                     field: {
@@ -267,9 +283,148 @@ export class AppComponent implements OnInit, AfterViewInit {
                     },
                 },
             },
+            {
+                columnDef: 'provider',
+                align: AlignCell.LEFT,
+                headerCell: {
+                    label: 'Statuts',
+                },
+                cell: {
+                    field: {
+                        component: KlesFormStatusComponent,
+                        statusOptions: {
+                            appearance: 'chip',
+                            resolve: (value, context) => {
+                                if (!value) {
+                                    return null;
+                                }
+
+                                if (!value.enabled) {
+                                    return {
+                                        label: 'Désactivé',
+                                        tone: 'neutral',
+                                        icon: 'block',
+                                    };
+                                }
+
+                                return {
+                                    label: 'Actif',
+                                    tone: 'success',
+                                    icon: 'check_circle',
+                                };
+                            },
+                        },
+                    },
+                },
+                // separator: {
+                //     style: 'double',
+                //     width: '4px',
+                // },
+            },
+            // {
+            //     columnDef: 'actions',
+            //     stickyEnd:true,
+
+            //     cell: {
+            //         field: {
+            //             component: KlesFormActionMenuComponent,
+            //             icon: 'more_vert',
+            //             tooltip: 'Actions',
+            //             // ariaLabel: 'Actions disponibles',
+            //             options: [
+            //                 {
+            //                     id: 'edit',
+            //                     label: 'Modifier',
+            //                     icon: 'edit',
+
+            //                     disabled: () => true,
+            //                 },
+            //                 {
+            //                     id: 'duplicate',
+            //                     label: 'Dupliquer',
+            //                     icon: 'content_copy',
+            //                 },
+            //                 {
+            //                     id: 'delete',
+            //                     label: 'Supprimer',
+            //                     icon: 'delete',
+            //                     color: 'warn',
+            //                     dividerBefore: true,
+
+            //                     // visible: (context) => context?.provider.canDelete === true,
+            //                 },
+            //             ],
+
+            //             onAction: ({ actionId, context, value, group }) => {
+            //                 console.log('Actionid', actionId);
+            //                 console.log('Action sélectionnée', value);
+            //                 console.log('Valeurs de la ligne', group.getRawValue());
+            //             },
+            //         },
+            //     },
+            //     separator: {
+            //         style: 'solid',
+            //         width: '1px',
+            //     },
+            // },
+            {
+                columnDef: 'actions',
+                headerCell: {},
+                stickyEnd: true,
+                cell: {
+                    field: {
+                        component: KlesFormGroupComponent,
+                        direction: 'row',
+                        collections: [
+                            {
+                                component: KlesFormIconButtonComponent,
+                                icon: 'edit',
+                                name: 'edit',
+                                onAction: (event: IKlesFieldActionEvent<any, any>) => {
+                                    console.log(event);
+                                },
+                            },
+                            {
+                                component: KlesFormActionMenuComponent,
+                                icon: 'more_vert',
+                                name: 'more',
+                                options: [
+                                    {
+                                        id: 'edit',
+                                        label: 'Modifier',
+                                        icon: 'edit',
+
+                                        disabled: () => true,
+                                    },
+                                    {
+                                        id: 'duplicate',
+                                        label: 'Dupliquer',
+                                        icon: 'content_copy',
+                                    },
+                                    {
+                                        id: 'delete',
+                                        label: 'Supprimer',
+                                        icon: 'delete',
+                                        color: 'warn',
+                                        dividerBefore: true,
+
+                                        // visible: (context) => context?.provider.canDelete === true,
+                                    },
+                                ],
+
+                                onAction: ({ actionId, context, value, group }) => {
+                                    console.log('Actionid', actionId);
+                                    console.log('Action sélectionnée', value);
+                                    console.log('Valeurs de la ligne', group.getRawValue());
+                                },
+                            },
+                        ],
+                    },
+                },
+            },
         ],
         paginator: true,
-        footer: true,
+        footer: false,
 
         lines: linesLoader({
             params: () => this.toto,
@@ -277,8 +432,9 @@ export class AppComponent implements OnInit, AfterViewInit {
                 console.log('normal load');
                 // return throwError(() => new Error('Une erreur est survenue'));
                 return of({
+                    // items: [],
                     items: this.data,
-                }).pipe(delay(100));
+                }).pipe(delay(500));
             },
             // hasChildren: (parent, depth) => {
             //     return parent.value._id === '1';

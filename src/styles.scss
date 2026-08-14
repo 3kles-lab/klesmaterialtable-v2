@@ -1,6 +1,9 @@
 @use "@angular/material" as mat;
 @use "./assets/theme/_theme-color.scss" as theme-colors;
 
+@include mat.elevation-classes();
+
+
 html {
   @include mat.theme(
     (
