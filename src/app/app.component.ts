@@ -22,6 +22,7 @@ import {
     KlesFormSelectComponent,
     KlesFormStatusComponent,
     KlesFormTextComponent,
+    KlesFormTileComponent,
 } from '@3kles/kles-material-dynamicforms';
 import { FormControlStatus, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -52,7 +53,17 @@ export class AppComponent implements OnInit, AfterViewInit {
             e: 'ceci est une phrase',
             ddd: 'ligne 2 expand key: ' + key,
             eee: 'ceci est une phrase dans une extra row qui prend le maximum de place dispo',
-            provider: { enabled: key % 3 },
+            provider: {
+                enabled: key % 3,
+                label: key % 3 ? 'Google Workspace' : 'Microsoft EntraId',
+                hint: key % 3 ? 'SSO for Google Workspace' : 'SSO for Microsoft EntraId',
+                imageUrl:
+                    key % 3
+                        ? 'https://www.gstatic.com/marketing-cms/assets/images/97/37/bbe70068407199f1ada4b3f6b9f8/g-about-gatg.png=n-w64-h65-fcrop64=1,00000367fffffd72-rw'
+                        : 'https://www.techofficesolutions.be/wp-content/uploads/2024/11/microsoft-entra-id-logo-png_seeklogo-523357.png',
+                imageAlt: key % 3 ? 'Google Workspace' : 'Microsoft EntraId',
+                tooltip: key % 3 ? 'Configurer Google Workspace' : 'Configurer Microsoft EntraId',
+            },
         };
     });
 
@@ -140,52 +151,28 @@ export class AppComponent implements OnInit, AfterViewInit {
                 sortable: true,
                 filterable: true,
                 visible: true,
-                align: AlignCell.RIGHT,
-                // maxWidth: '350px',
-                // minWidth: '350px',
-                // width: '950px',
                 resizable: true,
-
                 headerCell: {
                     label: 'Name',
                     field: {
                         component: KlesFormInputComponent,
-                        // clearable: true,
-                        // label: 'toto',
                     },
-
-                    style: {
-                        // ngStyle: {
-                        //     background: 'blue',
-                        // },
-                    },
-                    // style: {
-                    //     ngStyle: (value: string, status: FormControlStatus, row: Record<string, any>, rowStatus: FormControlStatus) => {
-                    //         return {
-                    //             background: 'white',
-                    //         };
-                    //     },
-                    // },
                 },
                 cell: {
                     field: {
-                        component: KlesFormTextComponent,
-                        // clearable: true,
-                        validations: [
-                            {
-                                validator: Validators.required,
-                                name: 'required',
-                                message: 'aaaa',
-                            },
-                        ],
+                        component: KlesFormTileComponent,
+                        resolveUi: (event) => {
+                            const context = event.context as any;
+
+                            return {
+                                label: context.source.provider.label,
+                                hint: context.source.provider.hint,
+                                imageUrl: context.source.provider.imageUrl,
+                                imageAlt: context.source.provider.imageAlt,
+                                tooltip: context.source.provider.tooltip,
+                            };
+                        },
                     },
-                    // style: {
-                    //     ngStyle: (value: number, status: FormControlStatus, row: Record<string, any>, rowStatus: FormControlStatus) => {
-                    //         return {
-                    //             background: value === 1 ? 'blue' : 'red',
-                    //         };
-                    //     },
-                    // },
                 },
             },
 
@@ -195,7 +182,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
                 filterable: true,
                 visible: true,
-                width: '800px',
+                // width: '800px',
                 canExpand: true,
                 // canExpandNode: true,
                 align: AlignCell.LEFT,
@@ -265,7 +252,7 @@ export class AppComponent implements OnInit, AfterViewInit {
                 sortable: true,
                 filterable: true,
                 align: AlignCell.LEFT,
-                width: '100px',
+                // width: '100px',
                 // stickyEnd: true,
                 headerCell: {
                     label: 'Test',
@@ -415,6 +402,7 @@ export class AppComponent implements OnInit, AfterViewInit {
                                 onAction: ({ actionId, context, value, group }) => {
                                     console.log('Actionid', actionId);
                                     console.log('Action sélectionnée', value);
+                                    console.log('context', context);
                                     console.log('Valeurs de la ligne', group.getRawValue());
                                 },
                             },
