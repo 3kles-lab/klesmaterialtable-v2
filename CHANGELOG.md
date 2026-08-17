@@ -1,3 +1,10 @@
+## [21.4.1](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v21.4.0...v21.4.1) (2026-08-17)
+
+
+### Bug Fixes
+
+* change header background ([56ad33e](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/56ad33ed1d1218e19bab0e62b04405dbc3b1f3f7))
+
 # [21.4.0](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v21.3.0...v21.4.0) (2026-08-14)
 
 
