@@ -1,3 +1,10 @@
+## [21.4.2](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v21.4.1...v21.4.2) (2026-08-17)
+
+
+### Bug Fixes
+
+* scrollbar not visible ([cfcc341](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/cfcc34109c734261ed437b27084d52376c22b5e3))
+
 ## [21.4.1](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v21.4.0...v21.4.1) (2026-08-17)
 
 
