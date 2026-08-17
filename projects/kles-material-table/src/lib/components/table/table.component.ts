@@ -10,6 +10,7 @@ import {
     OnDestroy,
     OnInit,
     Optional,
+    signal,
     Signal,
     ViewChild,
 } from '@angular/core';
@@ -109,7 +110,7 @@ type TableSection = 'header' | 'body' | 'footer';
         KlesCellComponent,
         KlesHeaderComponent,
         HeaderPipe,
-        RowContextPipe
+        RowContextPipe,
     ],
 })
 export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy {
@@ -117,9 +118,9 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
     @ViewChild(MatSort, { static: true }) matSort!: MatSort;
     @ViewChild('form', { static: true }) formElemRef!: ElementRef<HTMLElement>;
 
-    headerHeightPx = 56;
-    scrollHeightPx = 0;
-    footerHeightPx = 0;
+    headerHeightPx = signal(56);
+    scrollHeightPx = signal(0);
+    footerHeightPx = signal(0);
 
     dataSource: IKlesDataSource;
     columns: Signal<KlesColumnConfig[]>;
@@ -438,9 +439,9 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
         const footer = this.host.nativeElement.querySelector('.mat-mdc-footer-row') as HTMLElement | null;
 
         const compute = () => {
-            this.scrollHeightPx = Math.max(0, (formNativeElem?.offsetHeight ?? 0) - (formNativeElem?.clientHeight ?? 0));
-            this.headerHeightPx = Math.ceil(header?.getBoundingClientRect().height ?? 0);
-            this.footerHeightPx = Math.max(0, footer?.getBoundingClientRect().height ?? 0);
+            this.scrollHeightPx.set(Math.max(0, (formNativeElem?.offsetHeight ?? 0) - (formNativeElem?.clientHeight ?? 0)));
+            this.headerHeightPx.set(Math.ceil(header?.getBoundingClientRect().height ?? 0));
+            this.footerHeightPx.set(Math.max(0, footer?.getBoundingClientRect().height ?? 0));
         };
 
         const scheduleCompute = () => {
