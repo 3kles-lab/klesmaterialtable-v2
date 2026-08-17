@@ -3,7 +3,7 @@
 :host {
     --kles-table-divider-color: color-mix(in srgb, var(--mat-sys-outline-variant) 65%, transparent);
     --kles-table-divider-strong-color: var(--mat-sys-outline-variant);
-    --kles-table-header-background: var(--mat-sys-surface-container-low);
+    --kles-table-header-background: var(--mat-sys-surface-container);
     --kles-table-header-color: var(--mat-sys-on-surface);
     --kles-table-header-divider-color: var(--mat-sys-outline-variant);
     --kles-table-row-hover-background: color-mix(in srgb, var(--mat-sys-primary) 7%, var(--mat-sys-surface));
