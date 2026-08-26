@@ -233,8 +233,9 @@ export class ResizableColumnDirective implements OnInit, OnChanges, OnDestroy {
                   (col) => col.dataset['columnDef'] === this.column().columnDef,
               )
             : undefined;
-        this.resizeMinWidth = this.getMinWidth();
+        this.resizeMinWidth = Math.max(this.getMinWidth(), this.measureContentWidth(this.resizeCells));
         this.resizeMaxWidth = Math.max(this.resizeMinWidth, this.getMaxWidth());
+        this.handle?.setAttribute('aria-valuemin', `${Math.round(this.resizeMinWidth)}`);
     }
 
     private clearResizeCache(): void {
@@ -245,27 +246,42 @@ export class ResizableColumnDirective implements OnInit, OnChanges, OnDestroy {
         this.resizeMaxWidth = this.defaultMaxWidth;
     }
 
-    private measureContentWidth(): number {
+    private measureContentWidth(cells = this.getColumnCells()): number {
         const doc = this.el.nativeElement.ownerDocument;
+        const measurementRoot = this.renderer.createElement('div') as HTMLElement;
+        const clones: HTMLElement[] = [];
+        Object.assign(measurementRoot.style, {
+            position: 'fixed',
+            left: '-10000px',
+            top: '0',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-start',
+            visibility: 'hidden',
+            pointerEvents: 'none',
+        });
+
         let measured = this.getMinWidth();
-        for (const cell of this.getColumnCells()) {
+        for (const cell of cells) {
             const clone = cell.cloneNode(true) as HTMLElement;
             clone.querySelector('.resize-handle')?.remove();
             Object.assign(clone.style, {
-                position: 'fixed',
-                left: '-10000px',
-                top: '0',
+                position: 'static',
                 width: 'max-content',
                 minWidth: '0',
                 maxWidth: 'none',
                 whiteSpace: 'nowrap',
-                visibility: 'hidden',
-                pointerEvents: 'none',
+                flex: 'none',
             });
-            doc.body.appendChild(clone);
-            measured = Math.max(measured, clone.getBoundingClientRect().width);
-            clone.remove();
+            clones.push(clone);
+            measurementRoot.appendChild(clone);
         }
+
+        doc.body.appendChild(measurementRoot);
+        for (const clone of clones) {
+            measured = Math.max(measured, clone.getBoundingClientRect().width);
+        }
+        measurementRoot.remove();
         return this.clampWidth(Math.ceil(measured));
     }
 
