@@ -445,7 +445,7 @@ export class SelectionLazyService<T> extends AbstractSelectionService<T> {
                     return selected;
                 });
 
-                this.selectionModel.setSelection(selectedRows, {
+                this.selectionModel.reset(selectedRows, {
                     emitEvent: false,
                 });
 

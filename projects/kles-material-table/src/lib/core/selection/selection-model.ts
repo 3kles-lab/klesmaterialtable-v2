@@ -140,7 +140,7 @@ export class KlesSelectionModel<T> implements IKlesSelectionModel<T> {
         return this.multiple || false;
     }
 
-    public setSelection(values: T[], options?: { emitEvent?: boolean }): void {
+    public reset(values: T[], options?: { emitEvent?: boolean }): void {
         const previous = Array.from(this._selection);
 
         this._selection.clear();
