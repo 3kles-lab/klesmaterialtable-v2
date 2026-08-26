@@ -70,8 +70,8 @@ export class ColumnsService {
 
     public setSticky(columnDef: string, options: { sticky?: boolean; stickyEnd?: boolean }) {
         this.updateColumn(columnDef, {
-            ...(options.sticky && { sticky: options.sticky }),
-            ...(options.stickyEnd && { stickyEnd: options.stickyEnd }),
+            ...(options.sticky !== undefined && { sticky: options.sticky }),
+            ...(options.stickyEnd !== undefined && { stickyEnd: options.stickyEnd }),
         });
     }
 
