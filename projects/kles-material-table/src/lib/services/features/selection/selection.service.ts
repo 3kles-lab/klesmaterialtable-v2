@@ -279,12 +279,10 @@ export class SelectionLazyService<T> extends AbstractSelectionService<T> {
     }
 
     public disable(): void {
-        // this.fm.getHeader().controls[this.key].disable({ emitEvent: false });
         this.selectionModel.disable();
     }
 
     public enable(): void {
-        // this.fm.getHeader().controls[this.key].enable({ emitEvent: false });
         this.selectionModel.enable();
     }
 
@@ -325,18 +323,6 @@ export class SelectionLazyService<T> extends AbstractSelectionService<T> {
                     this.fm.getRows().updateValueAndValidity({
                         emitEvent: false,
                     });
-
-                    // this.fm
-                    //     .getRows()
-                    //     .controls.filter((group) => group.controls[this.key]?.enabled)
-                    //     .forEach((group) => {
-                    //         group.controls[this.selectionLoaderService.key].patchValue(response.selected, { emitEvent: false });
-                    //     });
-                    // this.fm.getRows().updateValueAndValidity({ emitEvent: false });
-
-                    // if (response.footer) {
-                    //     this.fm.getFooter().patchValue(response.footer, { emitEvent: false });
-                    // }
                 }
             });
     }
@@ -382,12 +368,6 @@ export class SelectionLazyService<T> extends AbstractSelectionService<T> {
                 if (response.loading) {
                     //mettre la ligne avec un spinner
                 } else {
-                    // this.fm
-                    //     .getUiHeader()
-                    //     .get(this.selectionLoaderService.key)
-                    //     ?.patchValue({
-                    //         indeterminate: response.count != undefined ? response.count > 0 && this.linesService.total() > response.count : false,
-                    //     });
                     this._count.set(response.count ?? 0);
 
                     if (response.selected) {
@@ -397,10 +377,6 @@ export class SelectionLazyService<T> extends AbstractSelectionService<T> {
                     }
 
                     this.updateHeader(response.count);
-
-                    //         if (footer) {
-                    //             this.fm.getFooter().patchValue(footer, { emitEvent: false });
-                    //         }
                 }
             });
     }
@@ -476,16 +452,6 @@ export class SelectionLazyService<T> extends AbstractSelectionService<T> {
                 });
 
                 this.updateHeader(this._count());
-
-                // this.fm.getRows().controls.forEach((group) => {
-                //     if (this.selectionConfig?.isSelected != undefined && this.selectionConfig.isSelected(group)) {
-                //         group.controls[this.selectionLoaderService.key]?.patchValue(true, { emitEvent: false });
-                //     }
-                //     if (this.selectionConfig?.isDisabled && this.selectionConfig.isDisabled(group)) {
-                //         group.controls[this.selectionLoaderService.key]?.disable({ emitEvent: false });
-                //     }
-                // });
-                // this.updateHeader();
             });
     }
 
