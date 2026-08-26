@@ -2,6 +2,7 @@ import { Inject, Injectable, signal, Type } from '@angular/core';
 import { KlesTableEmptyStateComponent } from '../../../components/empty-state/empty-state.component';
 import { EmptyStateConfig } from '../../../core/table/config.interface';
 import { EMPTY_STATE_CONFIG } from '../../../token';
+import { EventsService } from '../events/events.service';
 
 @Injectable()
 export class EmptyStateService {
@@ -13,6 +14,7 @@ export class EmptyStateService {
     constructor(
         @Inject(EMPTY_STATE_CONFIG)
         config: boolean | EmptyStateConfig | undefined,
+        private readonly eventsService: EventsService,
     ) {
         if (typeof config === 'boolean') {
             this._enabled.set(config);
@@ -26,14 +28,22 @@ export class EmptyStateService {
     }
 
     enable(): void {
+        if (this._enabled()) {
+            return;
+        }
         this._enabled.set(true);
+        this.eventsService.emit('emptyStateChange', { enabled: true });
     }
 
     disable(): void {
+        if (!this._enabled()) {
+            return;
+        }
         this._enabled.set(false);
+        this.eventsService.emit('emptyStateChange', { enabled: false });
     }
 
     toggle(): void {
-        this._enabled.update((enabled) => !enabled);
+        this._enabled() ? this.disable() : this.enable();
     }
 }

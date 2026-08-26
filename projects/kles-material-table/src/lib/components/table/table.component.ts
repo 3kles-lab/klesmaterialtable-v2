@@ -226,7 +226,7 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
                 list: () => this.tableService.klesForm.getRows(),
                 get: (_id) => this.tableService.klesForm.getRows().controls.find((row) => row.value._id === _id),
                 create: (value, index, options) => {
-                    return this.tableService.klesForm.insertRow(
+                    const row = this.tableService.klesForm.insertRow(
                         this.rowFactory.createRow(
                             this.columnsService
                                 .columns()
@@ -237,15 +237,30 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
                         index,
                         options,
                     ).formGroup;
+                    this.eventsService.emit('rowCreate', this.rowEventPayload(row));
+                    return row;
                 },
                 patch: (_id, value, options) => {
-                    return this.tableService.klesForm.updateRow(_id, value, options);
+                    const row = this.tableService.klesForm.updateRow(_id, value, options);
+                    if (row) {
+                        this.eventsService.emit('rowPatch', this.rowEventPayload(row));
+                    }
+                    return row;
                 },
                 remove: (_id, options) => {
+                    const row = this.tableService.klesForm.getRows().controls.find((current) => current.getRawValue()._id === _id);
+                    const payload = row ? this.rowEventPayload(row) : undefined;
                     this.tableService.klesForm.deleteRowById(_id, options);
+                    if (payload) {
+                        this.eventsService.emit('rowDelete', payload);
+                    }
                 },
                 reset: (_id, value, options) => {
                     this.tableService.klesForm.resetRow(_id, value, options);
+                    const row = this.tableService.klesForm.getRows().controls.find((current) => current.getRawValue()._id === _id);
+                    if (row) {
+                        this.eventsService.emit('rowUpdate', this.rowEventPayload(row));
+                    }
                 },
             },
         };
@@ -340,6 +355,15 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
 
     refresh() {
         this.loader.refresh();
+    }
+
+    private rowEventPayload(row: FormGroup) {
+        return {
+            row,
+            rowIndex: this.tableService.klesForm.getRows().controls.indexOf(row),
+            value: row.value,
+            rawValue: row.getRawValue(),
+        };
     }
 
     ngOnInit(): void {

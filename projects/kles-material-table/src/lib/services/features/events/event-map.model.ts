@@ -1,13 +1,12 @@
 import {
     CellMousePayload,
     CellValueChangePayload,
-    ColumnDropPayload,
     ColumnOrderChangePayload,
-    ColumnPayload,
     ColumnResizePayload,
     ColumnVisibilityChangePayload,
     ExpansionPayload,
     FilterChangePayload,
+    EmptyStateChangePayload,
     LoadErrorPayload,
     LoadSuccessPayload,
     PageChangePayload,
@@ -15,8 +14,11 @@ import {
     RowMousePayload,
     RowPayload,
     SortPayload,
+    SelectionChangePayload,
     TreePayload,
     ValidationErrorPayload,
+    LoadingChangePayload,
+    VisibilityChangePayload,
 } from './event-payloads.model';
 
 export interface TableEventMap<TValue = unknown> {
@@ -29,10 +31,10 @@ export interface TableEventMap<TValue = unknown> {
     rowMouseEnter: RowMousePayload<TValue>;
     rowMouseLeave: RowMousePayload<TValue>;
 
-    rowCreate: RowPayload<TValue>; //TODO
-    rowUpdate: RowPayload<TValue>; //TODO
-    rowPatch: RowPayload<TValue>; //TODO
-    rowDelete: RowPayload<TValue>; //TODO
+    rowCreate: RowPayload<TValue>;
+    rowUpdate: RowPayload<TValue>;
+    rowPatch: RowPayload<TValue>;
+    rowDelete: RowPayload<TValue>;
 
     /**
      * cell
@@ -42,15 +44,15 @@ export interface TableEventMap<TValue = unknown> {
     cellContextMenu: CellMousePayload<TValue>;
     cellValueChange: CellValueChangePayload<TValue>;
 
-    //   /**
-    //    * Sélection
-    //    */
-    //   selectionChange: SelectionChangePayload<TValue>;
-    //   rowSelect: RowPayload<TValue>;
-    //   rowUnselect: RowPayload<TValue>;
+    /**
+     * Sélection
+     */
+    selectionChange: SelectionChangePayload<TValue>;
+    rowSelect: RowPayload<TValue>;
+    rowUnselect: RowPayload<TValue>;
+    selectAll: SelectionChangePayload<TValue>;
+    unselectAll: SelectionChangePayload<TValue>;
 
-    //   selectAll: SelectionChangePayload<TValue>;
-    //   unselectAll: SelectionChangePayload<TValue>;
     //   selectionClear: SelectionChangePayload<TValue>;
     //   selectionInvert: SelectionChangePayload<TValue>;
 
@@ -81,29 +83,22 @@ export interface TableEventMap<TValue = unknown> {
     /**
      * Drag & drop
      */
-    rowDragStart: RowPayload<TValue>; //TODO
-    rowDragMove: RowPayload<TValue>; //TODO
-    rowDragEnd: RowPayload<TValue>; //TODO
-    rowDrop: RowDropPayload<TValue>; //TODO
-
-    columnDragStart: ColumnPayload; //TODO
-    columnDragEnd: ColumnPayload; //TODO
-    columnDrop: ColumnDropPayload; //TODO
+    rowDragStart: RowPayload<TValue>;
+    rowDragMove: RowPayload<TValue>;
+    rowDragEnd: RowPayload<TValue>;
+    rowDrop: RowDropPayload<TValue>;
 
     /**
      * Expansion / tree
      */
-    rowExpand: ExpansionPayload<TValue>; //TODO
-    rowCollapse: ExpansionPayload<TValue>; //TODO
-    rowToggleExpand: ExpansionPayload<TValue>; //TODO
+    rowExpand: ExpansionPayload<TValue>;
+    rowCollapse: ExpansionPayload<TValue>;
+    rowToggleExpand: ExpansionPayload<TValue>;
 
-    expandAll: void; //TODO
-    collapseAll: void; //TODO
-
-    nodeExpand: TreePayload<TValue>; //TODO
-    nodeCollapse: TreePayload<TValue>; //TODO
-    nodeLoadChildren: TreePayload<TValue>; //TODO
-    nodeChildrenLoaded: TreePayload<TValue>; //TODO
+    nodeExpand: TreePayload<TValue>;
+    nodeCollapse: TreePayload<TValue>;
+    nodeLoadChildren: TreePayload<TValue>;
+    nodeChildrenLoaded: TreePayload<TValue>;
 
     /**
      * Loading / lazy
@@ -113,6 +108,13 @@ export interface TableEventMap<TValue = unknown> {
     loadError: LoadErrorPayload;
 
     refresh: void;
+
+    /**
+     * États d'affichage
+     */
+    loadingChange: LoadingChangePayload;
+    footerVisibilityChange: VisibilityChangePayload;
+    emptyStateChange: EmptyStateChangePayload;
 
     /**
      * Error / validation

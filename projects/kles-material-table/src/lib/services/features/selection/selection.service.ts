@@ -14,6 +14,8 @@ import { IKlesSelectionModel } from '../../../core/selection/selection-model.int
 import { KlesSelectionModelState } from '../../../core/selection/selection-state.enum';
 import { ILinesService } from '../lines/lines.service';
 import { FilterStore } from '../../store/filter-store.service';
+import { EventsService } from '../events/events.service';
+import { SelectionChangePayload } from '../events/event-payloads.model';
 
 export interface ISelectionService {
     key: string;
@@ -27,7 +29,11 @@ export interface ISelectionService {
 
 @Injectable()
 export abstract class AbstractSelectionService<T> implements ISelectionService {
-    constructor(@Optional() @Inject(SELECTION_CONFIG) protected readonly selectionConfig: SelectionConfig<T> | undefined) {}
+    constructor(
+        @Optional() @Inject(SELECTION_CONFIG) protected readonly selectionConfig: SelectionConfig<T> | undefined,
+        protected readonly fm: KlesForm,
+        protected readonly eventsService: EventsService,
+    ) {}
 
     public get key() {
         return this.selectionConfig?.key || '#select';
@@ -43,6 +49,46 @@ export abstract class AbstractSelectionService<T> implements ISelectionService {
     abstract count(): Signal<number>;
     abstract disable(): void;
     abstract enable(): void;
+
+    protected emitSelectionEvents(
+        changed: { added?: FormGroup[]; removed?: FormGroup[]; count: number },
+        selectedCount = changed.count,
+    ): void {
+        const payload = this.selectionPayload(changed.added, changed.removed, selectedCount);
+        this.eventsService.emit('selectionChange', payload);
+
+        changed.added?.forEach((row) => this.eventsService.emit('rowSelect', this.rowPayload(row)));
+        changed.removed?.forEach((row) => this.eventsService.emit('rowUnselect', this.rowPayload(row)));
+    }
+
+    protected emitBulkSelectionEvent(selected: boolean, selectedCount: number): void {
+        this.eventsService.emit(selected ? 'selectAll' : 'unselectAll', this.selectionPayload(undefined, undefined, selectedCount));
+    }
+
+    private selectionPayload(addedRows?: FormGroup[], removedRows?: FormGroup[], selectedCount = 0): SelectionChangePayload<T> {
+        const selectedRows = this.selectionModel.selected.items ?? [];
+
+        return {
+            selectedRows,
+            selectedValues: selectedRows.map((row) => row.value),
+            selectedRawValues: selectedRows.map((row) => row.getRawValue()),
+            selectedCount,
+            addedRows,
+            removedRows,
+            allSelected: selectedCount > 0 && selectedCount === this.linesTotal(),
+        };
+    }
+
+    private rowPayload(row: FormGroup) {
+        return {
+            row,
+            rowIndex: this.fm.getRows().controls.indexOf(row),
+            value: row.value,
+            rawValue: row.getRawValue(),
+        };
+    }
+
+    protected abstract linesTotal(): number;
 }
 
 @Injectable()
@@ -52,14 +98,15 @@ export class SelectionService<T> extends AbstractSelectionService<T> {
 
     constructor(
         @Optional() @Inject(SELECTION_CONFIG) selectionConfig: SelectionConfig<T> | undefined,
-        private fm: KlesForm,
+        fm: KlesForm,
         private selectionLoaderService: SelectionLoaderService<T>,
         private scrollbarService: ScrollbarService,
         private loadingService: LoadingService,
         @Inject(DATASOURCE_SERVICE) private datasourceService: DatasourceService,
         @Inject(LINES_SERVICE) private linesService: ILinesService,
+        eventsService: EventsService,
     ) {
-        super(selectionConfig);
+        super(selectionConfig, fm, eventsService);
         this.selectionModel = new KlesSelectionModel<FormGroup>(selectionConfig?.selectionMode);
     }
 
@@ -81,6 +128,10 @@ export class SelectionService<T> extends AbstractSelectionService<T> {
 
     public enable(): void {
         this.selectionModel.enable();
+    }
+
+    protected linesTotal(): number {
+        return this.linesService.total();
     }
 
     private setSelection() {
@@ -139,6 +190,7 @@ export class SelectionService<T> extends AbstractSelectionService<T> {
                             this.datasourceService.datasource.filteredData?.filter((g) => g.controls[this.selectionLoaderService.key]?.enabled),
                         );
                     }
+                    this.emitBulkSelectionEvent(!!response.selected, this.selectionModel.selected.count);
                 }
             });
     }
@@ -199,6 +251,7 @@ export class SelectionService<T> extends AbstractSelectionService<T> {
             });
             this.fm.getRows().updateValueAndValidity({ emitEvent: false });
             this.updateHeader();
+            this.emitSelectionEvents(changed);
         });
 
         this.selectionModel.stateChanged.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((state) => {
@@ -254,15 +307,16 @@ export class SelectionLazyService<T> extends AbstractSelectionService<T> {
 
     constructor(
         @Optional() @Inject(SELECTION_CONFIG) selectionConfig: SelectionConfig<T> | undefined,
-        private fm: KlesForm,
+        fm: KlesForm,
         private selectionLoaderService: SelectionLoaderService<T>,
         private scrollbarService: ScrollbarService,
         private loadingService: LoadingService,
         @Inject(DATASOURCE_SERVICE) private datasourceService: DatasourceService,
         @Inject(LINES_SERVICE) private linesService: ILinesService,
         @Optional() private filterStore: FilterStore | null,
+        eventsService: EventsService,
     ) {
-        super(selectionConfig);
+        super(selectionConfig, fm, eventsService);
 
         this.selectionModel = new KlesSelectionModel<FormGroup>(selectionConfig?.selectionMode);
     }
@@ -284,6 +338,10 @@ export class SelectionLazyService<T> extends AbstractSelectionService<T> {
 
     public enable(): void {
         this.selectionModel.enable();
+    }
+
+    protected linesTotal(): number {
+        return this.linesService.total();
     }
 
     private listenHeaderSelection(): void {
@@ -323,6 +381,7 @@ export class SelectionLazyService<T> extends AbstractSelectionService<T> {
                     this.fm.getRows().updateValueAndValidity({
                         emitEvent: false,
                     });
+                    this.emitBulkSelectionEvent(!!response.selected, this._count());
                 }
             });
     }
@@ -394,6 +453,7 @@ export class SelectionLazyService<T> extends AbstractSelectionService<T> {
             this.fm.getRows().updateValueAndValidity({
                 emitEvent: false,
             });
+            this.emitSelectionEvents(changed, this._count());
         });
 
         this.selectionModel.stateChanged.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((state) => {

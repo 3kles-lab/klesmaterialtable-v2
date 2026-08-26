@@ -15,7 +15,16 @@ import { ArrayUiState, GroupUiState } from '@3kles/kles-material-dynamicforms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter, switchMap } from 'rxjs';
 import { TableEvent } from './services/features/events/events.model';
-import { CellMousePayload, CellValueChangePayload, RowMousePayload } from './services/features/events/event-payloads.model';
+import {
+    CellMousePayload,
+    CellValueChangePayload,
+    FilterChangePayload,
+    LoadErrorPayload,
+    PageChangePayload,
+    RowMousePayload,
+    SelectionChangePayload,
+    SortPayload,
+} from './services/features/events/event-payloads.model';
 import { EmptyStateApi } from './core/api/empty-state';
 import { RenderApi } from './core/api/render';
 import { EventsApi } from './core/api/events';
@@ -37,9 +46,19 @@ export class KlesTableComponent<TValue = unknown> implements OnInit, KlesTableAp
     @Output() rowClick = new EventEmitter<RowMousePayload<TValue>>();
     @Output() rowDoubleClick = new EventEmitter<RowMousePayload<TValue>>();
     @Output() rowContextMenu = new EventEmitter<RowMousePayload<TValue>>();
+    @Output() rowMouseEnter = new EventEmitter<RowMousePayload<TValue>>();
+    @Output() rowMouseLeave = new EventEmitter<RowMousePayload<TValue>>();
 
     @Output() cellClick = new EventEmitter<CellMousePayload<TValue>>();
+    @Output() cellDoubleClick = new EventEmitter<CellMousePayload<TValue>>();
+    @Output() cellContextMenu = new EventEmitter<CellMousePayload<TValue>>();
     @Output() cellValueChange = new EventEmitter<CellValueChangePayload<TValue>>();
+
+    @Output() selectionChange = new EventEmitter<SelectionChangePayload<TValue>>();
+    @Output() pageChange = new EventEmitter<PageChangePayload>();
+    @Output() sortChange = new EventEmitter<SortPayload>();
+    @Output() filterChange = new EventEmitter<FilterChangePayload>();
+    @Output() loadError = new EventEmitter<LoadErrorPayload>();
 
     readonly elevationShadow = computed(() => {
         const level = this.tableConfig().elevation ?? 2;
@@ -47,25 +66,18 @@ export class KlesTableComponent<TValue = unknown> implements OnInit, KlesTableAp
         return level === 0 ? 'none' : `var(--mat-sys-level${level})`;
     });
 
-    // @Output() selectionChange = new EventEmitter<KlesTableSelectionChangePayload<TValue>>();
-
-    // @Output() pageChange = new EventEmitter<KlesTablePageChangePayload>();
-    // @Output() sortChange = new EventEmitter<KlesTableSortPayload>();
-    // @Output() filterChange = new EventEmitter<KlesTableFilterChangePayload>();
-
     // @Output() lazyQueryChange = new EventEmitter<KlesTableLazyQueryChangePayload>();
-    // @Output() loadError = new EventEmitter<KlesTableLoadErrorPayload>();
 
     constructor(private connectorService: KlesTableConnectorService) {}
 
     ngOnInit(): void {
         this.connectorService.connected$
             .pipe(
-                takeUntilDestroyed(this.destroyRef),
                 filter((connected) => connected),
                 switchMap(() => {
                     return this.events.listen();
                 }),
+                takeUntilDestroyed(this.destroyRef),
             )
             .subscribe((event) => {
                 this.dispatchEvent(event);
@@ -149,37 +161,53 @@ export class KlesTableComponent<TValue = unknown> implements OnInit, KlesTableAp
                 this.rowContextMenu.emit(event.payload);
                 break;
 
+            case 'rowMouseEnter':
+                this.rowMouseEnter.emit(event.payload);
+                break;
+
+            case 'rowMouseLeave':
+                this.rowMouseLeave.emit(event.payload);
+                break;
+
             case 'cellClick':
                 this.cellClick.emit(event.payload);
+                break;
+
+            case 'cellDoubleClick':
+                this.cellDoubleClick.emit(event.payload);
+                break;
+
+            case 'cellContextMenu':
+                this.cellContextMenu.emit(event.payload);
                 break;
 
             case 'cellValueChange':
                 this.cellValueChange.emit(event.payload);
                 break;
 
-            // case 'selectionChange':
-            //     this.selectionChange.emit(event.payload);
-            //     break;
+            case 'selectionChange':
+                this.selectionChange.emit(event.payload);
+                break;
 
-            // case 'pageChange':
-            //     this.pageChange.emit(event.payload);
-            //     break;
+            case 'pageChange':
+                this.pageChange.emit(event.payload);
+                break;
 
-            // case 'sortChange':
-            //     this.sortChange.emit(event.payload);
-            //     break;
+            case 'sortChange':
+                this.sortChange.emit(event.payload);
+                break;
 
-            // case 'filterChange':
-            //     this.filterChange.emit(event.payload);
-            //     break;
+            case 'filterChange':
+                this.filterChange.emit(event.payload);
+                break;
 
             // case 'lazyQueryChange':
             //     this.lazyQueryChange.emit(event.payload);
             //     break;
 
-            // case 'loadError':
-            //     this.loadError.emit(event.payload);
-            //     break;
+            case 'loadError':
+                this.loadError.emit(event.payload);
+                break;
         }
     }
 }

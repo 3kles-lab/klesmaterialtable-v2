@@ -92,6 +92,18 @@ export interface SelectionChangePayload<TValue = unknown> {
     allSelected?: boolean;
 }
 
+export interface LoadingChangePayload {
+    loading: boolean;
+}
+
+export interface VisibilityChangePayload {
+    visible: boolean;
+}
+
+export interface EmptyStateChangePayload {
+    enabled: boolean;
+}
+
 /**
  * Pagination.
  */

@@ -4,9 +4,13 @@ import { DragDropConfig } from '../../../core/table/config.interface';
 import { PaginatorStore } from '../../store/paginator-store.service';
 import { DRAG_DROP_CONFIG } from '../../../token';
 import { FormArray, FormGroup } from '@angular/forms';
+import { EventsService } from '../events/events.service';
 
 export abstract class DragDropBase {
-    constructor(protected config?: DragDropConfig) {}
+    constructor(
+        protected config: DragDropConfig | undefined,
+        protected readonly eventsService: EventsService,
+    ) {}
 
     get enable() {
         return this.config?.enable || false;
@@ -35,15 +39,37 @@ export abstract class DragDropBase {
     }
 
     abstract listDropped(event: CdkDragDrop<FormArray<FormGroup>>): void;
+
+    rowDragStarted(row: FormGroup, rowIndex: number): void {
+        this.eventsService.emit('rowDragStart', this.rowPayload(row, rowIndex));
+    }
+
+    rowDragMoved(row: FormGroup, rowIndex: number): void {
+        this.eventsService.emit('rowDragMove', this.rowPayload(row, rowIndex));
+    }
+
+    rowDragEnded(row: FormGroup, rowIndex: number): void {
+        this.eventsService.emit('rowDragEnd', this.rowPayload(row, rowIndex));
+    }
+
+    protected rowPayload(row: FormGroup, rowIndex: number) {
+        return {
+            row,
+            rowIndex,
+            value: row.value,
+            rawValue: row.getRawValue(),
+        };
+    }
 }
 
 @Injectable()
 export class DragDropService extends DragDropBase {
     constructor(
-        @Optional() @Inject(DRAG_DROP_CONFIG) protected config?: DragDropConfig,
+        @Optional() @Inject(DRAG_DROP_CONFIG) config: DragDropConfig | undefined,
+        eventsService: EventsService,
         @Optional() private paginatorStore?: PaginatorStore | null,
     ) {
-        super(config);
+        super(config, eventsService);
     }
 
     listDropped(event: CdkDragDrop<FormArray<FormGroup>>) {
@@ -58,21 +84,43 @@ export class DragDropService extends DragDropBase {
                 faRows.removeAt(previousIndex, { emitEvent: false });
                 faRows.insert(currentIndex, ctrl, { emitEvent: false });
                 faRows.updateValueAndValidity({ emitEvent: true });
+                this.eventsService.emit('rowDrop', {
+                    ...this.rowPayload(ctrl, currentIndex),
+                    previousIndex,
+                    currentIndex,
+                });
             }
         } else {
-            //TODO
+            const row = event.item.data as FormGroup;
+            this.eventsService.emit('rowDrop', {
+                ...this.rowPayload(row, event.currentIndex),
+                previousIndex: event.previousIndex,
+                currentIndex: event.currentIndex,
+                previousContainerId: event.previousContainer.id,
+                currentContainerId: event.container.id,
+            });
         }
     }
 }
 
 @Injectable()
 export class DragDropLazyService extends DragDropBase {
-    constructor(@Optional() @Inject(DRAG_DROP_CONFIG) protected config?: DragDropConfig) {
-        super(config);
+    constructor(
+        @Optional() @Inject(DRAG_DROP_CONFIG) config: DragDropConfig | undefined,
+        eventsService: EventsService,
+    ) {
+        super(config, eventsService);
     }
 
     listDropped(event: CdkDragDrop<FormArray<FormGroup>>) {
-        
+        const row = event.item.data as FormGroup;
+        this.eventsService.emit('rowDrop', {
+            ...this.rowPayload(row, event.currentIndex),
+            previousIndex: event.previousIndex,
+            currentIndex: event.currentIndex,
+            previousContainerId: event.previousContainer.id,
+            currentContainerId: event.container.id,
+        });
         // TODO appeler un observable + refresh tableau
     }
 }

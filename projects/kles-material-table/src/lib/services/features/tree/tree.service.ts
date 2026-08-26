@@ -8,6 +8,7 @@ import { LoadingService } from '../loading/loading.service';
 import { KlesForm } from '../table/form';
 import { ColumnsService } from '../columns/columns.service';
 import { RowFormFactory } from '../table/row-factory.service';
+import { EventsService } from '../events/events.service';
 
 export interface RowMeta {
     id: string;
@@ -25,6 +26,7 @@ export class TreeService<T, R> {
     private readonly fm = inject(KlesForm);
     private readonly columnsService = inject(ColumnsService);
     private readonly rowFactory = inject(RowFormFactory);
+    private readonly eventsService = inject(EventsService);
 
 
     private loading = new Set<string>();
@@ -41,6 +43,7 @@ export class TreeService<T, R> {
         const expanded = new Set(this._expandedIds$.value);
 
         if (expanded.has(id)) {
+            const payload = this.rowPayload(group, depth);
             this.fm
                 .getRows()
                 .controls.filter((control) => control.getRawValue()._parentId === id)
@@ -49,8 +52,11 @@ export class TreeService<T, R> {
 
             expanded.delete(id);
             this._expandedIds$.next(expanded);
+            this.eventsService.emit('nodeCollapse', payload);
         } else {
             const index = this.findParentIndex(id);
+            const payload = this.rowPayload(group, depth);
+            this.eventsService.emit('nodeLoadChildren', payload);
 
             this.loaderChildrensService.load(group, depth).subscribe((response) => {
                 if (response.loading) {
@@ -58,6 +64,13 @@ export class TreeService<T, R> {
                     // this.loadingService.start();
                 } else {
                     this.loading.delete(id);
+                    if (response.error) {
+                        this.eventsService.emit('loadError', {
+                            error: response.error,
+                            message: response.error?.message,
+                        });
+                        return;
+                    }
                     // this.loadingService.stop();
                     // console.log( (group.getRawValue()._depth ?? 0) + 1)
                     this.fm.insertRows(
@@ -70,6 +83,8 @@ export class TreeService<T, R> {
                     );
                     expanded.add(id);
                     this._expandedIds$.next(expanded);
+                    this.eventsService.emit('nodeChildrenLoaded', payload);
+                    this.eventsService.emit('nodeExpand', payload);
                 }
             });
         }
@@ -77,5 +92,15 @@ export class TreeService<T, R> {
 
     public hasChildren(group: FormGroup, depth: number): boolean {
         return this.loaderConfig.lines.hasChildren?.(group, depth) ?? true;
+    }
+
+    private rowPayload(row: FormGroup, level: number) {
+        return {
+            row,
+            rowIndex: this.fm.getRows().controls.indexOf(row),
+            value: row.value,
+            rawValue: row.getRawValue(),
+            level,
+        };
     }
 }

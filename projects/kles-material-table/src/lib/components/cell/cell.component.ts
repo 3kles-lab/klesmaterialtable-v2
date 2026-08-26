@@ -9,6 +9,7 @@ import { filter, map, switchMap } from 'rxjs';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { KlesColumnConfig } from '../../core/table/column.interface';
 import { TreeService } from '../../services/features/tree/tree.service';
+import { EventsService } from '../../services/features/events/events.service';
 
 @Component({
     selector: 'kles-cell',
@@ -21,10 +22,12 @@ export class KlesCellComponent implements OnInit {
     private readonly destroyRef = inject(DestroyRef);
     private readonly expandedRowStore = inject(ExpandedRowStore);
     private readonly treeService = inject(TreeService);
+    private readonly eventsService = inject(EventsService);
 
     ui = input.required<GroupUiState<any>>();
     group = input.required<FormGroup<any>>();
     column = input.required<KlesColumnConfig>();
+    rowIndex = input.required<number>();
 
     expandedRow = computed(() => {
         return (this.column().canExpand ?? false) && (this.ui().get(this.column().columnDef)?.value().expandedRow ?? false);
@@ -49,11 +52,23 @@ export class KlesCellComponent implements OnInit {
     }
 
     expandRow() {
-        this.expandedRowStore.toggle(this.group().getRawValue()._id);
+        const row = this.group();
+        const expanded = this.expandedRowStore.isExpanded(row.getRawValue()._id);
+        this.expandedRowStore.toggle(row.getRawValue()._id);
+
+        const payload = {
+            row,
+            rowIndex: this.rowIndex(),
+            value: row.value,
+            rawValue: row.getRawValue(),
+            level: row.getRawValue()._depth,
+        };
+        this.eventsService.emit(expanded ? 'rowCollapse' : 'rowExpand', payload);
+        this.eventsService.emit('rowToggleExpand', payload);
     }
 
     expandNode() {
-        this.treeService.toggle(this.group().getRawValue()._id, this.group(), 0); //TODO depth
+        this.treeService.toggle(this.group().getRawValue()._id, this.group(), this.group().getRawValue()._depth ?? 0);
     }
 
     private listen() {

@@ -4,6 +4,7 @@ import {
     Directive,
     effect,
     Injector,
+    inject,
     input,
     OnDestroy,
     OnInit,
@@ -290,7 +291,7 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
 
                       {
                           provide: ROW_DRAG_DROP,
-                          useFactory: () => new DragDropLazyService(this.tableConfig().dragDropRows),
+                          useFactory: () => new DragDropLazyService(this.tableConfig().dragDropRows, inject(EventsService)),
                       },
                       {
                           provide: SORT_SERVICE,
@@ -318,8 +319,12 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
                       FilterService,
                       {
                           provide: ROW_DRAG_DROP,
-                          useFactory: (paginatorstore: PaginatorStore | null) => new DragDropService(this.tableConfig().dragDropRows, paginatorstore),
-                          deps: [...(this.tableConfig().paginator ? [PaginatorStore] : [])],
+                          useFactory: () =>
+                              new DragDropService(
+                                  this.tableConfig().dragDropRows,
+                                  inject(EventsService),
+                                  inject(PaginatorStore, { optional: true }),
+                              ),
                       },
                       {
                           provide: SORT_SERVICE,
