@@ -24,6 +24,7 @@ import { MatTable, MatTableModule } from '@angular/material/table';
 import { ITable } from '../../core/table/table.interface';
 
 import { CdkTableModule } from '@angular/cdk/table';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 import { ArrayUiState, GroupUiState, KlesMaterialDynamicformsModule } from '@3kles/kles-material-dynamicforms';
 import { HeaderFieldPipe } from '../../pipes/header-field.pipe';
 import { CellFieldPipe, ExtraCellFieldPipe } from '../../pipes/cell-field.pipe';
@@ -97,6 +98,7 @@ type TableSection = 'header' | 'body' | 'footer';
         MatIconModule,
         MatButtonModule,
         CdkTableModule,
+        ScrollingModule,
         KlesMaterialDynamicformsModule,
         HeaderFieldPipe,
         CellFieldPipe,

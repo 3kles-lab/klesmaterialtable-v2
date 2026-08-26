@@ -16,8 +16,8 @@ export abstract class DragDropBase {
         return this.config?.enable || false;
     }
 
-    get autoScrollStep() {
-        return this.config?.options?.autoScrollStep ?? true;
+    get autoScrollStep(): number {
+        return this.config?.options?.autoScrollStep ?? 8;
     }
 
     get connectedTo() {
