@@ -7,8 +7,11 @@ import { PaginationApi } from './pagination';
 import { ScrollbarApi } from './scrollbar';
 import { SelectionApi } from './selection';
 import { SortApi } from './sort';
+import { EmptyStateApi } from './empty-state';
+import { EventsApi } from './events';
+import { RenderApi } from './render';
 
-export interface KlesTableApi {
+export interface KlesTableApi<TValue = unknown> {
     refresh(): void;
     get scrollbar(): ScrollbarApi;
     get column(): ColumnApi;
@@ -18,10 +21,12 @@ export interface KlesTableApi {
     get selection(): SelectionApi;
     get form(): FormApi;
     get footer(): FooterApi;
+    get emptyState(): EmptyStateApi;
+    get render(): RenderApi;
+    get events(): EventsApi<TValue>;
     get ui(): GroupUiState<{
         header: GroupUiState;
         rows: ArrayUiState;
         footer: GroupUiState;
     }>;
-    // event
 }

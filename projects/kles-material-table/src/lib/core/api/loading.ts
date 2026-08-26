@@ -1,4 +1,7 @@
+import { Signal } from '@angular/core';
+
 export interface LoadingApi {
-    start();
-    stop();
+    active: Signal<boolean>;
+    start(): void;
+    stop(): void;
 }

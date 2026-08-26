@@ -8,6 +8,8 @@ import { SelectionApi } from '../api/selection';
 import { SortApi } from '../api/sort';
 import { FormApi } from '../api/form';
 import { EventsApi } from '../api/events';
+import { EmptyStateApi } from '../api/empty-state';
+import { RenderApi } from '../api/render';
 
 export interface ITable {
     scrollbar: ScrollbarApi;
@@ -19,6 +21,8 @@ export interface ITable {
     loading: LoadingApi;
     form: FormApi;
     events: EventsApi;
+    emptyState: EmptyStateApi;
+    render: RenderApi;
     ui: GroupUiState<{
         header: GroupUiState;
         rows: ArrayUiState;

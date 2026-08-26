@@ -77,6 +77,8 @@ import { CellService } from '../../services/features/cell/cell.service';
 import { KlesTableEmptyStateComponent } from '../empty-state/empty-state.component';
 import { EmptyStateService } from '../../services/features/empty-state/empty-state.service';
 import { RowContextPipe } from '../../pipes/row-context.pipe';
+import { EmptyStateApi } from '../../core/api/empty-state';
+import { RenderApi } from '../../core/api/render';
 
 type TableSection = 'header' | 'body' | 'footer';
 
@@ -191,6 +193,21 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
         };
     }
 
+    get emptyState(): EmptyStateApi {
+        return {
+            enabled: this.emptyStateService.enabled,
+            enable: () => this.emptyStateService.enable(),
+            disable: () => this.emptyStateService.disable(),
+            toggle: () => this.emptyStateService.toggle(),
+        };
+    }
+
+    get render(): RenderApi {
+        return {
+            rows: () => this.renderService.forceRenderRows(),
+        };
+    }
+
     get form(): FormApi {
         return {
             header: {
@@ -236,6 +253,9 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
 
     get scrollbar(): ScrollbarApi {
         return {
+            setVisible: (visible) => this.scrollbarService.setScrollbarVisible(visible),
+            show: () => this.scrollbarService.showScrollbar(),
+            hide: () => this.scrollbarService.hideScrollbar(),
             getTop: () => this.scrollbarService.getTop(),
             to: (top, left, sb) => this.scrollbarService.to(top, left, sb),
             toTop: (sb) => this.scrollbarService.toTop(sb),
@@ -247,6 +267,7 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
 
     get column(): ColumnApi {
         return {
+            getVisible: () => this.columnsService.getVisible(),
             setVisible: (columnDef, visible) => this.columnsService.setVisible(columnDef, visible),
             toggleVisible: (columnDef) => this.columnsService.toggleVisible(columnDef),
             changeWidth: (columnDef, options) => this.columnsService.changeWidth(columnDef, options),
@@ -260,6 +281,7 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
 
     get pagination(): PaginationApi {
         return {
+            disabled: this.paginatorService.disabled(),
             setPageIndex: (index) => this.paginatorService.setPageIndex(index),
             setPageSize: (size) => this.paginatorService.setPageSize(size),
             firstPage: () => this.paginatorService.firstPage(),
@@ -294,6 +316,7 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
 
     get loading(): LoadingApi {
         return {
+            active: this.loadingService.loading,
             start: () => this.loadingService.start(),
             stop: () => this.loadingService.stop(),
         };
@@ -301,6 +324,7 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
 
     get footer(): FooterApi {
         return {
+            visible: this.footerService.footer,
             hide: () => this.footerService.hide(),
             show: () => this.footerService.show(),
         };

@@ -16,6 +16,9 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter, switchMap } from 'rxjs';
 import { TableEvent } from './services/features/events/events.model';
 import { CellMousePayload, CellValueChangePayload, RowMousePayload } from './services/features/events/event-payloads.model';
+import { EmptyStateApi } from './core/api/empty-state';
+import { RenderApi } from './core/api/render';
+import { EventsApi } from './core/api/events';
 
 @Component({
     selector: 'kles-dynamic-table',
@@ -25,7 +28,7 @@ import { CellMousePayload, CellValueChangePayload, RowMousePayload } from './ser
     providers: [KlesTableConnectorService],
     styleUrl: './kles-table.component.scss',
 })
-export class KlesTableComponent<TValue = unknown> implements OnInit, KlesTableApi {
+export class KlesTableComponent<TValue = unknown> implements OnInit, KlesTableApi<TValue> {
     tableConfig = input.required<KlesTableConfig>();
     private readonly destroyRef = inject(DestroyRef);
 
@@ -61,7 +64,7 @@ export class KlesTableComponent<TValue = unknown> implements OnInit, KlesTableAp
                 takeUntilDestroyed(this.destroyRef),
                 filter((connected) => connected),
                 switchMap(() => {
-                    return this.connectorService.events.listen();
+                    return this.events.listen();
                 }),
             )
             .subscribe((event) => {
@@ -108,6 +111,18 @@ export class KlesTableComponent<TValue = unknown> implements OnInit, KlesTableAp
 
     get footer(): FooterApi {
         return this.connectorService.footer;
+    }
+
+    get emptyState(): EmptyStateApi {
+        return this.connectorService.emptyState;
+    }
+
+    get render(): RenderApi {
+        return this.connectorService.render;
+    }
+
+    get events(): EventsApi<TValue> {
+        return this.connectorService.events as EventsApi<TValue>;
     }
 
     get ui(): GroupUiState<{

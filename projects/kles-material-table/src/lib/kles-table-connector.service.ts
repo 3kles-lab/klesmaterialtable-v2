@@ -10,6 +10,8 @@ import { FooterApi } from './core/api/footer';
 import { ArrayUiState, GroupUiState } from '@3kles/kles-material-dynamicforms';
 import { EventsApi } from './core/api/events';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { EmptyStateApi } from './core/api/empty-state';
+import { RenderApi } from './core/api/render';
 
 @Injectable()
 export class KlesTableConnectorService {
@@ -81,6 +83,14 @@ export class KlesTableConnectorService {
 
     get events(): EventsApi {
         return this.table.events;
+    }
+
+    get emptyState(): EmptyStateApi {
+        return this.table.emptyState;
+    }
+
+    get render(): RenderApi {
+        return this.table.render;
     }
 
     public refresh() {
