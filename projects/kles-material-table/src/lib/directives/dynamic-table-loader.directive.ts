@@ -292,7 +292,13 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
                       {
                           provide: ROW_DRAG_DROP,
                           useFactory: () =>
-                              new DragDropLazyService(this.tableConfig().dragDropRows, inject(EventsService), inject(KlesForm)),
+                              new DragDropLazyService(
+                                  this.tableConfig().dragDropRows,
+                                  inject(EventsService),
+                                  inject(KlesForm),
+                                  inject(Injector),
+                                  this.tableConfig().id,
+                              ),
                       },
                       {
                           provide: SORT_SERVICE,
@@ -325,6 +331,8 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
                                   this.tableConfig().dragDropRows,
                                   inject(EventsService),
                                   inject(KlesForm),
+                                  inject(Injector),
+                                  this.tableConfig().id,
                               ),
                       },
                       {

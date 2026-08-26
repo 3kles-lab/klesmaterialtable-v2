@@ -1,6 +1,6 @@
 import { InjectionToken, WritableSignal } from '@angular/core';
 import { KlesColumnConfig } from './core/table/column.interface';
-import { EmptyStateConfig, ExtraRowConfig, LoaderConfig, PaginatorConfig } from './core/table/config.interface';
+import { DragDropConfig, DragDropRowContext, EmptyStateConfig, ExtraRowConfig, LoaderConfig, PaginatorConfig } from './core/table/config.interface';
 import { DragDropService } from './services/features/dragdrop/dragdrop.service';
 import { Sort } from '@angular/material/sort';
 
@@ -24,7 +24,8 @@ export const FOOTER = new InjectionToken<WritableSignal<boolean>>('FOOTER');
 export const EXTRA_ROWS = new InjectionToken<WritableSignal<ExtraRowConfig[]>>('EXTRA_ROWS');
 
 export const ROW_DRAG_DROP = new InjectionToken<DragDropService>('ROW_DRAG_DROP');
-export const DRAG_DROP_CONFIG = new InjectionToken<DragDropService>('DRAG_DROP_CONFIG');
+export const DRAG_DROP_CONFIG = new InjectionToken<DragDropConfig | undefined>('DRAG_DROP_CONFIG');
+export const KLES_DRAG_DROP_ROW_CONTEXT = new InjectionToken<DragDropRowContext>('KLES_DRAG_DROP_ROW_CONTEXT');
 
 // export const KLES_TABLE_SERVICE = new InjectionToken<KlesTableService>('KLES_TABLE_SERVICE');
 

@@ -135,6 +135,40 @@ export class KlesForm {
         };
     }
 
+    public transferRowTo(target: KlesForm, row: FormGroup, targetRow?: FormGroup): { previousIndex: number; currentIndex: number } | undefined {
+        if (target === this) {
+            return targetRow ? this.moveRow(row, targetRow) : undefined;
+        }
+
+        const previousIndex = this.getRows().controls.indexOf(row);
+        if (previousIndex < 0) {
+            return undefined;
+        }
+
+        const rowUi = this.uiStore.get(row) ?? this.getUiRows().at(previousIndex);
+        const rowContext = this.rowContextStore.get(row)?.();
+        const targetIndex = targetRow ? target.getRows().controls.indexOf(targetRow) : target.getRows().length;
+        const currentIndex = targetIndex < 0 ? target.getRows().length : targetIndex;
+
+        this.getRows().removeAt(previousIndex, { emitEvent: false });
+        this.getUiRows().removeAt(previousIndex);
+        this.rowContextStore.delete(row);
+
+        target.getRows().insert(currentIndex, row, { emitEvent: false });
+        target.getUiRows().insert(currentIndex, rowUi);
+        target.uiStore.set(row, rowUi);
+        if (rowContext) {
+            target.rowContextStore.set(row, rowContext);
+        }
+
+        this.getRows().updateValueAndValidity({ emitEvent: true });
+        target.getRows().updateValueAndValidity({ emitEvent: true });
+        this.notifyRowsStructureChanged();
+        target.notifyRowsStructureChanged();
+
+        return { previousIndex, currentIndex };
+    }
+
     public updateRow(_id: number | string, value: any, options?: { emitEvent?: boolean; onlySelf?: boolean }) {
         const row = this.getRows().controls.find((c) => c.getRawValue()._id === _id);
 

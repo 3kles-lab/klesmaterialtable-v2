@@ -46,17 +46,22 @@ export interface DragDropConfig {
     options?: {
         autoScrollStep?: number;
         connectedTo?: string[];
-        dragDisabled?: (row: FormGroup) => boolean; //TODO
+        dragDisabled?: (row: FormGroup) => boolean;
         dragPreview?: {
-            //TODO
             matchSize?: boolean;
-            component: Type<any>;
+            component: Type<unknown>;
         };
         dragPlaceholder?: {
-            //TODO
-            component: Type<any>;
+            component: Type<unknown>;
         };
     };
+}
+
+export interface DragDropRowContext<TValue = unknown> {
+    row: FormGroup;
+    rowIndex: number;
+    value: Partial<TValue>;
+    rawValue: TValue;
 }
 
 export interface DragDrop {

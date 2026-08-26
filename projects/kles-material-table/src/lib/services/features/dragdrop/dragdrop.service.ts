@@ -1,17 +1,24 @@
-import { Inject, Injectable, Optional } from '@angular/core';
+import { Inject, Injector, Optional } from '@angular/core';
 import { CdkDrag, CdkDragDrop } from '@angular/cdk/drag-drop';
 import { DragDropConfig } from '../../../core/table/config.interface';
-import { DRAG_DROP_CONFIG } from '../../../token';
-import { FormArray, FormGroup } from '@angular/forms';
+import { DRAG_DROP_CONFIG, KLES_DRAG_DROP_ROW_CONTEXT } from '../../../token';
+import { FormGroup } from '@angular/forms';
 import { EventsService } from '../events/events.service';
 import { KlesForm } from '../table/form';
 
 export abstract class DragDropBase {
+    private static nextDropListId = 0;
+    readonly dropListId: string;
+
     constructor(
         protected config: DragDropConfig | undefined,
         protected readonly eventsService: EventsService,
         protected readonly klesForm: KlesForm,
-    ) {}
+        protected readonly injector: Injector,
+        tableId?: string,
+    ) {
+        this.dropListId = tableId ? this.toDropListId(tableId) : `kles-rows-drop-list-${DragDropBase.nextDropListId++}`;
+    }
 
     get enable() {
         return this.config?.enable || false;
@@ -22,7 +29,7 @@ export abstract class DragDropBase {
     }
 
     get connectedTo() {
-        return this.config?.options?.connectedTo;
+        return this.config?.options?.connectedTo?.map((id) => this.toDropListId(id));
     }
 
     get sortPredicate(): (index: number, item: CdkDrag<number>) => boolean {
@@ -36,10 +43,30 @@ export abstract class DragDropBase {
     }
 
     get previewMatchSize() {
-        return this.config?.options?.dragPreview?.matchSize || true;
+        return this.config?.options?.dragPreview?.matchSize ?? true;
     }
 
-    abstract listDropped(event: CdkDragDrop<FormArray<FormGroup>>): void;
+    get placeholderComponent() {
+        return this.config?.options?.dragPlaceholder?.component;
+    }
+
+    isDragDisabled(row: FormGroup): boolean {
+        return this.config?.options?.dragDisabled?.(row) ?? false;
+    }
+
+    componentInjector(row: FormGroup, rowIndex: number): Injector {
+        return Injector.create({
+            parent: this.injector,
+            providers: [
+                {
+                    provide: KLES_DRAG_DROP_ROW_CONTEXT,
+                    useValue: this.rowPayload(row, rowIndex),
+                },
+            ],
+        });
+    }
+
+    abstract listDropped(event: CdkDragDrop<KlesForm>): void;
 
     rowDragStarted(row: FormGroup, rowIndex: number): void {
         this.eventsService.emit('rowDragStart', this.rowPayload(row, rowIndex));
@@ -62,7 +89,7 @@ export abstract class DragDropBase {
         };
     }
 
-    protected reorder(event: CdkDragDrop<FormArray<FormGroup>>): void {
+    protected reorder(event: CdkDragDrop<KlesForm>): void {
         const row = event.item.data as FormGroup;
         const visibleRows = event.container.getSortedItems().map((item) => item.data as FormGroup);
         const targetRow = visibleRows[event.currentIndex];
@@ -81,58 +108,66 @@ export abstract class DragDropBase {
             });
         }
     }
-}
 
-@Injectable()
-export class DragDropService extends DragDropBase {
-    constructor(
-        @Optional() @Inject(DRAG_DROP_CONFIG) config: DragDropConfig | undefined,
-        eventsService: EventsService,
-        klesForm: KlesForm,
-    ) {
-        super(config, eventsService, klesForm);
-    }
+    protected transfer(event: CdkDragDrop<KlesForm>): void {
+        const row = event.item.data as FormGroup;
+        const targetRows = event.container.getSortedItems().map((item) => item.data as FormGroup);
+        const targetRow = targetRows[event.currentIndex];
+        const moved = event.previousContainer.data.transferRowTo(event.container.data, row, targetRow);
 
-    listDropped(event: CdkDragDrop<FormArray<FormGroup>>) {
-        if (event.previousContainer === event.container) {
-            this.reorder(event);
-        } else {
-            const row = event.item.data as FormGroup;
+        if (moved) {
             this.eventsService.emit('rowDrop', {
-                ...this.rowPayload(row, event.currentIndex),
-                previousIndex: event.previousIndex,
-                currentIndex: event.currentIndex,
+                ...this.rowPayload(row, moved.currentIndex),
+                previousIndex: moved.previousIndex,
+                currentIndex: moved.currentIndex,
                 previousContainerId: event.previousContainer.id,
                 currentContainerId: event.container.id,
             });
         }
     }
+
+    private toDropListId(id: string): string {
+        return id.endsWith('-rows-drop-list') ? id : `${id}-rows-drop-list`;
+    }
 }
 
-@Injectable()
+export class DragDropService extends DragDropBase {
+    constructor(
+        @Optional() @Inject(DRAG_DROP_CONFIG) config: DragDropConfig | undefined,
+        eventsService: EventsService,
+        klesForm: KlesForm,
+        injector: Injector,
+        tableId?: string,
+    ) {
+        super(config, eventsService, klesForm, injector, tableId);
+    }
+
+    listDropped(event: CdkDragDrop<KlesForm>) {
+        if (event.previousContainer === event.container) {
+            this.reorder(event);
+        } else {
+            this.transfer(event);
+        }
+    }
+}
+
 export class DragDropLazyService extends DragDropBase {
     constructor(
         @Optional() @Inject(DRAG_DROP_CONFIG) config: DragDropConfig | undefined,
         eventsService: EventsService,
         klesForm: KlesForm,
+        injector: Injector,
+        tableId?: string,
     ) {
-        super(config, eventsService, klesForm);
+        super(config, eventsService, klesForm, injector, tableId);
     }
 
-    listDropped(event: CdkDragDrop<FormArray<FormGroup>>) {
+    listDropped(event: CdkDragDrop<KlesForm>) {
         if (event.previousContainer === event.container) {
             this.reorder(event);
             return;
         }
 
-        const row = event.item.data as FormGroup;
-        this.eventsService.emit('rowDrop', {
-            ...this.rowPayload(row, event.currentIndex),
-            previousIndex: event.previousIndex,
-            currentIndex: event.currentIndex,
-            previousContainerId: event.previousContainer.id,
-            currentContainerId: event.container.id,
-        });
-        // TODO appeler un observable + refresh tableau
+        this.transfer(event);
     }
 }
