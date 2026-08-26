@@ -2,6 +2,7 @@ import { AbstractControl, FormGroup, ValidationErrors } from '@angular/forms';
 
 import { PageEvent } from '@angular/material/paginator';
 import { SortDirection } from '@angular/material/sort';
+import { DragDropRowChange } from '../../../core/table/config.interface';
 
 export type AggregationType = 'sum' | 'avg' | 'min' | 'max' | 'count';
 
@@ -161,11 +162,11 @@ export interface ColumnVisibilityChangePayload {
 /**
  * Drag & drop.
  */
-export interface RowDropPayload<TValue = unknown> extends RowPayload<TValue> {
-    previousIndex: number;
-    currentIndex: number;
-    previousContainerId?: string;
-    currentContainerId?: string;
+export interface RowDropPayload<TValue = unknown> extends DragDropRowChange<TValue> {}
+
+export interface RowDropErrorPayload<TValue = unknown> {
+    change: RowDropPayload<TValue>;
+    error: unknown;
 }
 
 export interface ColumnDropPayload {

@@ -1,10 +1,11 @@
 import { Inject, Injector, Optional } from '@angular/core';
 import { CdkDrag, CdkDragDrop } from '@angular/cdk/drag-drop';
-import { DragDropConfig } from '../../../core/table/config.interface';
+import { DragDropConfig, DragDropRowChange } from '../../../core/table/config.interface';
 import { DRAG_DROP_CONFIG, KLES_DRAG_DROP_ROW_CONTEXT } from '../../../token';
 import { FormGroup } from '@angular/forms';
 import { EventsService } from '../events/events.service';
 import { KlesForm } from '../table/form';
+import { defaultIfEmpty, defer, take } from 'rxjs';
 
 export abstract class DragDropBase {
     private static nextDropListId = 0;
@@ -101,7 +102,7 @@ export abstract class DragDropBase {
         const moved = this.klesForm.moveRow(row, targetRow);
 
         if (moved) {
-            this.eventsService.emit('rowDrop', {
+            this.handleDrop({
                 ...this.rowPayload(row, moved.currentIndex),
                 previousIndex: moved.previousIndex,
                 currentIndex: moved.currentIndex,
@@ -116,7 +117,7 @@ export abstract class DragDropBase {
         const moved = event.previousContainer.data.transferRowTo(event.container.data, row, targetRow);
 
         if (moved) {
-            this.eventsService.emit('rowDrop', {
+            this.handleDrop({
                 ...this.rowPayload(row, moved.currentIndex),
                 previousIndex: moved.previousIndex,
                 currentIndex: moved.currentIndex,
@@ -124,6 +125,22 @@ export abstract class DragDropBase {
                 currentContainerId: event.container.id,
             });
         }
+    }
+
+    private handleDrop(change: DragDropRowChange): void {
+        this.eventsService.emit('rowDrop', change);
+
+        const drop = this.config?.options?.drop;
+        if (!drop) {
+            return;
+        }
+
+        defer(() => drop(change))
+            .pipe(defaultIfEmpty(undefined), take(1))
+            .subscribe({
+                next: () => this.eventsService.emit('rowDropSuccess', change),
+                error: (error) => this.eventsService.emit('rowDropError', { change, error }),
+            });
     }
 
     private toDropListId(id: string): string {

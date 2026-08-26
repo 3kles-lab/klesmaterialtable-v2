@@ -22,6 +22,8 @@ import {
     LoadErrorPayload,
     PageChangePayload,
     RowMousePayload,
+    RowDropErrorPayload,
+    RowDropPayload,
     SelectionChangePayload,
     SortPayload,
 } from './services/features/events/event-payloads.model';
@@ -48,6 +50,9 @@ export class KlesTableComponent<TValue = unknown> implements OnInit, KlesTableAp
     @Output() rowContextMenu = new EventEmitter<RowMousePayload<TValue>>();
     @Output() rowMouseEnter = new EventEmitter<RowMousePayload<TValue>>();
     @Output() rowMouseLeave = new EventEmitter<RowMousePayload<TValue>>();
+    @Output() rowDrop = new EventEmitter<RowDropPayload<TValue>>();
+    @Output() rowDropSuccess = new EventEmitter<RowDropPayload<TValue>>();
+    @Output() rowDropError = new EventEmitter<RowDropErrorPayload<TValue>>();
 
     @Output() cellClick = new EventEmitter<CellMousePayload<TValue>>();
     @Output() cellDoubleClick = new EventEmitter<CellMousePayload<TValue>>();
@@ -167,6 +172,18 @@ export class KlesTableComponent<TValue = unknown> implements OnInit, KlesTableAp
 
             case 'rowMouseLeave':
                 this.rowMouseLeave.emit(event.payload);
+                break;
+
+            case 'rowDrop':
+                this.rowDrop.emit(event.payload);
+                break;
+
+            case 'rowDropSuccess':
+                this.rowDropSuccess.emit(event.payload);
+                break;
+
+            case 'rowDropError':
+                this.rowDropError.emit(event.payload);
                 break;
 
             case 'cellClick':

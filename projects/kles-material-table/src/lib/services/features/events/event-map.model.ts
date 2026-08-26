@@ -11,6 +11,7 @@ import {
     LoadSuccessPayload,
     PageChangePayload,
     RowDropPayload,
+    RowDropErrorPayload,
     RowMousePayload,
     RowPayload,
     SortPayload,
@@ -87,6 +88,8 @@ export interface TableEventMap<TValue = unknown> {
     rowDragMove: RowPayload<TValue>;
     rowDragEnd: RowPayload<TValue>;
     rowDrop: RowDropPayload<TValue>;
+    rowDropSuccess: RowDropPayload<TValue>;
+    rowDropError: RowDropErrorPayload<TValue>;
 
     /**
      * Expansion / tree

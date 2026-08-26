@@ -7,6 +7,7 @@ import { LinesLazyLoader, LinesLoader } from './loader.interface';
 import { SelectionConfig } from './selection-config.interface';
 import { KlesExtraCellFieldConfig } from './cell.interface';
 import { KlesTableIntl } from '../../components/table/table-intl';
+import { Observable } from 'rxjs';
 
 export type TableElevationLevel = 0 | 1 | 2 | 3 | 4 | 5;
 
@@ -41,12 +42,20 @@ export interface InfiniteScrollConfig {
     infinite?: boolean; //TODO
 }
 
-export interface DragDropConfig {
+export interface DragDropRowChange<TValue = unknown> extends DragDropRowContext<TValue> {
+    previousIndex: number;
+    currentIndex: number;
+    previousContainerId?: string;
+    currentContainerId?: string;
+}
+
+export interface DragDropConfig<TValue = unknown> {
     enable?: boolean;
     options?: {
         autoScrollStep?: number;
         connectedTo?: string[];
         dragDisabled?: (row: FormGroup) => boolean;
+        drop?: (change: DragDropRowChange<TValue>) => Observable<unknown>;
         dragPreview?: {
             matchSize?: boolean;
             component: Type<unknown>;
@@ -64,9 +73,9 @@ export interface DragDropRowContext<TValue = unknown> {
     rawValue: TValue;
 }
 
-export interface DragDrop {
-    dragDropRows?: DragDropConfig;
-    drapDropColumns?: DragDropConfig; //TODO
+export interface DragDrop<TValue = unknown> {
+    dragDropRows?: DragDropConfig<TValue>;
+    drapDropColumns?: DragDropConfig<TValue>; //TODO
 }
 
 export type ExtraRowMode = 'expand' | 'always';
@@ -93,6 +102,6 @@ type Exclusive<T, U> = (T & { [K in keyof U]?: never }) | (U & { [K in keyof T]?
 export type KlesTableConfig<T = any, R = any> = DefaultTableConfig &
     Exclusive<PaginatorConfig, InfiniteScrollConfig> &
     LoaderConfig<T, R> &
-    DragDrop &
+    DragDrop<R> &
     Selection<T> &
     ExtraRow;
