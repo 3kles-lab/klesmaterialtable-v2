@@ -1,15 +1,16 @@
 import { Inject, Injectable, Optional } from '@angular/core';
 import { CdkDrag, CdkDragDrop } from '@angular/cdk/drag-drop';
 import { DragDropConfig } from '../../../core/table/config.interface';
-import { PaginatorStore } from '../../store/paginator-store.service';
 import { DRAG_DROP_CONFIG } from '../../../token';
 import { FormArray, FormGroup } from '@angular/forms';
 import { EventsService } from '../events/events.service';
+import { KlesForm } from '../table/form';
 
 export abstract class DragDropBase {
     constructor(
         protected config: DragDropConfig | undefined,
         protected readonly eventsService: EventsService,
+        protected readonly klesForm: KlesForm,
     ) {}
 
     get enable() {
@@ -60,6 +61,26 @@ export abstract class DragDropBase {
             rawValue: row.getRawValue(),
         };
     }
+
+    protected reorder(event: CdkDragDrop<FormArray<FormGroup>>): void {
+        const row = event.item.data as FormGroup;
+        const visibleRows = event.container.getSortedItems().map((item) => item.data as FormGroup);
+        const targetRow = visibleRows[event.currentIndex];
+
+        if (!targetRow) {
+            return;
+        }
+
+        const moved = this.klesForm.moveRow(row, targetRow);
+
+        if (moved) {
+            this.eventsService.emit('rowDrop', {
+                ...this.rowPayload(row, moved.currentIndex),
+                previousIndex: moved.previousIndex,
+                currentIndex: moved.currentIndex,
+            });
+        }
+    }
 }
 
 @Injectable()
@@ -67,29 +88,14 @@ export class DragDropService extends DragDropBase {
     constructor(
         @Optional() @Inject(DRAG_DROP_CONFIG) config: DragDropConfig | undefined,
         eventsService: EventsService,
-        @Optional() private paginatorStore?: PaginatorStore | null,
+        klesForm: KlesForm,
     ) {
-        super(config, eventsService);
+        super(config, eventsService, klesForm);
     }
 
     listDropped(event: CdkDragDrop<FormArray<FormGroup>>) {
         if (event.previousContainer === event.container) {
-            const faRows = event.container.data;
-
-            const currentIndex = event.currentIndex + (this.paginatorStore?.snapshot().page ?? 0) * (this.paginatorStore?.snapshot().perPage ?? 0);
-            const previousIndex = event.previousIndex + (this.paginatorStore?.snapshot().page ?? 0) * (this.paginatorStore?.snapshot().perPage ?? 0);
-
-            if (previousIndex >= 0) {
-                const ctrl = faRows.at(previousIndex);
-                faRows.removeAt(previousIndex, { emitEvent: false });
-                faRows.insert(currentIndex, ctrl, { emitEvent: false });
-                faRows.updateValueAndValidity({ emitEvent: true });
-                this.eventsService.emit('rowDrop', {
-                    ...this.rowPayload(ctrl, currentIndex),
-                    previousIndex,
-                    currentIndex,
-                });
-            }
+            this.reorder(event);
         } else {
             const row = event.item.data as FormGroup;
             this.eventsService.emit('rowDrop', {
@@ -108,11 +114,17 @@ export class DragDropLazyService extends DragDropBase {
     constructor(
         @Optional() @Inject(DRAG_DROP_CONFIG) config: DragDropConfig | undefined,
         eventsService: EventsService,
+        klesForm: KlesForm,
     ) {
-        super(config, eventsService);
+        super(config, eventsService, klesForm);
     }
 
     listDropped(event: CdkDragDrop<FormArray<FormGroup>>) {
+        if (event.previousContainer === event.container) {
+            this.reorder(event);
+            return;
+        }
+
         const row = event.item.data as FormGroup;
         this.eventsService.emit('rowDrop', {
             ...this.rowPayload(row, event.currentIndex),

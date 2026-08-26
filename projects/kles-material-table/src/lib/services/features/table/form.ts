@@ -107,6 +107,34 @@ export class KlesForm {
         this.notifyRowsStructureChanged();
     }
 
+    public moveRow(row: FormGroup, targetRow: FormGroup): { previousIndex: number; currentIndex: number } | undefined {
+        const rows = this.getRows();
+        const previousIndex = rows.controls.indexOf(row);
+        const targetIndex = rows.controls.indexOf(targetRow);
+
+        if (previousIndex < 0 || targetIndex < 0 || previousIndex === targetIndex) {
+            return undefined;
+        }
+
+        const rowUi = this.uiStore.get(row) ?? this.getUiRows().at(previousIndex);
+
+        rows.removeAt(previousIndex, { emitEvent: false });
+        this.getUiRows().removeAt(previousIndex);
+
+        // En descendant, la suppression décale la cible d'une position : utiliser
+        // son index initial insère donc naturellement la ligne après celle-ci.
+        rows.insert(targetIndex, row, { emitEvent: false });
+        this.getUiRows().insert(targetIndex, rowUi);
+
+        rows.updateValueAndValidity({ emitEvent: true });
+        this.notifyRowsStructureChanged();
+
+        return {
+            previousIndex,
+            currentIndex: rows.controls.indexOf(row),
+        };
+    }
+
     public updateRow(_id: number | string, value: any, options?: { emitEvent?: boolean; onlySelf?: boolean }) {
         const row = this.getRows().controls.find((c) => c.getRawValue()._id === _id);
 
