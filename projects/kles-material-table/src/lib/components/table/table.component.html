@@ -18,7 +18,12 @@
     >
         <colgroup>
             @for (column of columns(); track column.columnDef) {
-                <col [style.width]="column.width ?? null" [style.minWidth]="column.minWidth ?? null" [style.maxWidth]="column.maxWidth ?? null" />
+                <col
+                    [attr.data-column-def]="column.columnDef"
+                    [style.width]="column.width ?? null"
+                    [style.minWidth]="column.minWidth ?? null"
+                    [style.maxWidth]="column.maxWidth ?? null"
+                />
             }
         </colgroup>
 

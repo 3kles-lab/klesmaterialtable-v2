@@ -17,6 +17,12 @@ export class ResizableColumnDirective implements OnInit, OnChanges, OnDestroy {
     private handle?: HTMLElement;
     private widthLabel?: HTMLElement;
     private activeCells: HTMLElement[] = [];
+    private resizeCells: HTMLElement[] = [];
+    private resizeCol?: HTMLTableColElement;
+    private resizeMinWidth = this.defaultMinWidth;
+    private resizeMaxWidth = this.defaultMaxWidth;
+    private pendingWidth?: number;
+    private animationFrameId?: number;
     private handleCleanups: Array<() => void> = [];
     private documentCleanups: Array<() => void> = [];
 
@@ -58,6 +64,7 @@ export class ResizableColumnDirective implements OnInit, OnChanges, OnDestroy {
         this.startX = event.clientX;
         this.startWidth = th.getBoundingClientRect().width;
         this.currentWidth = this.startWidth;
+        this.cacheResizeTargets();
         this.resizing = true;
         this.setActiveState(true);
         this.updateWidthLabel(this.currentWidth);
@@ -76,15 +83,19 @@ export class ResizableColumnDirective implements OnInit, OnChanges, OnDestroy {
     private onPointerMove(event: PointerEvent): void {
         if (!this.resizing) return;
         event.preventDefault();
-        this.resizeTo(this.startWidth + event.clientX - this.startX, true);
+        this.pendingWidth = this.startWidth + event.clientX - this.startX;
+        this.scheduleResizeFrame();
     }
 
     private stopResize(emit = true): void {
         this.clearDocumentListeners();
         if (!this.resizing) return;
 
+        this.flushResizeFrame();
         this.resizing = false;
+        this.applyWidth(this.currentWidth, this.resizeCells);
         this.setActiveState(false);
+        this.clearResizeCache();
         if (this.currentWidth <= 0) return;
 
         this.columnsService.changeWidth(this.column().columnDef, { width: `${this.currentWidth}px` });
@@ -126,7 +137,7 @@ export class ResizableColumnDirective implements OnInit, OnChanges, OnDestroy {
         this.startWidth = previousWidth;
         this.currentWidth = previousWidth;
         this.emitResizeStart(previousWidth);
-        this.resizeTo(nextWidth, true);
+        this.resizeTo(nextWidth, true, false);
         this.columnsService.changeWidth(this.column().columnDef, { width: `${nextWidth}px` });
         this.eventsService.emit('columnResizeEnd', {
             columnDef: this.column().columnDef,
@@ -135,13 +146,15 @@ export class ResizableColumnDirective implements OnInit, OnChanges, OnDestroy {
         });
     }
 
-    private resizeTo(width: number, emit: boolean): void {
-        const next = this.clampWidth(width);
+    private resizeTo(width: number, emit: boolean, previewOnly = this.resizing): void {
+        const next = this.resizing
+            ? Math.min(this.resizeMaxWidth, Math.max(this.resizeMinWidth, width))
+            : this.clampWidth(width);
         if (Math.round(next) === Math.round(this.currentWidth)) return;
 
         const previousWidth = this.currentWidth;
         this.currentWidth = next;
-        this.applyWidth(next);
+        previewOnly ? this.applyPreviewWidth(next) : this.applyWidth(next);
         this.updateWidthLabel(next);
         if (emit) {
             this.zone.run(() =>
@@ -164,14 +177,72 @@ export class ResizableColumnDirective implements OnInit, OnChanges, OnDestroy {
         );
     }
 
-    private applyWidth(px: number): void {
-        for (const cell of this.getColumnCells()) {
+    private applyWidth(px: number, cells = this.getColumnCells()): void {
+        if (this.resizeCol) this.resizeCol.style.width = `${px}px`;
+        for (const cell of cells) {
             cell.style.width = `${px}px`;
             cell.style.minWidth = `${px}px`;
             cell.style.maxWidth = `${px}px`;
             cell.style.flex = `0 0 ${px}px`;
         }
         this.handle?.setAttribute('aria-valuenow', `${Math.round(px)}`);
+    }
+
+    private applyPreviewWidth(px: number): void {
+        if (this.resizeCol) {
+            this.resizeCol.style.width = `${px}px`;
+        } else {
+            // Fallback for consumers rendering without the table colgroup.
+            for (const cell of this.resizeCells) cell.style.width = `${px}px`;
+        }
+        this.handle?.setAttribute('aria-valuenow', `${Math.round(px)}`);
+    }
+
+    private scheduleResizeFrame(): void {
+        if (this.animationFrameId !== undefined) return;
+        const view = this.el.nativeElement.ownerDocument.defaultView;
+        if (!view) {
+            this.flushPendingWidth();
+            return;
+        }
+        this.animationFrameId = view.requestAnimationFrame(() => {
+            this.animationFrameId = undefined;
+            this.flushPendingWidth();
+        });
+    }
+
+    private flushResizeFrame(): void {
+        const view = this.el.nativeElement.ownerDocument.defaultView;
+        if (this.animationFrameId !== undefined && view) view.cancelAnimationFrame(this.animationFrameId);
+        this.animationFrameId = undefined;
+        this.flushPendingWidth();
+    }
+
+    private flushPendingWidth(): void {
+        if (this.pendingWidth === undefined) return;
+        const width = this.pendingWidth;
+        this.pendingWidth = undefined;
+        this.resizeTo(width, true, true);
+    }
+
+    private cacheResizeTargets(): void {
+        const root = this.el.nativeElement.closest('table, mat-table, cdk-table');
+        this.resizeCells = this.getColumnCells();
+        this.resizeCol = root
+            ? Array.from(root.querySelectorAll<HTMLTableColElement>('col[data-column-def]')).find(
+                  (col) => col.dataset['columnDef'] === this.column().columnDef,
+              )
+            : undefined;
+        this.resizeMinWidth = this.getMinWidth();
+        this.resizeMaxWidth = Math.max(this.resizeMinWidth, this.getMaxWidth());
+    }
+
+    private clearResizeCache(): void {
+        this.pendingWidth = undefined;
+        this.resizeCells = [];
+        this.resizeCol = undefined;
+        this.resizeMinWidth = this.defaultMinWidth;
+        this.resizeMaxWidth = this.defaultMaxWidth;
     }
 
     private measureContentWidth(): number {
@@ -211,7 +282,7 @@ export class ResizableColumnDirective implements OnInit, OnChanges, OnDestroy {
             this.renderer.removeStyle(th.ownerDocument.body, 'user-select');
         }
 
-        this.activeCells = active ? this.getColumnCells() : this.activeCells;
+        this.activeCells = active ? this.resizeCells : this.activeCells;
         for (const cell of this.activeCells) this.renderer[method](cell, 'column-resizing-cell');
         if (!active) this.activeCells = [];
     }
@@ -281,6 +352,8 @@ export class ResizableColumnDirective implements OnInit, OnChanges, OnDestroy {
 
     private remove(): void {
         if (this.resizing) this.stopResize(false);
+        this.flushResizeFrame();
+        this.clearResizeCache();
         this.clearDocumentListeners();
         this.handleCleanups.splice(0).forEach((cleanup) => cleanup());
         if (this.handle) this.renderer.removeChild(this.el.nativeElement, this.handle);
