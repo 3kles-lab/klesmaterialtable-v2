@@ -81,7 +81,7 @@ export interface DragDropRowContext<TValue = unknown> {
 
 export interface DragDrop<TValue = unknown> {
     dragDropRows?: DragDropConfig<TValue>;
-    drapDropColumns?: DragDropConfig<TValue>; //TODO
+    dragDropColumns?: DragDropConfig<TValue>; //TODO
 }
 
 export type ExtraRowMode = 'expand' | 'always';
