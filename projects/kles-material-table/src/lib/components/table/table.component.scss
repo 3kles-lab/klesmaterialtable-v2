@@ -143,6 +143,10 @@ th[appResizableColumn].column-resizing > .resize-handle > .resize-width-label {
 }
 
 :host .column-resizing-cell {
+    width: var(--kles-column-resize-width) !important;
+    min-width: var(--kles-column-resize-width) !important;
+    max-width: var(--kles-column-resize-width) !important;
+    flex: 0 0 var(--kles-column-resize-width) !important;
     background-image: linear-gradient(
         color-mix(in srgb, var(--mat-sys-primary) 5%, transparent),
         color-mix(in srgb, var(--mat-sys-primary) 5%, transparent)

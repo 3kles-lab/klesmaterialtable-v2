@@ -19,10 +19,13 @@ export class ResizableColumnDirective implements OnInit, OnChanges, OnDestroy {
     private activeCells: HTMLElement[] = [];
     private resizeCells: HTMLElement[] = [];
     private resizeCol?: HTMLTableColElement;
+    private resizeRoot?: HTMLElement;
     private resizeMinWidth = this.defaultMinWidth;
     private resizeMaxWidth = this.defaultMaxWidth;
     private pendingWidth?: number;
     private animationFrameId?: number;
+    private contentMinWidth = this.defaultMinWidth;
+    private contentMeasurementFrameId?: number;
     private handleCleanups: Array<() => void> = [];
     private documentCleanups: Array<() => void> = [];
 
@@ -59,6 +62,7 @@ export class ResizableColumnDirective implements OnInit, OnChanges, OnDestroy {
         if (event.button !== 0 || this.resizing) return;
         event.preventDefault();
         event.stopPropagation();
+        this.cancelContentMeasurement();
 
         const th = this.el.nativeElement;
         this.startX = event.clientX;
@@ -96,6 +100,7 @@ export class ResizableColumnDirective implements OnInit, OnChanges, OnDestroy {
         this.applyWidth(this.currentWidth, this.resizeCells);
         this.setActiveState(false);
         this.clearResizeCache();
+        this.scheduleContentMeasurement();
         if (this.currentWidth <= 0) return;
 
         this.columnsService.changeWidth(this.column().columnDef, { width: `${this.currentWidth}px` });
@@ -189,6 +194,7 @@ export class ResizableColumnDirective implements OnInit, OnChanges, OnDestroy {
     }
 
     private applyPreviewWidth(px: number): void {
+        this.resizeRoot?.style.setProperty('--kles-column-resize-width', `${px}px`);
         if (this.resizeCol) {
             this.resizeCol.style.width = `${px}px`;
         } else {
@@ -227,23 +233,44 @@ export class ResizableColumnDirective implements OnInit, OnChanges, OnDestroy {
 
     private cacheResizeTargets(): void {
         const root = this.el.nativeElement.closest('table, mat-table, cdk-table');
+        this.resizeRoot = root ? (root as HTMLElement) : undefined;
         this.resizeCells = this.getColumnCells();
         this.resizeCol = root
             ? Array.from(root.querySelectorAll<HTMLTableColElement>('col[data-column-def]')).find(
                   (col) => col.dataset['columnDef'] === this.column().columnDef,
               )
             : undefined;
-        this.resizeMinWidth = Math.max(this.getMinWidth(), this.measureContentWidth(this.resizeCells));
+        this.resizeMinWidth = Math.max(this.getMinWidth(), this.contentMinWidth);
         this.resizeMaxWidth = Math.max(this.resizeMinWidth, this.getMaxWidth());
         this.handle?.setAttribute('aria-valuemin', `${Math.round(this.resizeMinWidth)}`);
     }
 
     private clearResizeCache(): void {
+        this.resizeRoot?.style.removeProperty('--kles-column-resize-width');
         this.pendingWidth = undefined;
         this.resizeCells = [];
         this.resizeCol = undefined;
+        this.resizeRoot = undefined;
         this.resizeMinWidth = this.defaultMinWidth;
         this.resizeMaxWidth = this.defaultMaxWidth;
+    }
+
+    private scheduleContentMeasurement(): void {
+        if (this.resizing || this.contentMeasurementFrameId !== undefined) return;
+        const view = this.el.nativeElement.ownerDocument.defaultView;
+        if (!view) return;
+        this.contentMeasurementFrameId = view.requestAnimationFrame(() => {
+            this.contentMeasurementFrameId = undefined;
+            if (this.resizing || !this.handle) return;
+            this.contentMinWidth = this.measureContentWidth();
+            this.handle.setAttribute('aria-valuemin', `${Math.round(Math.max(this.getMinWidth(), this.contentMinWidth))}`);
+        });
+    }
+
+    private cancelContentMeasurement(): void {
+        const view = this.el.nativeElement.ownerDocument.defaultView;
+        if (this.contentMeasurementFrameId !== undefined && view) view.cancelAnimationFrame(this.contentMeasurementFrameId);
+        this.contentMeasurementFrameId = undefined;
     }
 
     private measureContentWidth(cells = this.getColumnCells()): number {
@@ -360,15 +387,18 @@ export class ResizableColumnDirective implements OnInit, OnChanges, OnDestroy {
 
         this.handleCleanups.push(
             this.renderer.listen(this.handle, 'pointerdown', (event: PointerEvent) => this.startResize(event)),
+            this.renderer.listen(this.handle, 'pointerenter', () => this.scheduleContentMeasurement()),
             this.renderer.listen(this.handle, 'dblclick', (event: MouseEvent) => this.autoFit(event)),
             this.renderer.listen(this.handle, 'keydown', (event: KeyboardEvent) => this.onKeyDown(event)),
             this.renderer.listen(this.handle, 'click', (event: MouseEvent) => event.stopPropagation()),
         );
+        this.scheduleContentMeasurement();
     }
 
     private remove(): void {
         if (this.resizing) this.stopResize(false);
         this.flushResizeFrame();
+        this.cancelContentMeasurement();
         this.clearResizeCache();
         this.clearDocumentListeners();
         this.handleCleanups.splice(0).forEach((cleanup) => cleanup());
