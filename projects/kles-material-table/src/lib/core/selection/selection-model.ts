@@ -13,7 +13,7 @@ export class KlesSelectionModel<T> implements IKlesSelectionModel<T> {
     private _count = signal<number>(0);
 
     constructor(
-        private readonly multiple: boolean = true,
+        private readonly multiple: boolean = false,
         initialValues?: T[],
     ) {
         initialValues?.forEach((v) => {
