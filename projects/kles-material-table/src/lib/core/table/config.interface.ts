@@ -47,6 +47,12 @@ export interface DragDropRowChange<TValue = unknown> extends DragDropRowContext<
     currentIndex: number;
     previousContainerId?: string;
     currentContainerId?: string;
+    parentId?: string | number | null;
+    depth?: number;
+    previousSiblingIndex?: number;
+    currentSiblingIndex?: number;
+    movedRows?: FormGroup[];
+    movedRawValues?: TValue[];
 }
 
 export interface DragDropConfig<TValue = unknown> {

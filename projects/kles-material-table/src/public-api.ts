@@ -33,6 +33,7 @@ export * from './lib/core/api/render';
 export * from './lib/core/api/scrollbar';
 export * from './lib/core/api/selection';
 export * from './lib/core/api/sort';
+export * from './lib/core/api/tree';
 
 export * from './lib/services/features/events/event-map.model';
 export * from './lib/services/features/events/event-payloads.model';

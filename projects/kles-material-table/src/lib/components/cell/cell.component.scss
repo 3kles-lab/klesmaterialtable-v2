@@ -13,11 +13,35 @@
 // }
 
 .cell-field {
+    min-width: 0;
     flex-grow: 1;
     justify-content: inherit;
     flex-direction: column;
     display: flex;
     text-align: center;
+}
+
+.tree-indent {
+    flex: 0 0 auto;
+}
+
+.expand-button-spacer {
+    flex: 0 0 28px;
+    width: 28px;
+    height: 28px;
+}
+
+.tree-loading-icon {
+    animation: tree-loading-pulse 800ms ease-in-out infinite alternate;
+}
+
+@keyframes tree-loading-pulse {
+    from {
+        opacity: 0.35;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 // .expand-button{

@@ -12,6 +12,7 @@ import { EventsApi } from './core/api/events';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { EmptyStateApi } from './core/api/empty-state';
 import { RenderApi } from './core/api/render';
+import { TreeApi } from './core/api/tree';
 
 @Injectable()
 export class KlesTableConnectorService {
@@ -91,6 +92,10 @@ export class KlesTableConnectorService {
 
     get render(): RenderApi {
         return this.table.render;
+    }
+
+    get tree(): TreeApi {
+        return this.table.tree;
     }
 
     public refresh() {

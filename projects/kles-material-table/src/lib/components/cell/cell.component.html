@@ -7,13 +7,27 @@
         }
     </button>
 }
-@if (hasChildren() && column().canExpandNode) {
-    <button matIconButton class="expand-button" (click)="expandNode(); stopPropagation($event)">
-        @if (this.expandedNode()) {
-            <mat-icon>keyboard_arrow_down</mat-icon>
-        } @else {
-            <mat-icon>chevron_right</mat-icon>
-        }
-    </button>
+@if (column().canExpandNode) {
+    <span class="tree-indent" [style.width.px]="depth() * 24" aria-hidden="true"></span>
+    @if (hasChildren()) {
+        <button
+            matIconButton
+            class="expand-button"
+            [disabled]="loadingNode()"
+            [attr.aria-expanded]="expandedNode()"
+            [attr.aria-label]="expandedNode() ? 'Réduire la ligne' : 'Développer la ligne'"
+            (click)="expandNode(); stopPropagation($event)"
+        >
+            @if (loadingNode()) {
+                <mat-icon class="tree-loading-icon">more_horiz</mat-icon>
+            } @else if (expandedNode()) {
+                <mat-icon>keyboard_arrow_down</mat-icon>
+            } @else {
+                <mat-icon>chevron_right</mat-icon>
+            }
+        </button>
+    } @else {
+        <span class="expand-button-spacer" aria-hidden="true"></span>
+    }
 }
 <div class="cell-field"><ng-content></ng-content></div>

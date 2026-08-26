@@ -80,6 +80,8 @@ import { EmptyStateService } from '../../services/features/empty-state/empty-sta
 import { RowContextPipe } from '../../pipes/row-context.pipe';
 import { EmptyStateApi } from '../../core/api/empty-state';
 import { RenderApi } from '../../core/api/render';
+import { TreeApi } from '../../core/api/tree';
+import { TreeService } from '../../services/features/tree/tree.service';
 
 type TableSection = 'header' | 'body' | 'footer';
 
@@ -166,6 +168,7 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
         public readonly rowService: RowService,
         public readonly cellService: CellService,
         public readonly emptyStateService: EmptyStateService,
+        private readonly treeService: TreeService<unknown, unknown>,
     ) {
         this.columns = this.columnsService.columns;
         this.displayedColumns = this.columnsService.displayedColumns;
@@ -207,6 +210,21 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
     get render(): RenderApi {
         return {
             rows: () => this.renderService.forceRenderRows(),
+        };
+    }
+
+    get tree(): TreeApi {
+        return {
+            expandedIds: this.treeService.expandedIds,
+            loadingIds: this.treeService.loadingIds,
+            isExpanded: (id) => this.treeService.isExpanded(id),
+            isLoading: (id) => this.treeService.isLoading(id),
+            getChildren: (id) => this.treeService.getChildren(id),
+            getDescendants: (id) => this.treeService.getDescendants(id),
+            expand: (id) => this.treeService.expand(id),
+            collapse: (id) => this.treeService.collapse(id),
+            toggle: (id) => this.treeService.toggle(id),
+            collapseAll: () => this.treeService.collapseAll(),
         };
     }
 
@@ -356,6 +374,7 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
     }
 
     refresh() {
+        this.treeService.collapseAll();
         this.loader.refresh();
     }
 

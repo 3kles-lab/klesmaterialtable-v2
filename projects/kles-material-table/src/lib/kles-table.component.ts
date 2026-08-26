@@ -26,10 +26,12 @@ import {
     RowDropPayload,
     SelectionChangePayload,
     SortPayload,
+    TreePayload,
 } from './services/features/events/event-payloads.model';
 import { EmptyStateApi } from './core/api/empty-state';
 import { RenderApi } from './core/api/render';
 import { EventsApi } from './core/api/events';
+import { TreeApi } from './core/api/tree';
 
 @Component({
     selector: 'kles-dynamic-table',
@@ -64,6 +66,10 @@ export class KlesTableComponent<TValue = unknown> implements OnInit, KlesTableAp
     @Output() sortChange = new EventEmitter<SortPayload>();
     @Output() filterChange = new EventEmitter<FilterChangePayload>();
     @Output() loadError = new EventEmitter<LoadErrorPayload>();
+    @Output() nodeExpand = new EventEmitter<TreePayload<TValue>>();
+    @Output() nodeCollapse = new EventEmitter<TreePayload<TValue>>();
+    @Output() nodeLoadChildren = new EventEmitter<TreePayload<TValue>>();
+    @Output() nodeChildrenLoaded = new EventEmitter<TreePayload<TValue>>();
 
     readonly elevationShadow = computed(() => {
         const level = this.tableConfig().elevation ?? 2;
@@ -140,6 +146,10 @@ export class KlesTableComponent<TValue = unknown> implements OnInit, KlesTableAp
 
     get events(): EventsApi<TValue> {
         return this.connectorService.events as EventsApi<TValue>;
+    }
+
+    get tree(): TreeApi {
+        return this.connectorService.tree;
     }
 
     get ui(): GroupUiState<{
@@ -224,6 +234,22 @@ export class KlesTableComponent<TValue = unknown> implements OnInit, KlesTableAp
 
             case 'loadError':
                 this.loadError.emit(event.payload);
+                break;
+
+            case 'nodeExpand':
+                this.nodeExpand.emit(event.payload);
+                break;
+
+            case 'nodeCollapse':
+                this.nodeCollapse.emit(event.payload);
+                break;
+
+            case 'nodeLoadChildren':
+                this.nodeLoadChildren.emit(event.payload);
+                break;
+
+            case 'nodeChildrenLoaded':
+                this.nodeChildrenLoaded.emit(event.payload);
                 break;
         }
     }

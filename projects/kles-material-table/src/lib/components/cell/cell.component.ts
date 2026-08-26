@@ -41,6 +41,10 @@ export class KlesCellComponent implements OnInit {
         return this.treeService.hasChildren(this.group(), this.group().getRawValue()._depth);
     });
 
+    depth = computed(() => Math.max(0, this.group().getRawValue()._depth ?? 0));
+
+    loadingNode = computed(() => this.treeService.isLoading(this.group().getRawValue()._id));
+
     private column$ = toObservable(this.column);
 
     ngOnInit(): void {

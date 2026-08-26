@@ -10,6 +10,7 @@ import { SortApi } from './sort';
 import { EmptyStateApi } from './empty-state';
 import { EventsApi } from './events';
 import { RenderApi } from './render';
+import { TreeApi } from './tree';
 
 export interface KlesTableApi<TValue = unknown> {
     refresh(): void;
@@ -23,6 +24,7 @@ export interface KlesTableApi<TValue = unknown> {
     get footer(): FooterApi;
     get emptyState(): EmptyStateApi;
     get render(): RenderApi;
+    get tree(): TreeApi;
     get events(): EventsApi<TValue>;
     get ui(): GroupUiState<{
         header: GroupUiState;

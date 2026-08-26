@@ -38,7 +38,7 @@ export class RowFormFactory {
     createRow<TSource extends Record<string, any>>(
         fields: IKlesFieldConfig[],
         record: TSource,
-        meta: { depth: number; parentId: string | null } = { depth: 0, parentId: null },
+        meta: { depth: number; parentId: string | number | null } = { depth: 0, parentId: null },
     ): KlesCreatedRow<TSource> {
         const data = { _id: crypto.randomUUID(), ...record };
 
@@ -69,7 +69,7 @@ export class RowFormFactory {
     createRows<TSource extends Record<string, any>>(
         fields: IKlesFieldConfig[],
         records: TSource[],
-        meta: { depth: number; parentId: string | null } = { depth: 0, parentId: null },
+        meta: { depth: number; parentId: string | number | null } = { depth: 0, parentId: null },
     ): KlesCreatedRow<TSource>[] {
         return records.map((r) => this.createRow(fields, r, meta));
     }

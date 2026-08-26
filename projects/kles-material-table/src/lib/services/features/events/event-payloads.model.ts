@@ -184,6 +184,8 @@ export interface ExpansionPayload<TValue = unknown> extends RowPayload<TValue> {
 
 export interface TreePayload<TValue = unknown> extends RowPayload<TValue> {
     level: number;
+    children?: FormGroup[];
+    childValues?: TValue[];
 }
 
 /**

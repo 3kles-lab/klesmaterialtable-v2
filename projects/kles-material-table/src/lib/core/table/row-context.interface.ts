@@ -3,6 +3,6 @@ export interface KlesRowContext<TSource = unknown> {
     _id: string | number;
     meta: {
         depth: number;
-        parentId: string | null;
+        parentId: string | number | null;
     };
 }

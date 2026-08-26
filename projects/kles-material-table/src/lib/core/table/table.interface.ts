@@ -10,6 +10,7 @@ import { FormApi } from '../api/form';
 import { EventsApi } from '../api/events';
 import { EmptyStateApi } from '../api/empty-state';
 import { RenderApi } from '../api/render';
+import { TreeApi } from '../api/tree';
 
 export interface ITable {
     scrollbar: ScrollbarApi;
@@ -23,6 +24,7 @@ export interface ITable {
     events: EventsApi;
     emptyState: EmptyStateApi;
     render: RenderApi;
+    tree: TreeApi;
     ui: GroupUiState<{
         header: GroupUiState;
         rows: ArrayUiState;

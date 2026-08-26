@@ -33,9 +33,18 @@ export abstract class DragDropBase {
         return this.config?.options?.connectedTo?.map((id) => this.toDropListId(id));
     }
 
-    get sortPredicate(): (index: number, item: CdkDrag<number>) => boolean {
-        return (index: number, item: CdkDrag<number>) => {
-            return true;
+    get sortPredicate(): (index: number, item: CdkDrag<FormGroup>) => boolean {
+        return (index: number, item: CdkDrag<FormGroup>) => {
+            const row = item.data;
+            const targetRow = item.dropContainer.getSortedItems()[index]?.data as FormGroup | undefined;
+            if (!targetRow || row === targetRow) return true;
+
+            const targetForm = item.dropContainer.data as KlesForm;
+            if (targetForm !== this.klesForm) {
+                return (row.getRawValue()._depth ?? 0) === 0 && (targetRow.getRawValue()._depth ?? 0) === 0;
+            }
+
+            return this.klesForm.canMoveSubtree(row, targetRow);
         };
     }
 
@@ -99,13 +108,19 @@ export abstract class DragDropBase {
             return;
         }
 
-        const moved = this.klesForm.moveRow(row, targetRow);
+        const moved = this.klesForm.moveSubtree(row, targetRow);
 
         if (moved) {
             this.handleDrop({
                 ...this.rowPayload(row, moved.currentIndex),
                 previousIndex: moved.previousIndex,
                 currentIndex: moved.currentIndex,
+                parentId: row.getRawValue()._parentId,
+                depth: row.getRawValue()._depth ?? 0,
+                previousSiblingIndex: moved.previousSiblingIndex,
+                currentSiblingIndex: moved.currentSiblingIndex,
+                movedRows: moved.movedRows,
+                movedRawValues: moved.movedRows.map((movedRow) => movedRow.getRawValue()),
             });
         }
     }
@@ -114,7 +129,7 @@ export abstract class DragDropBase {
         const row = event.item.data as FormGroup;
         const targetRows = event.container.getSortedItems().map((item) => item.data as FormGroup);
         const targetRow = targetRows[event.currentIndex];
-        const moved = event.previousContainer.data.transferRowTo(event.container.data, row, targetRow);
+        const moved = event.previousContainer.data.transferSubtreeTo(event.container.data, row, targetRow);
 
         if (moved) {
             this.handleDrop({
@@ -123,6 +138,12 @@ export abstract class DragDropBase {
                 currentIndex: moved.currentIndex,
                 previousContainerId: event.previousContainer.id,
                 currentContainerId: event.container.id,
+                parentId: row.getRawValue()._parentId,
+                depth: row.getRawValue()._depth ?? 0,
+                previousSiblingIndex: moved.previousSiblingIndex,
+                currentSiblingIndex: moved.currentSiblingIndex,
+                movedRows: moved.movedRows,
+                movedRawValues: moved.movedRows.map((movedRow) => movedRow.getRawValue()),
             });
         }
     }
