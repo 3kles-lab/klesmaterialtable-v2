@@ -421,24 +421,16 @@ export class SelectionLazyService<T> extends AbstractSelectionService<T> {
         });
     }
 
-    private setSelection() {
+    private setSelection(): void {
         this.linesService
             .loaded()
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(() => {
-                if (this.selectionModel.hasValue()) {
-                    this.selectionModel.deselect(this.selectionModel.selected.items, { emitEvent: false });
-                }
-
-                this.fm.getRows().controls.forEach((group) => {
+                const selectedRows = this.fm.getRows().controls.filter((group) => {
                     const selected =
                         group.controls[this.selectionLoaderService.key]?.value === true || this.selectionConfig?.isSelected?.(group) === true;
 
                     if (selected) {
-                        this.selectionModel.select(group, {
-                            emitEvent: false,
-                        });
-
                         group.controls[this.selectionLoaderService.key]?.patchValue(true, {
                             emitEvent: false,
                         });
@@ -449,6 +441,12 @@ export class SelectionLazyService<T> extends AbstractSelectionService<T> {
                             emitEvent: false,
                         });
                     }
+
+                    return selected;
+                });
+
+                this.selectionModel.setSelection(selectedRows, {
+                    emitEvent: false,
                 });
 
                 this.updateHeader(this._count());

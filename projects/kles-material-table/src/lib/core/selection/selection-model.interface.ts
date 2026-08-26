@@ -5,6 +5,7 @@ export interface IKlesSelectionModel<T> {
     select(value: T | T[], options?: { emitEvent?: boolean }): void;
     deselect(value: T | T[], options?: { emitEvent?: boolean }): void;
     toggle(value: T, options?: { emitEvent?: boolean }): void;
+    setSelection(values: T[], options?: { emitEvent?: boolean }): void;
     isEmpty(): boolean;
     hasValue(): boolean;
 

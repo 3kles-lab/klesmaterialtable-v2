@@ -140,6 +140,29 @@ export class KlesSelectionModel<T> implements IKlesSelectionModel<T> {
         return this.multiple || false;
     }
 
+    public setSelection(values: T[], options?: { emitEvent?: boolean }): void {
+        const previous = Array.from(this._selection);
+
+        this._selection.clear();
+
+        if (this.multiple) {
+            values.forEach((value) => this._selection.add(value));
+        } else if (values.length > 0) {
+            this._selection.add(values[0]);
+        }
+
+        this._count.set(this._selection.size);
+
+        if (options?.emitEvent ?? true) {
+            this._changed.next({
+                added: values.filter((value) => !previous.includes(value)),
+                removed: previous.filter((value) => !this._selection.has(value)),
+                count: this._selection.size,
+                state: this._state,
+            });
+        }
+    }
+
     private getValue(value: T) {
         // si jamais je rajoute une méthode de comparaison avec _selection
         return value;
