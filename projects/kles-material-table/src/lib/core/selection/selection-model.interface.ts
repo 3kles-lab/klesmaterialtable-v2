@@ -14,4 +14,6 @@ export interface IKlesSelectionModel<T> {
     get selected(): { items?: T[]; count: number; state: KlesSelectionModelState };
     get changed(): Observable<{ added?: T[]; removed?: T[]; count: number; state: KlesSelectionModelState }>;
     get state(): KlesSelectionModelState;
+
+    get selectionMode(): boolean;
 }

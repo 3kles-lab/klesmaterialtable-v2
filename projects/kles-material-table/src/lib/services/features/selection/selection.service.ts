@@ -247,6 +247,8 @@ export class SelectionService<T> extends AbstractSelectionService<T> {
 
 @Injectable()
 export class SelectionLazyService<T> extends AbstractSelectionService<T> {
+    public selectionModel: KlesSelectionModel<FormGroup>;
+
     private readonly destroyRef = inject(DestroyRef);
     private _count = signal(0);
 
@@ -261,9 +263,12 @@ export class SelectionLazyService<T> extends AbstractSelectionService<T> {
         @Optional() private filterStore: FilterStore | null,
     ) {
         super(selectionConfig);
+
+        this.selectionModel = new KlesSelectionModel<FormGroup>(selectionConfig?.selectionMode);
     }
 
     public register(): void {
+        this.listenSelection();
         this.setSelection();
         this.listenHeaderSelection();
         this.listenRowSelection();
@@ -274,11 +279,13 @@ export class SelectionLazyService<T> extends AbstractSelectionService<T> {
     }
 
     public disable(): void {
-        this.fm.getHeader().controls[this.key].disable({ emitEvent: false });
+        // this.fm.getHeader().controls[this.key].disable({ emitEvent: false });
+        this.selectionModel.disable();
     }
 
     public enable(): void {
-        this.fm.getHeader().controls[this.key].enable({ emitEvent: false });
+        // this.fm.getHeader().controls[this.key].enable({ emitEvent: false });
+        this.selectionModel.enable();
     }
 
     private listenHeaderSelection(): void {
@@ -298,13 +305,34 @@ export class SelectionLazyService<T> extends AbstractSelectionService<T> {
                 } else {
                     this.loadingService.stop();
                     this._count.set(response.count ?? 0);
-                    this.fm
-                        .getRows()
-                        .controls.filter((group) => group.controls[this.key]?.enabled)
-                        .forEach((group) => {
-                            group.controls[this.selectionLoaderService.key].patchValue(response.selected, { emitEvent: false });
-                        });
-                    this.fm.getRows().updateValueAndValidity({ emitEvent: false });
+
+                    const rows = this.fm.getRows().controls.filter((group) => group.controls[this.selectionLoaderService.key]?.enabled);
+
+                    if (response.selected) {
+                        if (this.selectionModel.isMultipleSelection()) {
+                            this.selectionModel.select(rows);
+                        } else {
+                            const row = rows[0];
+
+                            if (row) {
+                                this.selectionModel.select(row);
+                            }
+                        }
+                    } else {
+                        this.selectionModel.deselect(rows);
+                    }
+
+                    this.fm.getRows().updateValueAndValidity({
+                        emitEvent: false,
+                    });
+
+                    // this.fm
+                    //     .getRows()
+                    //     .controls.filter((group) => group.controls[this.key]?.enabled)
+                    //     .forEach((group) => {
+                    //         group.controls[this.selectionLoaderService.key].patchValue(response.selected, { emitEvent: false });
+                    //     });
+                    // this.fm.getRows().updateValueAndValidity({ emitEvent: false });
 
                     // if (response.footer) {
                     //     this.fm.getFooter().patchValue(response.footer, { emitEvent: false });
@@ -354,12 +382,21 @@ export class SelectionLazyService<T> extends AbstractSelectionService<T> {
                 if (response.loading) {
                     //mettre la ligne avec un spinner
                 } else {
-                    this.fm
-                        .getUiHeader()
-                        .get(this.selectionLoaderService.key)
-                        ?.patchValue({
-                            indeterminate: response.count != undefined ? response.count > 0 && this.linesService.total() > response.count : false,
-                        });
+                    // this.fm
+                    //     .getUiHeader()
+                    //     .get(this.selectionLoaderService.key)
+                    //     ?.patchValue({
+                    //         indeterminate: response.count != undefined ? response.count > 0 && this.linesService.total() > response.count : false,
+                    //     });
+                    this._count.set(response.count ?? 0);
+
+                    if (response.selected) {
+                        this.selectionModel.select(row);
+                    } else {
+                        this.selectionModel.deselect(row);
+                    }
+
+                    this.updateHeader(response.count);
 
                     //         if (footer) {
                     //             this.fm.getFooter().patchValue(footer, { emitEvent: false });
@@ -368,20 +405,102 @@ export class SelectionLazyService<T> extends AbstractSelectionService<T> {
             });
     }
 
+    private listenSelection(): void {
+        this.selectionModel.changed.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((changed) => {
+            changed.removed?.forEach((group) => {
+                group.controls[this.selectionLoaderService.key]?.patchValue(false, { emitEvent: false });
+            });
+
+            changed.added?.forEach((group) => {
+                group.controls[this.selectionLoaderService.key]?.patchValue(true, { emitEvent: false });
+            });
+
+            this.fm.getRows().updateValueAndValidity({
+                emitEvent: false,
+            });
+        });
+
+        this.selectionModel.stateChanged.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((state) => {
+            if (state === KlesSelectionModelState.ENABLED) {
+                this.fm.getHeader().controls[this.key]?.enable({ emitEvent: false });
+
+                this.fm.getRows().controls.forEach((group) => {
+                    if (!this.selectionConfig?.isDisabled?.(group)) {
+                        group.controls[this.key]?.enable({
+                            emitEvent: false,
+                        });
+                    }
+                });
+
+                return;
+            }
+
+            this.fm.getHeader().controls[this.key]?.disable({ emitEvent: false });
+
+            this.fm.getRows().controls.forEach((group) => {
+                group.controls[this.key]?.disable({
+                    emitEvent: false,
+                });
+            });
+        });
+    }
+
     private setSelection() {
         this.linesService
             .loaded()
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(() => {
+                if (this.selectionModel.hasValue()) {
+                    this.selectionModel.deselect(this.selectionModel.selected.items, { emitEvent: false });
+                }
+
                 this.fm.getRows().controls.forEach((group) => {
-                    if (this.selectionConfig?.isSelected != undefined && this.selectionConfig.isSelected(group)) {
-                        group.controls[this.selectionLoaderService.key]?.patchValue(true, { emitEvent: false });
+                    const selected =
+                        group.controls[this.selectionLoaderService.key]?.value === true || this.selectionConfig?.isSelected?.(group) === true;
+
+                    if (selected) {
+                        this.selectionModel.select(group, {
+                            emitEvent: false,
+                        });
+
+                        group.controls[this.selectionLoaderService.key]?.patchValue(true, {
+                            emitEvent: false,
+                        });
                     }
-                    if (this.selectionConfig?.isDisabled && this.selectionConfig.isDisabled(group)) {
-                        group.controls[this.selectionLoaderService.key]?.disable({ emitEvent: false });
+
+                    if (this.selectionConfig?.isDisabled?.(group)) {
+                        group.controls[this.selectionLoaderService.key]?.disable({
+                            emitEvent: false,
+                        });
                     }
                 });
+
+                this.updateHeader(this._count());
+
+                // this.fm.getRows().controls.forEach((group) => {
+                //     if (this.selectionConfig?.isSelected != undefined && this.selectionConfig.isSelected(group)) {
+                //         group.controls[this.selectionLoaderService.key]?.patchValue(true, { emitEvent: false });
+                //     }
+                //     if (this.selectionConfig?.isDisabled && this.selectionConfig.isDisabled(group)) {
+                //         group.controls[this.selectionLoaderService.key]?.disable({ emitEvent: false });
+                //     }
+                // });
                 // this.updateHeader();
             });
+    }
+
+    private updateHeader(count = this._count()): void {
+        const total = this.linesService.total();
+
+        this.fm
+            .getUiHeader()
+            .get(this.selectionLoaderService.key)
+            ?.patchValue({
+                indeterminate: count > 0 && count < total,
+            });
+
+        this.fm.getHeader().controls[this.selectionLoaderService.key]?.patchValue(count > 0 && count === total, {
+            emitEvent: false,
+        });
     }
 }

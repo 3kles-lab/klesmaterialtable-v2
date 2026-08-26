@@ -13,7 +13,7 @@ export class KlesSelectionModel<T> implements IKlesSelectionModel<T> {
     private _count = signal<number>(0);
 
     constructor(
-        private multiple: boolean = false,
+        private readonly multiple: boolean = true,
         initialValues?: T[],
     ) {
         initialValues?.forEach((v) => {
@@ -43,6 +43,10 @@ export class KlesSelectionModel<T> implements IKlesSelectionModel<T> {
 
     get stateChanged() {
         return this._stateChanged.asObservable();
+    }
+
+    get selectionMode() {
+        return this.multiple;
     }
 
     public select(value: T | T[], options?: { emitEvent?: boolean }): void {
@@ -79,8 +83,8 @@ export class KlesSelectionModel<T> implements IKlesSelectionModel<T> {
     }
 
     public deselect(value: T | T[], options?: { emitEvent?: boolean }): void {
-        const removed = [];
-        const added = [];
+        const removed: T[] = [];
+        const added: T[] = [];
         if (this._state === KlesSelectionModelState.ENABLED) {
             if (Array.isArray(value)) {
                 value.forEach((v) => {
