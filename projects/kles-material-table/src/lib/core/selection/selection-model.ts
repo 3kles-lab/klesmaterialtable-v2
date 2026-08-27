@@ -16,9 +16,9 @@ export class KlesSelectionModel<T> implements IKlesSelectionModel<T> {
         private readonly multiple: boolean = false,
         initialValues?: T[],
     ) {
-        initialValues?.forEach((v) => {
-            this._selection.add(v);
-        });
+        const normalizedInitialValues = this.multiple ? (initialValues ?? []) : (initialValues?.slice(0, 1) ?? []);
+        normalizedInitialValues.forEach((value) => this._selection.add(value));
+        this._count.set(this._selection.size);
     }
 
     get selected(): { items: T[]; count: number; state: KlesSelectionModelState } {
