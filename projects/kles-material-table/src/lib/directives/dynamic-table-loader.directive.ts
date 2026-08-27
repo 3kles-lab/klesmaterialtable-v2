@@ -7,7 +7,6 @@ import {
     inject,
     input,
     OnDestroy,
-    OnInit,
     Provider,
     signal,
     StaticProvider,
@@ -42,7 +41,6 @@ import {
     SCROLLBAR_ORCHESTRATOR_SERVICE,
     EXTRA_ROWS,
     EMPTY_STATE_CONFIG,
-    // SCROLLBAR_ORCHESTRATOR_SERVICE,
 } from '../token';
 import { KlesColumnConfig } from '../core/table/column.interface';
 import { ColumnsService } from '../services/features/columns/columns.service';
@@ -79,12 +77,10 @@ import { KlesTableEmptyStateComponent } from '../components/empty-state/empty-st
 import { EmptyStateService } from '../services/features/empty-state/empty-state.service';
 import { RowContextStore } from '../services/store/row-context-store.service';
 
-// import { ScrollbarLazyOrchestratorService, ScrollbarOrchestratorService } from '../services/features/scrollbar/scrollbar-orchestrator.service';
-
 @Directive({
     selector: '[appDynamicTableLoader]',
 })
-export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
+export class DynamicTableLoaderDirective implements OnDestroy {
     tableConfig = input.required<KlesTableConfig, KlesTableConfig>({
         transform: (v) => {
             v.columns = v.columns.map((col) => {
@@ -107,8 +103,6 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
             }
         });
     }
-
-    ngOnInit(): void {}
 
     ngOnDestroy(): void {
         this.clearComponent();
@@ -264,7 +258,7 @@ export class DynamicTableLoaderDirective implements OnInit, OnDestroy {
             ValidationService,
             SelectionLoaderService,
             PaginatorService,
-            LoaderChildrensService, //TODO
+            LoaderChildrensService,
             {
                 provide: TABLE_SERVICE,
                 useClass: TableService,

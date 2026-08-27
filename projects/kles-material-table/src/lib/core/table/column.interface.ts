@@ -27,10 +27,10 @@ export interface KlesColumnConfig {
     filterable?: boolean;
     sortable?: boolean;
     sortArrowPosition?: SortHeaderArrowPosition;
-    resizable?: boolean; //TODO
+    resizable?: boolean;
     headerCell?: IKlesHeaderFieldConfig;
     cell?: IKlesCellFieldConfig;
-    footerCell?: IKlesFooterFieldConfig; //TODO
+    footerCell?: IKlesFooterFieldConfig;
     align?: AlignCell;
     width?: string;
     minWidth?: string;

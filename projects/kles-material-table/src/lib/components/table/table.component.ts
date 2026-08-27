@@ -334,10 +334,6 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
             enable: () => this.selectionService.enable(),
             count: this.selectionService.count(),
             selectionModel: this.selectionService.selectionModel,
-            // changed: () => {},
-            // isEmpty: () => {},
-            // isMultipleSelection: () => {},
-            // selected: () => {},
         };
     }
 
@@ -413,10 +409,6 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
         this.scrollbarService.unregister();
     }
 
-    submit() {
-        // TODO
-    }
-
     getColumnSeparator(column: KlesColumnConfig, section: TableSection): string | null {
         const separatorConfig = column.separator;
 
@@ -463,16 +455,6 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
         }
         return this.getColumnSeparator(column, section);
     }
-
-    // getStickyEndSeparator(column: KlesColumnConfig, section: TableSection): string | null {
-    //     const isBoundary = this.columnsService.stickyEndBoundary() === column.columnDef;
-
-    //     if (!isBoundary) {
-    //         return null;
-    //     }
-
-    //     return this.getSeparatorStyle(column, section);
-    // }
 
     getStickyEndSeparator(column: KlesColumnConfig, section: TableSection): string | null {
         if (column.stickyEnd !== true) {

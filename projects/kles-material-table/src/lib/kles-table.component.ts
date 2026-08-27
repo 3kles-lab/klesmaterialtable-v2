@@ -79,8 +79,6 @@ export class KlesTableComponent<TValue = unknown> implements OnInit, KlesTableAp
         return level === 0 ? 'none' : `var(--mat-sys-level${level})`;
     });
 
-    // @Output() lazyQueryChange = new EventEmitter<KlesTableLazyQueryChangePayload>();
-
     constructor(private connectorService: KlesTableConnectorService) {}
 
     ngOnInit(): void {
@@ -233,10 +231,6 @@ export class KlesTableComponent<TValue = unknown> implements OnInit, KlesTableAp
             case 'filterChange':
                 this.filterChange.emit(event.payload);
                 break;
-
-            // case 'lazyQueryChange':
-            //     this.lazyQueryChange.emit(event.payload);
-            //     break;
 
             case 'loadError':
                 this.loadError.emit(event.payload);

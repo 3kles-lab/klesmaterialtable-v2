@@ -56,9 +56,6 @@ export interface TableEventMap<TValue = unknown> {
     unselectAll: SelectionChangePayload<TValue>;
     selectionError: SelectionErrorPayload<TValue>;
 
-    //   selectionClear: SelectionChangePayload<TValue>;
-    //   selectionInvert: SelectionChangePayload<TValue>;
-
     /**
      * pagination
      */

@@ -7,7 +7,6 @@ import { ExpandedRowStore } from '../../store/expanded-row-store.service';
 
 @Injectable()
 export class ExtraRowService {
-    // public displayedExtraColumns: Signal<string[]>;
     public multiTemplateDataRows: Signal<boolean>;
     public rows: Signal<(ExtraRowConfig & { displayedColumns: string[] })[]>;
 

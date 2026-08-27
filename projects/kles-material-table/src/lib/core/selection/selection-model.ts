@@ -141,7 +141,7 @@ export class KlesSelectionModel<T> implements IKlesSelectionModel<T> {
     }
 
     public isSelected(value: T): boolean {
-        return this._selection.has(this.getValue(value));
+        return this._selection.has(value);
     }
 
     public isMultipleSelection(): boolean {
@@ -166,11 +166,6 @@ export class KlesSelectionModel<T> implements IKlesSelectionModel<T> {
                 state: this._state,
             });
         }
-    }
-
-    private getValue(value: T) {
-        // si jamais je rajoute une méthode de comparaison avec _selection
-        return value;
     }
 
     private assertSelectionCardinality(values: T[]): void {

@@ -1,6 +1,10 @@
 import { FormGroup } from '@angular/forms';
 import { Observable } from 'rxjs';
 
+type SelectionCallback<TArgs extends unknown[], TResult> = {
+    bivarianceHack(...args: TArgs): TResult;
+}['bivarianceHack'];
+
 export type RowId = string | number;
 
 export interface SelectionResponse {
@@ -25,12 +29,18 @@ type SelectionConfigDef<T> = {
     selectionMode?: boolean;
     key?: string;
     params?: () => Observable<T>;
-    select?: (params: T, row: FormGroup, selected: boolean, filters?: Record<string, unknown>) => Observable<SelectionResponse>;
-    selectAll?: (params: T, selected: boolean, filters?: Record<string, unknown>) => Observable<SelectionAllResponse>;
+    select?: SelectionCallback<
+        [params: T, row: FormGroup, selected: boolean, filters?: Record<string, unknown>],
+        Observable<SelectionResponse>
+    >;
+    selectAll?: SelectionCallback<
+        [params: T, selected: boolean, filters?: Record<string, unknown>],
+        Observable<SelectionAllResponse>
+    >;
 
-    /** optionnel */
-    /** pour indiquer le critère des lignes déja sélectionné */
+    /** Resolves the initial selected state of a row. */
     isSelected?: (row: FormGroup) => boolean;
+    /** Resolves whether selection must remain disabled for a row. */
     isDisabled?: (row: FormGroup) => boolean;
 };
 

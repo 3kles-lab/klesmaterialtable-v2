@@ -20,9 +20,11 @@ export interface EmptyStateConfig {
 export interface DefaultTableConfig {
     id?: string;
     columns: KlesColumnConfig[];
-    lineValidations?: ValidatorFn[]; //TODO
-    lineAsyncValidations?: AsyncValidatorFn[]; //TODO
-    footer?: boolean; //TODO
+    /** Reserved for row-level validation configuration; not applied yet. */
+    lineValidations?: ValidatorFn[];
+    /** Reserved for asynchronous row-level validation configuration; not applied yet. */
+    lineAsyncValidations?: AsyncValidatorFn[];
+    footer?: boolean;
     sortConfig?: Sort;
     columnSeparator?: boolean | ColumnSeparatorConfig;
     elevation?: TableElevationLevel;
@@ -39,7 +41,8 @@ export interface PaginatorConfig {
 }
 
 export interface InfiniteScrollConfig {
-    infinite?: boolean; //TODO
+    /** Reserved for the future infinite-scroll implementation. */
+    infinite?: boolean;
 }
 
 export interface DragDropRowChange<TValue = unknown> extends DragDropRowContext<TValue> {
@@ -81,7 +84,8 @@ export interface DragDropRowContext<TValue = unknown> {
 
 export interface DragDrop<TValue = unknown> {
     dragDropRows?: DragDropConfig<TValue>;
-    dragDropColumns?: DragDropConfig<TValue>; //TODO
+    /** Reserved for the future column drag-and-drop implementation. */
+    dragDropColumns?: DragDropConfig<TValue>;
 }
 
 export type ExtraRowMode = 'expand' | 'always';

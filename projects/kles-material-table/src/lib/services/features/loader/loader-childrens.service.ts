@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@angular/core';
 
-import { Subject, Observable, combineLatest, startWith, of, auditTime, switchMap, concat, catchError, map, shareReplay } from 'rxjs';
+import { Subject, Observable, combineLatest, startWith, of, auditTime, switchMap, concat, catchError, map } from 'rxjs';
 import { LOADER_CONFIG } from '../../../token';
 import { IChildrensLoader } from './loader.interface';
 import { LoaderConfig } from '../../../core/table/config.interface';
@@ -13,7 +13,7 @@ export class LoaderChildrensService<T, R> implements IChildrensLoader<R> {
 
     constructor(@Inject(LOADER_CONFIG) private readonly loaderConfig: LoaderConfig<T, R>) {}
 
-    public load(parent: FormGroup<any>, depth: number): Observable<{ total: number; items: R[]; loading: boolean; error?: any }> {
+    public load(parent: FormGroup, depth: number): Observable<{ total: number; items: R[]; loading: boolean; error?: unknown }> {
         const linesLoader = this.loaderConfig.lines as LinesLoader<T, R>;
         return combineLatest([this._refresh$.pipe(startWith(void 0)), linesLoader.params?.() || of({} as T)]).pipe(
             auditTime(0),

@@ -1,5 +1,3 @@
-@use '@angular/material' as mat;
-
 :host {
     display: flex;
     flex-direction: row;
@@ -7,10 +5,6 @@
     gap: 5px;
     align-items: center;
 }
-
-// :host ::ng-deep .mat-mdc-icon-button {
-//     padding: 0;
-// }
 
 .cell-field {
     min-width: 0;
@@ -43,19 +37,6 @@
         opacity: 1;
     }
 }
-
-// .expand-button{
-//     @include mat.icon-button-overrides(
-//         (
-//             // touch-target-size: 10px,
-//             // icon-size: 10px,
-//             // state-layer-size: 20px
-//             touch-target-display: none,
-//             state-layer-size: 28px,
-//             icon-size: 18px
-//         )
-//     );
-// }
 
 .expand-button.mat-mdc-icon-button {
     --mdc-icon-button-state-layer-size: 28px;

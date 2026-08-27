@@ -61,7 +61,7 @@ export class TreeService<T, R> {
                 if (response.error) {
                     this.eventsService.emit('loadError', {
                         error: response.error,
-                        message: response.error?.message,
+                        message: response.error instanceof Error ? response.error.message : undefined,
                     });
                     return;
                 }

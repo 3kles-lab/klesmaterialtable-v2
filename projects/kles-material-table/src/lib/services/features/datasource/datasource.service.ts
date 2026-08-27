@@ -14,8 +14,6 @@ export interface IDatasourceService {
     register(): void;
 }
 
-//TODO Abstract Datasource service
-
 @Injectable()
 export class DatasourceService implements IDatasourceService {
     private _datasource!: KlesDataSource;

@@ -1,5 +1,4 @@
-<form #form cdkScrollable [formGroup]="tableService.form" (ngSubmit)="submit()">
-    <!-- [fixedLayout]="true" -->
+<form #form cdkScrollable [formGroup]="tableService.form">
     <table
         mat-table
         [dataSource]="dataSource"

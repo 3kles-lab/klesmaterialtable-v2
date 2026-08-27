@@ -20,9 +20,12 @@ export interface IKlesHeaderFieldConfig {
     field?: B;
     label?: string;
     tooltip?: string;
-    filterClearable?: boolean; //active button to clear filter
-    filterPredicate?: (value: unknown, filter: unknown) => boolean; //override default predicate only for this field
-    sortPredicate?: (data: FormGroup) => string | number; //override default sort predicate only for this field
+    /** Displays the action used to clear this column's filter. */
+    filterClearable?: boolean;
+    /** Overrides the default filter predicate for this column. */
+    filterPredicate?: (value: unknown, filter: unknown) => boolean;
+    /** Overrides the default sorting value for this column. */
+    sortPredicate?: (data: FormGroup) => string | number;
     style?: IStyle;
 }
 

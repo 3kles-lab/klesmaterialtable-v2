@@ -27,8 +27,6 @@ export const ROW_DRAG_DROP = new InjectionToken<DragDropService>('ROW_DRAG_DROP'
 export const DRAG_DROP_CONFIG = new InjectionToken<DragDropConfig | undefined>('DRAG_DROP_CONFIG');
 export const KLES_DRAG_DROP_ROW_CONTEXT = new InjectionToken<DragDropRowContext>('KLES_DRAG_DROP_ROW_CONTEXT');
 
-// export const KLES_TABLE_SERVICE = new InjectionToken<KlesTableService>('KLES_TABLE_SERVICE');
-
 export const PAGINATOR_CONFIG = new InjectionToken<PaginatorConfig>('PAGINATOR_CONFIG');
 export const SORT_CONFIG = new InjectionToken<Sort>('SORT_CONFIG');
 

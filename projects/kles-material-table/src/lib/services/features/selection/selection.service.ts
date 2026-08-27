@@ -183,14 +183,15 @@ export class SelectionService<T> extends AbstractSelectionService<T> {
             .loaded()
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(() => {
+                // Build the initial model silently, then update the header once.
                 this.fm.getRows().controls.forEach((group) => {
                     if (group.controls[this.selectionLoaderService.key]?.value === true) {
-                        this.selectionModel.select(group, { emitEvent: false }); // event false to avoid multiple send event
+                        this.selectionModel.select(group, { emitEvent: false });
                     } else if (this.selectionConfig?.isSelected != undefined && this.selectionConfig.isSelected(group)) {
-                        this.selectionModel.select(group, { emitEvent: false }); // event false to avoid multiple send event
+                        this.selectionModel.select(group, { emitEvent: false });
                         group.controls[this.selectionLoaderService.key]?.patchValue(true, { emitEvent: false });
                     } else {
-                        this.selectionModel.deselect(group, { emitEvent: false }); // event false to avoid multiple send event
+                        this.selectionModel.deselect(group, { emitEvent: false });
                     }
                     if (this.selectionConfig?.isDisabled && this.selectionConfig.isDisabled(group)) {
                         group.controls[this.selectionLoaderService.key]?.disable({ emitEvent: false });
