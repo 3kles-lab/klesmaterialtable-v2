@@ -1,3 +1,41 @@
+# [21.5.0](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v21.4.2...v21.5.0) (2026-08-27)
+
+
+### Bug Fixes
+
+* add control selection ([ea79073](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/ea7907315d5870d9aae093b763ae883662255eb9))
+* clear any ([14044d6](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/14044d66a9229c9e02b88f983413e6e9993cf27e))
+* clear code ([3a4a182](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/3a4a182599be32a80217acca53a9d4831d0e56da))
+* clear selection model interface ([284dbcd](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/284dbcd78738f6e6bb921da9c6a9fc0a828c47e5))
+* column position ([7d4cc9a](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/7d4cc9aa6937ad837338817238a055e2f413b019))
+* drag and drop options ([adc7b67](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/adc7b67f835a989c7020375bae203f22d4c8f7a5))
+* drag and drop reorder ([d7fee29](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/d7fee29aba8b587124e6102b0ec8df93604571a5))
+* drag and scroll ([a5d7503](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/a5d75037b3663a96c702f48f125c07009f8e3932))
+* dragdrop interface ([7445bb3](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/7445bb3bf88925a14546e0ae36344f3ee5276e39))
+* lazy clear selection when we paginate with selection disabled ([0dedc46](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/0dedc46d42b20a14af7fc3df73ecda747bd81def))
+* lazy table selectionModel undefined ([28d51fe](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/28d51fe5445031321ab85d1b03431bdba66d1617))
+* limit min resize ([230de0c](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/230de0ce63e0324d50e38cc87e5044f9fde760d4))
+* rename setSelection method to reset ([0cede0a](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/0cede0ade74c25910b3017689fbf0a6890116a71))
+* resize improve performance ([359915f](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/359915f622bfbae9b55307e171c969fe6fb89f03))
+* resize stuck ([f0b85bc](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/f0b85bcea81c18c22d6ef78b0b4d6c1eaf6b48f9))
+* rework resize directive ([cc6b41d](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/cc6b41d15cdbd96eca1204baffba4e180a601648))
+* selection event ([1b46099](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/1b4609978765eef4ae2dcc8edfa1ceeb8dc0c2a2))
+* selection mode default value ([e416a45](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/e416a45085caa268463a0fb7f2646fee40a4064e))
+* selection model init ([16fe07a](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/16fe07afc7c56437b3cf20a022ba50d0db54492c))
+* selection with disabled raw ([32dee0d](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/32dee0d34d77c838fa8a83e1ee9e2c36e04993d7))
+* show drag and drop placeholder ([78bd28b](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/78bd28b568f05238a658262a23b4407700f4e95c))
+* sticky option ([b649e2d](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/b649e2daed290450abd47ffb533d05485808ee9c))
+* types ([d1e046a](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/d1e046a452903675219669f511c6301478274a9c))
+
+
+### Features
+
+* add all events ([435583e](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/435583e2ceb89020964cd3e24338eb5f82526bce))
+* add drop change method ([80cd7c6](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/80cd7c6517b8f230ff4d4e32c6761dd18bab2625))
+* complete table api ([a634030](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/a634030ed8bcaa52fb7d860ce25d665e059824ce))
+* selection lazy ([daa8513](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/daa85138414e672a6988809db85c37a31ac244ab))
+* tree table ([beb8734](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/beb8734e9372a2b9f829be800676d15c140eeb88))
+
 ## [21.4.2](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v21.4.1...v21.4.2) (2026-08-17)
 
 
