@@ -345,6 +345,9 @@ export class AppComponent implements AfterViewInit {
         }),
         dragDropRows: {
             enable: true,
+            options: {
+                handleOnly: true,
+            },
         },
         selection: selectionConfig({
             selectionMode: true,
