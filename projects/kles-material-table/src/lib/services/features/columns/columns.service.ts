@@ -75,26 +75,24 @@ export class ColumnsService {
         });
     }
 
-    public setColumnPosition(columnDef: string, position: number) {
-        const previousIndex = this._columns().findIndex((c) => c.columnDef === columnDef);
+    public setColumnPosition(columnDef: string, position: number): void {
+        const columns = this._columns();
+        const previousIndex = columns.findIndex((column) => column.columnDef === columnDef);
 
-        this._columns.update((columns) => {
-            if (previousIndex >= 0 && position >= 0 && previousIndex != position) {
-                const currentElement = columns.at(position);
-                const [val] = columns.splice(previousIndex, 1);
-                const newCurrentElementPosition = columns.findIndex((c) => c.columnDef === currentElement?.columnDef);
-                columns.splice(newCurrentElementPosition, 0, val);
+        if (previousIndex < 0 || columns.length < 2 || !Number.isFinite(position)) return;
 
-                return [...columns];
-            } else {
-                return columns;
-            }
-        });
+        const currentIndex = Math.min(columns.length - 1, Math.max(0, Math.trunc(position)));
+        if (previousIndex === currentIndex) return;
+
+        const reorderedColumns = [...columns];
+        const [column] = reorderedColumns.splice(previousIndex, 1);
+        reorderedColumns.splice(currentIndex, 0, column);
+        this._columns.set(reorderedColumns);
 
         this.eventsService.emit('columnOrderChange', {
-            previousIndex: previousIndex,
+            previousIndex,
+            currentIndex,
             columns: this.getVisible(),
-            currentIndex: position,
         });
     }
 
