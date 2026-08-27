@@ -1,8 +1,12 @@
 <button matButton (click)="add()">add</button>
-<button matButton (click)="del()">del</button>
+
+<p class="selection-demo-hint">Selection is saved remotely. Rows 0, 10, 20… simulate a backend error.</p>
+@if (selectionErrorMessage(); as message) {
+    <p class="selection-demo-error" role="alert">{{ message }}</p>
+}
 
 <div style="height: 800px;">
-    <kles-dynamic-table #table [tableConfig]="config"></kles-dynamic-table>
+    <kles-dynamic-table #table [tableConfig]="config" (selectionError)="onSelectionError($event)"></kles-dynamic-table>
 </div>
 
 <div>Lazy</div>
