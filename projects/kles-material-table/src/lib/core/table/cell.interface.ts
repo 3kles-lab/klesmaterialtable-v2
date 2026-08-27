@@ -6,9 +6,11 @@ import { Span } from '../../enums/span.enum';
 type B = Omit<IKlesFieldConfig, 'name'>;
 type C = Omit<IKlesFieldConfig, 'name' | 'value'>;
 
+export type KlesStyleValue = string | number | null | undefined;
+export type KlesStyleMap = Record<string, KlesStyleValue>;
 export type NgStyleInput =
-    | Record<string, any>
-    | ((value?: any, status?: FormControlStatus, row?: Record<string, any>, rowStatus?: FormControlStatus) => Record<string, string | any>);
+    | KlesStyleMap
+    | ((value?: unknown, status?: FormControlStatus, row?: Record<string, unknown>, rowStatus?: FormControlStatus) => KlesStyleMap);
 
 interface IStyle {
     ngStyle?: NgStyleInput;
@@ -19,13 +21,13 @@ export interface IKlesHeaderFieldConfig {
     label?: string;
     tooltip?: string;
     filterClearable?: boolean; //active button to clear filter
-    filterPredicate?: (value: any, filter: any) => boolean; //override default predicate only for this field
-    sortPredicate?: (data: any) => string | number; //override default sort predicate only for this field
+    filterPredicate?: (value: unknown, filter: unknown) => boolean; //override default predicate only for this field
+    sortPredicate?: (data: FormGroup) => string | number; //override default sort predicate only for this field
     style?: IStyle;
 }
 
 export interface IKlesCellFieldConfig {
-    executeAfterChange?: (property?: string, row?: any, group?: FormGroup<any> | FormArray<any>) => Observable<any>;
+    executeAfterChange?: (property?: string, row?: unknown, group?: FormGroup | FormArray) => Observable<unknown>;
     style?: IStyle;
     field?: C;
 }

@@ -15,9 +15,9 @@ import { IHeaderService } from './services/features/header/header.service';
 import { IScrollbarOrchestratorService } from './services/features/scrollbar/scrollbar-orchestrator.service';
 import { ILoader } from './services/features/loader/loader.interface';
 
-export const SELECTION_CONFIG = new InjectionToken<SelectionConfig<any>>('SELECTION_CONFIG');
+export const SELECTION_CONFIG = new InjectionToken<SelectionConfig<unknown>>('SELECTION_CONFIG');
 
-export const LOADER_CONFIG = new InjectionToken<LoaderConfig<any, any>>('LOADER_CONFIG');
+export const LOADER_CONFIG = new InjectionToken<LoaderConfig<unknown, unknown>>('LOADER_CONFIG');
 export const COLUMNS = new InjectionToken<WritableSignal<KlesColumnConfig[]>>('COLUMNS');
 export const FOOTER = new InjectionToken<WritableSignal<boolean>>('FOOTER');
 
@@ -33,7 +33,7 @@ export const PAGINATOR_CONFIG = new InjectionToken<PaginatorConfig>('PAGINATOR_C
 export const SORT_CONFIG = new InjectionToken<Sort>('SORT_CONFIG');
 
 export const HEADER_SERVICE = new InjectionToken<IHeaderService>('HEADER_SERVICE');
-export const LOADER_SERVICE = new InjectionToken<ILoader<any>>('LOADER_SERVICE');
+export const LOADER_SERVICE = new InjectionToken<ILoader<unknown>>('LOADER_SERVICE');
 export const LINES_SERVICE = new InjectionToken<ILinesService>('LINES_SERVICE');
 export const DATASOURCE_SERVICE = new InjectionToken<IDatasourceService>('DATASOURCE_SERVICE');
 export const SELECTION_SERVICE = new InjectionToken<ISelectionService>('SELECTION_SERVICE');

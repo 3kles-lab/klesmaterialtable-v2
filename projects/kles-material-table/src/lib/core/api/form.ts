@@ -1,31 +1,34 @@
 import { FormArray, FormGroup } from '@angular/forms';
 
-export interface FormApi {
-    header: HeaderApi;
-    rows: RowsApi;
-    footer: FooterApi;
+export type FormValue = Record<string, unknown>;
+export type TableFormValue<TValue> = TValue extends object ? TValue : FormValue;
+
+export interface FormApi<TRow = FormValue> {
+    header: HeaderFormApi;
+    rows: RowsFormApi<TRow>;
+    footer: FooterFormApi;
 }
 
 type Id = string | number;
 
-interface HeaderApi {
-    setValue(value: { [key: string]: any }, options?: { emitEvent?: boolean; onlySelf?: boolean }): void;
-    patchValue(value: { [key: string]: any }, options?: { emitEvent?: boolean; onlySelf?: boolean }): void;
+export interface HeaderFormApi {
+    setValue(value: FormValue, options?: { emitEvent?: boolean; onlySelf?: boolean }): void;
+    patchValue(value: FormValue, options?: { emitEvent?: boolean; onlySelf?: boolean }): void;
     get(): FormGroup;
-    clear(value?: any, options?: { emitEvent?: boolean }): void;
+    clear(value?: unknown, options?: { emitEvent?: boolean }): void;
 }
 
-interface FooterApi {
-    setValue(value: { [key: string]: any }, options?: { emitEvent?: boolean; onlySelf?: boolean }): void;
-    patchValue(value: { [key: string]: any }, options?: { emitEvent?: boolean; onlySelf?: boolean }): void;
+export interface FooterFormApi {
+    setValue(value: FormValue, options?: { emitEvent?: boolean; onlySelf?: boolean }): void;
+    patchValue(value: FormValue, options?: { emitEvent?: boolean; onlySelf?: boolean }): void;
     get(): FormGroup;
-    clear(value?: any, options?: { emitEvent?: boolean }): void;
+    clear(value?: unknown, options?: { emitEvent?: boolean }): void;
 }
 
-interface RowsApi {
-    create(value: { [key: string]: any }, index?: number, options?: { emitEvent?: boolean }): FormGroup;
-    patch(_id: Id, value: { [key: string]: any }, options?: { emitEvent?: boolean; onlySelf?: boolean }): FormGroup | undefined;
-    reset(_id: Id, value?: { [key: string]: any }, options?: { emitEvent?: boolean; onlySelf?: boolean; overwriteDefaultValue?: boolean }): void;
+export interface RowsFormApi<TRow = FormValue> {
+    create(value: TRow, index?: number, options?: { emitEvent?: boolean }): FormGroup;
+    patch(_id: Id, value: Partial<TRow>, options?: { emitEvent?: boolean; onlySelf?: boolean }): FormGroup | undefined;
+    reset(_id: Id, value?: TRow, options?: { emitEvent?: boolean; onlySelf?: boolean; overwriteDefaultValue?: boolean }): void;
     remove(_id: Id, options?: { emitEvent?: boolean }): void;
     list(): FormArray<FormGroup>;
     get(_id: Id): FormGroup | undefined;

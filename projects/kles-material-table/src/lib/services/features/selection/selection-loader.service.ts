@@ -12,7 +12,7 @@ export class SelectionLoaderService<T> {
         return this.selectionConfig?.key || '#select';
     }
 
-    public select(row: FormGroup, selected: boolean, filters?: { [key: string]: any }): Observable<SelectionState> {
+    public select(row: FormGroup, selected: boolean, filters?: Record<string, unknown>): Observable<SelectionState> {
         return defer(() => this.selectionConfig?.params?.() || of({} as T)).pipe(
             auditTime(0),
             take(1),
@@ -60,7 +60,7 @@ export class SelectionLoaderService<T> {
         );
     }
 
-    public selectAll(selected: boolean, filters?: { [key: string]: any }): Observable<SelectionState> {
+    public selectAll(selected: boolean, filters?: Record<string, unknown>): Observable<SelectionState> {
         return defer(() => this.selectionConfig?.params?.() || of({} as T)).pipe(
             auditTime(0),
             take(1),

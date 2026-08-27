@@ -105,7 +105,7 @@ export type Selection<T> = {
 
 type Exclusive<T, U> = (T & { [K in keyof U]?: never }) | (U & { [K in keyof T]?: never });
 
-export type KlesTableConfig<T = any, R = any> = DefaultTableConfig &
+export type KlesTableConfig<T = unknown, R = unknown> = DefaultTableConfig &
     Exclusive<PaginatorConfig, InfiniteScrollConfig> &
     LoaderConfig<T, R> &
     DragDrop<R> &

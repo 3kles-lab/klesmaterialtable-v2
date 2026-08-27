@@ -1,7 +1,7 @@
 import { ArrayUiState, GroupUiState } from '@3kles/kles-material-dynamicforms';
 import { ColumnApi } from './column';
 import { FooterApi } from './footer';
-import { FormApi } from './form';
+import { FormApi, TableFormValue } from './form';
 import { LoadingApi } from './loading';
 import { PaginationApi } from './pagination';
 import { ScrollbarApi } from './scrollbar';
@@ -20,7 +20,7 @@ export interface KlesTableApi<TValue = unknown> {
     get sort(): SortApi;
     get loading(): LoadingApi;
     get selection(): SelectionApi;
-    get form(): FormApi;
+    get form(): FormApi<TableFormValue<TValue>>;
     get footer(): FooterApi;
     get emptyState(): EmptyStateApi;
     get render(): RenderApi;

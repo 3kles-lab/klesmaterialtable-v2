@@ -4,6 +4,7 @@ import { IKlesCellFieldConfig, IKlesFooterFieldConfig, IKlesHeaderFieldConfig } 
 import { Signal } from '@angular/core';
 
 export type ColumnSeparatorStyle = 'solid' | 'dashed' | 'dotted' | 'double';
+export type ColumnClass = string | string[] | Set<string> | Record<string, boolean | null | undefined>;
 
 export interface ColumnSeparatorConfig {
     color?: string;
@@ -22,7 +23,7 @@ export interface KlesColumnConfig {
     visible?: boolean;
     visibleWhen?: Signal<boolean>;
     disabled?: boolean;
-    ngClass?: any;
+    ngClass?: ColumnClass;
     filterable?: boolean;
     sortable?: boolean;
     sortArrowPosition?: SortHeaderArrowPosition;

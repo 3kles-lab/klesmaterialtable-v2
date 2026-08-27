@@ -9,14 +9,14 @@ export interface SelectionResponse {
 }
 
 export interface SelectionAllResponse extends SelectionResponse {
-    footer?: any;
+    footer?: unknown;
 }
 
 export interface SelectionState {
     loading: boolean;
     success: boolean;
     selected?: boolean;
-    footer?: any;
+    footer?: unknown;
     count?: number;
     error?: unknown;
 }
@@ -25,8 +25,8 @@ type SelectionConfigDef<T> = {
     selectionMode?: boolean;
     key?: string;
     params?: () => Observable<T>;
-    select?: (params: T, row: FormGroup, selected: boolean, filters?: { [key: string]: any }) => Observable<SelectionResponse>;
-    selectAll?: (params: T, selected: boolean, filters?: { [key: string]: any }) => Observable<SelectionAllResponse>;
+    select?: (params: T, row: FormGroup, selected: boolean, filters?: Record<string, unknown>) => Observable<SelectionResponse>;
+    selectAll?: (params: T, selected: boolean, filters?: Record<string, unknown>) => Observable<SelectionAllResponse>;
 
     /** optionnel */
     /** pour indiquer le critère des lignes déja sélectionné */

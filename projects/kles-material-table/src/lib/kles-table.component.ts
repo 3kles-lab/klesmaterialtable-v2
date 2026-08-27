@@ -9,7 +9,7 @@ import { PaginationApi } from './core/api/pagination';
 import { SortApi } from './core/api/sort';
 import { LoadingApi } from './core/api/loading';
 import { SelectionApi } from './core/api/selection';
-import { FormApi } from './core/api/form';
+import { FormApi, TableFormValue } from './core/api/form';
 import { FooterApi } from './core/api/footer';
 import { ArrayUiState, GroupUiState } from '@3kles/kles-material-dynamicforms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -130,8 +130,8 @@ export class KlesTableComponent<TValue = unknown> implements OnInit, KlesTableAp
         return this.connectorService.selection;
     }
 
-    get form(): FormApi {
-        return this.connectorService.form;
+    get form(): FormApi<TableFormValue<TValue>> {
+        return this.connectorService.form as FormApi<TableFormValue<TValue>>;
     }
 
     get footer(): FooterApi {

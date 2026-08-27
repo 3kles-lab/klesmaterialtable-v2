@@ -148,7 +148,7 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
     constructor(
         private readonly host: ElementRef<HTMLElement>,
         private readonly connectorService: KlesTableConnectorService,
-        @Inject(LOADER_SERVICE) private readonly loader: ILoader<any>,
+        @Inject(LOADER_SERVICE) private readonly loader: ILoader<unknown>,
         @Inject(DATASOURCE_SERVICE) private readonly datasourceService: IDatasourceService,
         @Inject(TABLE_SERVICE) public readonly tableService: ITableService,
         @Inject(ROW_DRAG_DROP) public readonly dragDropRowService: DragDropService,
