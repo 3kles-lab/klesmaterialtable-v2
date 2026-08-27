@@ -1,9 +1,9 @@
 import { computed, Inject, Injectable, Signal, WritableSignal } from '@angular/core';
 import { EXTRA_ROWS } from '../../../token';
 import { ExtraRowConfig } from '../../../core/table/config.interface';
-import { KlesExtraCellFieldConfig } from '../../../core/table/cell.interface';
 import { FormGroup } from '@angular/forms';
 import { ExpandedRowStore } from '../../store/expanded-row-store.service';
+import { IKlesFieldConfig } from '@3kles/kles-material-dynamicforms';
 
 @Injectable()
 export class ExtraRowService {
@@ -24,16 +24,17 @@ export class ExtraRowService {
         );
     }
 
-    public extraColumns(): KlesExtraCellFieldConfig[] {
+    public extraFields(): IKlesFieldConfig[] {
         return this._extraRowsConfig()
             .flatMap((config) => config.cells)
-            .filter(Boolean);
+            .filter(Boolean)
+            .map((cell) => ({ ...cell.field, name: cell.columnDef }));
     }
 
     private createWhen(config: ExtraRowConfig): ((index: number, row: FormGroup<any>) => boolean) | undefined {
         if (config.mode === 'expand') {
             return (_, row) => {
-                return this.expandedRowStore.isExpanded(row.value._id);
+                return this.expandedRowStore.isExpanded(row.getRawValue()._id);
             };
         } else {
             return config?.when;

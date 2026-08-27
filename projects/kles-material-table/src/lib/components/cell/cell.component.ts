@@ -83,7 +83,7 @@ export class KlesCellComponent implements OnInit {
                     return this.expandedRowStore.expandedIds$.pipe(
                         takeUntilDestroyed(this.destroyRef),
                         map((ids) => {
-                            return ids.has(this.group().value._id);
+                            return ids.has(this.group().getRawValue()._id);
                         }),
                     );
                 }),

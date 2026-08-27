@@ -22,6 +22,7 @@ export const COLUMNS = new InjectionToken<WritableSignal<KlesColumnConfig[]>>('C
 export const FOOTER = new InjectionToken<WritableSignal<boolean>>('FOOTER');
 
 export const EXTRA_ROWS = new InjectionToken<WritableSignal<ExtraRowConfig[]>>('EXTRA_ROWS');
+export const MULTI_UNFOLD = new InjectionToken<boolean>('MULTI_UNFOLD');
 
 export const ROW_DRAG_DROP = new InjectionToken<DragDropService>('ROW_DRAG_DROP');
 export const DRAG_DROP_CONFIG = new InjectionToken<DragDropConfig | undefined>('DRAG_DROP_CONFIG');

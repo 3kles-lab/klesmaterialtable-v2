@@ -70,7 +70,7 @@ export class LinesService implements ILinesService {
                                 this.columnsService
                                     .columns()
                                     .map((col) => ({ ...col.cell?.field, name: col.columnDef }))
-                                    .concat(this.extraRowService.extraColumns().map((col) => ({ ...col, name: col.columnDef }))),
+                                    .concat(this.extraRowService.extraFields()),
                                 response.items ?? [],
                             ),
                         );
@@ -147,7 +147,7 @@ export class LinesLazyService implements ILinesService {
                                 this.columnsService
                                     .columns()
                                     .map((col) => ({ ...col.cell?.field, name: col.columnDef }))
-                                    .concat(this.extraRowService.extraColumns().map((col) => ({ ...col, name: col.columnDef }))),
+                                    .concat(this.extraRowService.extraFields()),
                                 response.items,
                             ),
                         );

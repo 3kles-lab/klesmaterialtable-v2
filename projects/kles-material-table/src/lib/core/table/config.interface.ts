@@ -98,6 +98,7 @@ export interface ExtraRowConfig {
 
 export interface ExtraRow {
     extraRows?: ExtraRowConfig[];
+    /** Allows several expandable data rows to remain open. Defaults to false. */
     multiUnfold?: boolean;
 }
 

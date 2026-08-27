@@ -251,7 +251,7 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
                             this.columnsService
                                 .columns()
                                 .map((col) => ({ ...col.cell?.field, name: col.columnDef }))
-                                .concat(this.extraRowService.extraColumns().map((col) => ({ ...col, name: col.columnDef }))),
+                                .concat(this.extraRowService.extraFields()),
                             value,
                         ),
                         index,

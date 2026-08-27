@@ -40,6 +40,7 @@ import {
     TABLE_SERVICE,
     SCROLLBAR_ORCHESTRATOR_SERVICE,
     EXTRA_ROWS,
+    MULTI_UNFOLD,
     EMPTY_STATE_CONFIG,
 } from '../token';
 import { KlesColumnConfig } from '../core/table/column.interface';
@@ -158,6 +159,10 @@ export class DynamicTableLoaderDirective implements OnDestroy {
             {
                 provide: EXTRA_ROWS,
                 useValue: signal<ExtraRowConfig[]>(this.tableConfig().extraRows ?? []),
+            },
+            {
+                provide: MULTI_UNFOLD,
+                useValue: this.tableConfig().multiUnfold ?? false,
             },
             {
                 provide: FOOTER,
