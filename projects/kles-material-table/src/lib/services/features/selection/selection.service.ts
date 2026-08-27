@@ -258,7 +258,9 @@ export class SelectionService<T> extends AbstractSelectionService<T> {
             if (state === KlesSelectionModelState.ENABLED) {
                 this.fm.getHeader().controls[this.key].enable({ emitEvent: false });
                 this.fm.getRows().controls.forEach((group) => {
-                    group.controls[this.key].enable({ emitEvent: false });
+                    if (!this.selectionConfig?.isDisabled?.(group)) {
+                        group.controls[this.key].enable({ emitEvent: false });
+                    }
                 });
             } else {
                 this.fm.getHeader().controls[this.key].disable({ emitEvent: false });
