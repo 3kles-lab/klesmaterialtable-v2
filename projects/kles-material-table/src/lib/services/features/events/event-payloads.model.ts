@@ -93,6 +93,16 @@ export interface SelectionChangePayload<TValue = unknown> {
     allSelected?: boolean;
 }
 
+export interface SelectionErrorPayload<TValue = unknown> {
+    error: unknown;
+    requestedSelected: boolean;
+    previousSelected: boolean;
+    row?: FormGroup;
+    rowIndex?: number;
+    value?: Partial<TValue>;
+    rawValue?: TValue;
+}
+
 export interface LoadingChangePayload {
     loading: boolean;
 }

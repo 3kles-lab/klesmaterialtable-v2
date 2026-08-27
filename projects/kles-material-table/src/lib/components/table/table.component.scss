@@ -206,6 +206,10 @@ th[appResizableColumn].column-resizing > .resize-handle > .resize-width-label {
     box-shadow: var(--mat-sys-level3);
 }
 
+.selection-row-spinner {
+    margin-inline: auto;
+}
+
 :host tr.kles-row-drag-placeholder td {
     padding: 0;
     border: 2px dashed var(--mat-sys-primary);

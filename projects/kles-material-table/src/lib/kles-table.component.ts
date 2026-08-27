@@ -25,6 +25,7 @@ import {
     RowDropErrorPayload,
     RowDropPayload,
     SelectionChangePayload,
+    SelectionErrorPayload,
     SortPayload,
     TreePayload,
 } from './services/features/events/event-payloads.model';
@@ -62,6 +63,7 @@ export class KlesTableComponent<TValue = unknown> implements OnInit, KlesTableAp
     @Output() cellValueChange = new EventEmitter<CellValueChangePayload<TValue>>();
 
     @Output() selectionChange = new EventEmitter<SelectionChangePayload<TValue>>();
+    @Output() selectionError = new EventEmitter<SelectionErrorPayload<TValue>>();
     @Output() pageChange = new EventEmitter<PageChangePayload>();
     @Output() sortChange = new EventEmitter<SortPayload>();
     @Output() filterChange = new EventEmitter<FilterChangePayload>();
@@ -214,6 +216,10 @@ export class KlesTableComponent<TValue = unknown> implements OnInit, KlesTableAp
 
             case 'selectionChange':
                 this.selectionChange.emit(event.payload);
+                break;
+
+            case 'selectionError':
+                this.selectionError.emit(event.payload);
                 break;
 
             case 'pageChange':

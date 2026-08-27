@@ -152,7 +152,7 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
         @Inject(DATASOURCE_SERVICE) private readonly datasourceService: IDatasourceService,
         @Inject(TABLE_SERVICE) public readonly tableService: ITableService,
         @Inject(ROW_DRAG_DROP) public readonly dragDropRowService: DragDropService,
-        @Inject(SELECTION_SERVICE) private readonly selectionService: ISelectionService,
+        @Inject(SELECTION_SERVICE) public readonly selectionService: ISelectionService,
         public readonly columnsService: ColumnsService,
         public readonly loadingService: LoadingService,
         private readonly paginatorService: PaginatorService,

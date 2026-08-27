@@ -1,6 +1,6 @@
 import { Inject, Injectable, Optional } from '@angular/core';
 import { FormGroup } from '@angular/forms';
-import { auditTime, catchError, concat, map, Observable, of, switchMap, take } from 'rxjs';
+import { auditTime, catchError, concat, defer, map, Observable, of, switchMap, take } from 'rxjs';
 import { SELECTION_CONFIG } from '../../../token';
 import { SelectionAllResponse, SelectionConfig, SelectionResponse, SelectionState } from '../../../core/table/selection-config.interface';
 
@@ -13,7 +13,7 @@ export class SelectionLoaderService<T> {
     }
 
     public select(row: FormGroup, selected: boolean, filters?: { [key: string]: any }): Observable<SelectionState> {
-        return (this.selectionConfig?.params?.() || of({} as T)).pipe(
+        return defer(() => this.selectionConfig?.params?.() || of({} as T)).pipe(
             auditTime(0),
             take(1),
             switchMap((params) => {
@@ -50,11 +50,18 @@ export class SelectionLoaderService<T> {
                     result$,
                 );
             }),
+            catchError((error) =>
+                of<SelectionState>({
+                    error,
+                    loading: false,
+                    success: false,
+                }),
+            ),
         );
     }
 
     public selectAll(selected: boolean, filters?: { [key: string]: any }): Observable<SelectionState> {
-        return (this.selectionConfig?.params?.() || of({} as T)).pipe(
+        return defer(() => this.selectionConfig?.params?.() || of({} as T)).pipe(
             auditTime(0),
             take(1),
             switchMap((params) => {
@@ -92,6 +99,13 @@ export class SelectionLoaderService<T> {
                     result$,
                 );
             }),
+            catchError((error) =>
+                of<SelectionState>({
+                    error,
+                    loading: false,
+                    success: false,
+                }),
+            ),
         );
     }
 }

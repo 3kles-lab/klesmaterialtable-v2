@@ -71,7 +71,11 @@
                 >
                     <div class="cell" [style.--align]="column.align">
                         <kles-cell [group]="row" [ui]="row | uiField" [column]="column" [rowIndex]="dataIndex ?? index">
-                            <ng-container klesDynamicField [field]="column | cellField" [group]="row" [ui]="row | uiField" [context]="row | rowContext"></ng-container>
+                            @if (column.columnDef === selectionService.key && selectionService.isLoading(row)) {
+                                <mat-spinner class="selection-row-spinner" [diameter]="20"></mat-spinner>
+                            } @else {
+                                <ng-container klesDynamicField [field]="column | cellField" [group]="row" [ui]="row | uiField" [context]="row | rowContext"></ng-container>
+                            }
                         </kles-cell>
                     </div>
                 </td>

@@ -16,6 +16,7 @@ import {
     RowPayload,
     SortPayload,
     SelectionChangePayload,
+    SelectionErrorPayload,
     TreePayload,
     ValidationErrorPayload,
     LoadingChangePayload,
@@ -53,6 +54,7 @@ export interface TableEventMap<TValue = unknown> {
     rowUnselect: RowPayload<TValue>;
     selectAll: SelectionChangePayload<TValue>;
     unselectAll: SelectionChangePayload<TValue>;
+    selectionError: SelectionErrorPayload<TValue>;
 
     //   selectionClear: SelectionChangePayload<TValue>;
     //   selectionInvert: SelectionChangePayload<TValue>;
