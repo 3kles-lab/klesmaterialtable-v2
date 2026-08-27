@@ -1,3 +1,15 @@
+# [21.6.0](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v21.5.0...v21.6.0) (2026-08-27)
+
+
+### Bug Fixes
+
+* extra rows config ([a3fe632](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/a3fe632c8bf70336dc3752958d7365ce1fd842cc))
+
+
+### Features
+
+* drag add option to activate handle only ([a0ea257](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/a0ea257070f04f611fd1580c36ad88c459170015))
+
 # [21.5.0](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v21.4.2...v21.5.0) (2026-08-27)
 
 
