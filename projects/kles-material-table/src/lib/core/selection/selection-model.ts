@@ -16,8 +16,9 @@ export class KlesSelectionModel<T> implements IKlesSelectionModel<T> {
         private readonly multiple: boolean = false,
         initialValues?: T[],
     ) {
-        const normalizedInitialValues = this.multiple ? (initialValues ?? []) : (initialValues?.slice(0, 1) ?? []);
-        normalizedInitialValues.forEach((value) => this._selection.add(value));
+        const values = initialValues ?? [];
+        this.assertSelectionCardinality(values);
+        values.forEach((value) => this._selection.add(value));
         this._count.set(this._selection.size);
     }
 
@@ -54,16 +55,23 @@ export class KlesSelectionModel<T> implements IKlesSelectionModel<T> {
         const removed = [];
         if (this._state === KlesSelectionModelState.ENABLED) {
             if (Array.isArray(value)) {
-                if (value.length > 1 && !this.multiple) {
-                    throw getMultipleValuesInSingleSelectionError();
-                }
-
-                value.forEach((v) => {
-                    if (!this.isSelected(v)) {
-                        this._selection.add(v);
-                        added.push(v);
+                this.assertSelectionCardinality(value);
+                if (!this.multiple && value.length === 1) {
+                    const singleValue = value[0];
+                    if (!this.isSelected(singleValue)) {
+                        removed.push(...Array.from(this._selection));
+                        this._selection.clear();
+                        this._selection.add(singleValue);
+                        added.push(singleValue);
                     }
-                });
+                } else {
+                    value.forEach((v) => {
+                        if (!this.isSelected(v)) {
+                            this._selection.add(v);
+                            added.push(v);
+                        }
+                    });
+                }
             } else {
                 if (!this.isSelected(value)) {
                     if (!this.multiple) {
@@ -141,15 +149,12 @@ export class KlesSelectionModel<T> implements IKlesSelectionModel<T> {
     }
 
     public reset(values: T[], options?: { emitEvent?: boolean }): void {
+        this.assertSelectionCardinality(values);
         const previous = Array.from(this._selection);
 
         this._selection.clear();
 
-        if (this.multiple) {
-            values.forEach((value) => this._selection.add(value));
-        } else if (values.length > 0) {
-            this._selection.add(values[0]);
-        }
+        values.forEach((value) => this._selection.add(value));
 
         this._count.set(this._selection.size);
 
@@ -166,5 +171,11 @@ export class KlesSelectionModel<T> implements IKlesSelectionModel<T> {
     private getValue(value: T) {
         // si jamais je rajoute une méthode de comparaison avec _selection
         return value;
+    }
+
+    private assertSelectionCardinality(values: T[]): void {
+        if (!this.multiple && values.length > 1) {
+            throw getMultipleValuesInSingleSelectionError();
+        }
     }
 }
