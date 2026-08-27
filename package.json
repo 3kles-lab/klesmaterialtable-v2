@@ -15,7 +15,7 @@
   },
   "private": true,
   "dependencies": {
-    "@3kles/kles-material-dynamicforms": "^21.4.1",
+    "@3kles/kles-material-dynamicforms": "^21.8.0",
     "@3kles/kles-ng-pipe": "^21.0.0",
     "@angular/animations": "^21.0.6",
     "@angular/cdk": "^21.0.5",

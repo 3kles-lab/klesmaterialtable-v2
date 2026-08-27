@@ -268,6 +268,7 @@ export class AppComponent implements AfterViewInit {
                     field: {
                         component: KlesFormGroupComponent,
                         direction: 'row',
+                        wrap: false,
                         collections: [
                             {
                                 component: KlesFormIconButtonComponent,
