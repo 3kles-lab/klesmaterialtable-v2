@@ -21,7 +21,10 @@ import { IKlesHeaderFieldConfig } from '../../core/table/cell.interface';
             {{ header().label }}
         </div>
 
-        <div class="filterHeader">
+        <div class="filterHeader" [class.has-drag-handle-spacer]="dragHandleSpacer()">
+            @if (dragHandleSpacer()) {
+                <span class="drag-handle-spacer" aria-hidden="true"></span>
+            }
             <div class="field">
                 <ng-content></ng-content>
             </div>
@@ -63,6 +66,16 @@ import { IKlesHeaderFieldConfig } from '../../core/table/cell.interface';
             gap: 2px;
         }
 
+        .filterHeader.has-drag-handle-spacer {
+            gap: 5px;
+        }
+
+        .drag-handle-spacer {
+            flex: 0 0 32px;
+            width: 32px;
+            height: 32px;
+        }
+
         .field {
             flex-grow: 1;
             text-align: center;
@@ -97,6 +110,7 @@ import { IKlesHeaderFieldConfig } from '../../core/table/cell.interface';
 export class KlesHeaderComponent implements OnInit {
     header = input.required<IKlesHeaderFieldConfig & { columnDef: string; sortable?: boolean; sortArrowPosition?: SortHeaderArrowPosition }>();
     group = input.required<FormGroup<any>>();
+    dragHandleSpacer = input(false);
 
     ngOnInit(): void {}
 }

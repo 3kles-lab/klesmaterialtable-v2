@@ -25,6 +25,10 @@ export abstract class DragDropBase {
         return this.config?.enable || false;
     }
 
+    get handleOnly(): boolean {
+        return this.enable && (this.config?.options?.handleOnly ?? false);
+    }
+
     get autoScrollStep(): number {
         return this.config?.options?.autoScrollStep ?? 8;
     }

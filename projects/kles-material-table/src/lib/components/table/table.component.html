@@ -44,7 +44,11 @@
                     "
                 >
                     <div class="cell">
-                        <kles-header [header]="column | header" [group]="tableService.form.controls.header">
+                        <kles-header
+                            [header]="column | header"
+                            [group]="tableService.form.controls.header"
+                            [dragHandleSpacer]="dragDropRowService.handleOnly && column.columnDef === displayedColumns()?.[0]"
+                        >
                             <ng-container
                                 klesDynamicField
                                 [field]="column | headerField"
@@ -69,7 +73,13 @@
                     (contextmenu)="cellService.onContextMenu($event, row, dataIndex ?? index, column.columnDef)"
                 >
                     <div class="cell" [style.--align]="column.align">
-                        <kles-cell [group]="row" [ui]="row | uiField" [column]="column" [rowIndex]="dataIndex ?? index">
+                        <kles-cell
+                            [group]="row"
+                            [ui]="row | uiField"
+                            [column]="column"
+                            [rowIndex]="dataIndex ?? index"
+                            [dragHandle]="dragDropRowService.handleOnly && column.columnDef === displayedColumns()?.[0]"
+                        >
                             @if (column.columnDef === selectionService.key && selectionService.isLoading(row)) {
                                 <mat-spinner class="selection-row-spinner" [diameter]="20"></mat-spinner>
                             } @else {

@@ -10,13 +10,14 @@ import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { KlesColumnConfig } from '../../core/table/column.interface';
 import { TreeService } from '../../services/features/tree/tree.service';
 import { EventsService } from '../../services/features/events/events.service';
+import { CdkDragHandle } from '@angular/cdk/drag-drop';
 
 @Component({
     selector: 'kles-cell',
     templateUrl: './cell.component.html',
     styleUrl: './cell.component.scss',
     standalone: true,
-    imports: [CommonModule, MatIconModule, MatButtonModule],
+    imports: [CommonModule, MatIconModule, MatButtonModule, CdkDragHandle],
 })
 export class KlesCellComponent implements OnInit {
     private readonly destroyRef = inject(DestroyRef);
@@ -28,6 +29,7 @@ export class KlesCellComponent implements OnInit {
     group = input.required<FormGroup<any>>();
     column = input.required<KlesColumnConfig>();
     rowIndex = input.required<number>();
+    dragHandle = input(false);
 
     expandedRow = computed(() => {
         return (this.column().canExpand ?? false) && (this.ui().get(this.column().columnDef)?.value().expandedRow ?? false);

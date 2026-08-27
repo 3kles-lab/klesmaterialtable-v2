@@ -61,6 +61,8 @@ export interface DragDropRowChange<TValue = unknown> extends DragDropRowContext<
 export interface DragDropConfig<TValue = unknown> {
     enable?: boolean;
     options?: {
+        /** Restricts row dragging to the dedicated handle rendered in the first visible column. */
+        handleOnly?: boolean;
         autoScrollStep?: number;
         connectedTo?: string[];
         dragDisabled?: (row: FormGroup) => boolean;

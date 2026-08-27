@@ -1,3 +1,16 @@
+@if (dragHandle()) {
+    <button
+        type="button"
+        matIconButton
+        cdkDragHandle
+        class="drag-handle"
+        aria-label="Déplacer la ligne"
+        (click)="stopPropagation($event)"
+        (dblclick)="stopPropagation($event)"
+    >
+        <mat-icon>drag_indicator</mat-icon>
+    </button>
+}
 @if (column().canExpand) {
     <button matIconButton class="expand-button" (click)="expandRow(); stopPropagation($event)">
         @if (this.expandedRow()) {
