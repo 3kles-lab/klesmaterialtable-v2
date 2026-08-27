@@ -77,7 +77,7 @@ export class KlesSelectionModel<T> implements IKlesSelectionModel<T> {
         }
 
         this._count.set(this._selection.size);
-        if (options?.emitEvent ?? true) {
+        if ((options?.emitEvent ?? true) && (added.length > 0 || removed.length > 0)) {
             this._changed.next({ added, removed, count: this._selection.size, state: this._state });
         }
     }
@@ -102,7 +102,7 @@ export class KlesSelectionModel<T> implements IKlesSelectionModel<T> {
         }
 
         this._count.set(this._selection.size);
-        if (options?.emitEvent ?? true) {
+        if ((options?.emitEvent ?? true) && (added.length > 0 || removed.length > 0)) {
             this._changed.next({ added, removed, count: this._selection.size, state: this._state });
         }
     }
