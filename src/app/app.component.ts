@@ -9,6 +9,7 @@ import {
     linesLoader,
     selectionConfig,
     SelectionErrorPayload,
+    Span,
 } from 'kles-material-table';
 import { BehaviorSubject, delay, of, switchMap, throwError, timer } from 'rxjs';
 import {
@@ -26,6 +27,7 @@ import {
 import { Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { CustomTableIntl } from './table-intl';
+import { NestedTableFieldComponent } from './nested-table-field.component';
 
 @Component({
     selector: 'app-root',
@@ -51,6 +53,11 @@ export class AppComponent implements AfterViewInit {
             e: 'ceci est une phrase',
             ddd: 'ligne 2 expand key: ' + key,
             eee: 'ceci est une phrase dans une extra row qui prend le maximum de place dispo',
+            details: [
+                { label: 'Identifiant', value: `${key}` },
+                { label: 'Fournisseur', value: key % 3 ? 'Google Workspace' : 'Microsoft EntraId' },
+                { label: 'État', value: key % 3 ? 'Actif' : 'Désactivé' },
+            ],
             provider: {
                 enabled: key % 3,
                 label: key % 3 ? 'Google Workspace' : 'Microsoft EntraId',
@@ -360,6 +367,20 @@ export class AppComponent implements AfterViewInit {
                 return of({ selected }).pipe(delay(800));
             },
         }),
+        extraRows: [
+            {
+                mode: 'expand',
+                cells: [
+                    {
+                        columnDef: 'details',
+                        colspan: Span.MAX,
+                        field: {
+                            component: NestedTableFieldComponent,
+                        },
+                    },
+                ],
+            },
+        ],
     };
 
     lazyConfig: KlesTableConfig = {
