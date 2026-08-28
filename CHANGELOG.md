@@ -1,3 +1,10 @@
+## [21.7.1](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v21.7.0...v21.7.1) (2026-08-28)
+
+
+### Bug Fixes
+
+* propagation types ([a70639b](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/a70639bfc5d80434ae5823b352482010ac5d9995))
+
 # [21.7.0](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v21.6.0...v21.7.0) (2026-08-28)
 
 
