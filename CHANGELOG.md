@@ -1,3 +1,10 @@
+# [21.8.0](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v21.7.1...v21.8.0) (2026-08-28)
+
+
+### Features
+
+* add row appearance config ([8611d67](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/8611d670844a33f668c254f1d1f93e9acc77f598))
+
 ## [21.7.1](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v21.7.0...v21.7.1) (2026-08-28)
 
 
