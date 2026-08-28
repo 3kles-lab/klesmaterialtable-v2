@@ -124,6 +124,8 @@
             cdkDrag
             [cdkDragData]="row"
             [cdkDragDisabled]="dragDropRowService.isDragDisabled(row)"
+            [ngStyle]="rowAppearance.rowStyle | resolveRowStyle: row.value : row.status : (dataIndex ?? index)"
+            [ngClass]="rowAppearance.rowClass | resolveRowClass: row.value : row.status : (dataIndex ?? index)"
             (cdkDragStarted)="dragDropRowService.rowDragStarted(row, dataIndex ?? index)"
             (cdkDragMoved)="dragDropRowService.rowDragMoved(row, dataIndex ?? index)"
             (cdkDragEnded)="dragDropRowService.rowDragEnded(row, dataIndex ?? index)"
@@ -162,6 +164,7 @@
                     <ng-container [cdkColumnDef]="extraColumn.columnDef">
                         <td
                             mat-cell
+                            class="kles-extra-row-cell"
                             *cdkCellDef="let row"
                             [attr.colspan]="extraColumn.colspan | spanPipe: displayedColumns().length"
                             [attr.rowspan]="extraColumn.rowspan"
@@ -180,6 +183,7 @@
                 }
                 <tr
                     mat-row
+                    class="kles-extra-row"
                     *matRowDef="let row; let index = index; let dataIndex = dataIndex; columns: extraRow.displayedColumns; when: extraRow.when"
                     (click)="rowService.onClick($event, row, dataIndex ?? index)"
                     (dblclick)="rowService.onDoubleClick($event, row, dataIndex ?? index)"

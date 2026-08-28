@@ -8,6 +8,7 @@ import {
     InfiniteScrollConfig,
     LoaderConfig,
     PaginatorConfig,
+    RowAppearanceConfig,
 } from './core/table/config.interface';
 import { DragDropService } from './services/features/dragdrop/dragdrop.service';
 import { Sort } from '@angular/material/sort';
@@ -31,6 +32,7 @@ export const FOOTER = new InjectionToken<WritableSignal<boolean>>('FOOTER');
 
 export const EXTRA_ROWS = new InjectionToken<WritableSignal<ExtraRowConfig[]>>('EXTRA_ROWS');
 export const MULTI_UNFOLD = new InjectionToken<boolean>('MULTI_UNFOLD');
+export const ROW_APPEARANCE_CONFIG = new InjectionToken<RowAppearanceConfig>('ROW_APPEARANCE_CONFIG');
 
 export const ROW_DRAG_DROP = new InjectionToken<DragDropService>('ROW_DRAG_DROP');
 export const DRAG_DROP_CONFIG = new InjectionToken<DragDropConfig | undefined>('DRAG_DROP_CONFIG');

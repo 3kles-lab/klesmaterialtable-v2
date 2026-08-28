@@ -43,6 +43,7 @@ import {
     MULTI_UNFOLD,
     EMPTY_STATE_CONFIG,
     INFINITE_SCROLL_CONFIG,
+    ROW_APPEARANCE_CONFIG,
 } from '../token';
 import { KlesColumnConfig } from '../core/table/column.interface';
 import { ColumnsService } from '../services/features/columns/columns.service';
@@ -179,6 +180,13 @@ export class DynamicTableLoaderDirective<TParams = unknown, TValue = unknown> im
             {
                 provide: MULTI_UNFOLD,
                 useValue: this.tableConfig().multiUnfold ?? false,
+            },
+            {
+                provide: ROW_APPEARANCE_CONFIG,
+                useValue: {
+                    rowStyle: this.tableConfig().rowStyle,
+                    rowClass: this.tableConfig().rowClass,
+                },
             },
             {
                 provide: FOOTER,

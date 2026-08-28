@@ -1,15 +1,24 @@
 import { Type } from '@angular/core';
-import { AsyncValidatorFn, FormGroup, ValidatorFn } from '@angular/forms';
+import { AsyncValidatorFn, FormControlStatus, FormGroup, ValidatorFn } from '@angular/forms';
 import { MatPaginatorIntl, MatPaginatorSelectConfig } from '@angular/material/paginator';
 import { Sort } from '@angular/material/sort';
 import { ColumnSeparatorConfig, KlesColumnConfig } from './column.interface';
 import { LinesLazyLoader, LinesLoader } from './loader.interface';
 import { SelectionConfig } from './selection-config.interface';
-import { KlesExtraCellFieldConfig } from './cell.interface';
+import { KlesExtraCellFieldConfig, KlesStyleMap } from './cell.interface';
 import { KlesTableIntl } from '../../components/table/table-intl';
 import { Observable } from 'rxjs';
 
 export type TableElevationLevel = 0 | 1 | 2 | 3 | 4 | 5;
+
+export type RowClassValue = string | string[] | Set<string> | Record<string, boolean | null | undefined>;
+export type RowStyleInput = KlesStyleMap | ((row: Record<string, unknown>, status: FormControlStatus, index: number) => KlesStyleMap);
+export type RowClassInput = RowClassValue | ((row: Record<string, unknown>, status: FormControlStatus, index: number) => RowClassValue);
+
+export interface RowAppearanceConfig {
+    rowStyle?: RowStyleInput;
+    rowClass?: RowClassInput;
+}
 
 export interface EmptyStateConfig {
     enabled?: boolean;
@@ -17,7 +26,7 @@ export interface EmptyStateConfig {
     intl?: Type<KlesTableIntl>;
 }
 
-export interface DefaultTableConfig {
+export interface DefaultTableConfig extends RowAppearanceConfig {
     id?: string;
     columns: KlesColumnConfig[];
     /** Reserved for row-level validation configuration; not applied yet. */

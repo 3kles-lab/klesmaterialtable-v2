@@ -55,6 +55,10 @@ td {
     word-break: normal;
 }
 
+:host td.kles-extra-row-cell {
+    padding: 0;
+}
+
 th .cell,
 td .cell {
     display: flex;
@@ -165,7 +169,7 @@ th[appResizableColumn].column-resizing > .resize-handle > .resize-width-label {
     z-index: 500;
 }
 
-:host .mat-mdc-row {
+:host .mat-mdc-row:not(.kles-extra-row) {
     transition: background-color 120ms ease;
     &:hover {
         background: var(--kles-table-row-hover-background);
@@ -175,7 +179,7 @@ th[appResizableColumn].column-resizing > .resize-handle > .resize-width-label {
 // Conserve un emplacement clairement visible pendant le déplacement d'une ligne.
 :host tr.mat-mdc-row.cdk-drag-placeholder {
     opacity: 1;
-    background: color-mix(in srgb, var(--mat-sys-primary) 12%, var(--mat-sys-surface));
+    background: color-mix(in srgb, var(--mat-sys-primary) 12%, var(--mat-sys-surface)) !important;
 }
 
 :host tr.mat-mdc-row.cdk-drag-placeholder td {

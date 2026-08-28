@@ -31,7 +31,7 @@ import { CellFieldPipe, ExtraCellFieldPipe } from '../../pipes/cell-field.pipe';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { DragDropService } from '../../services/features/dragdrop/dragdrop.service';
-import { DATASOURCE_SERVICE, LOADER_SERVICE, ROW_DRAG_DROP, SELECTION_SERVICE, SORT_SERVICE, TABLE_SERVICE } from '../../token';
+import { DATASOURCE_SERVICE, LOADER_SERVICE, ROW_APPEARANCE_CONFIG, ROW_DRAG_DROP, SELECTION_SERVICE, SORT_SERVICE, TABLE_SERVICE } from '../../token';
 import { ResolveNgStylePipe } from '../../pipes/ng-style.pipe';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ResizableColumnDirective } from '../../directives/resizable-column.directive';
@@ -61,7 +61,8 @@ import { FooterApi } from '../../core/api/footer';
 import { UiFieldPipe } from '../../pipes/ui-field.pipe';
 import { SpanPipe } from '../../pipes/span.pipe';
 import { ExtraRowService } from '../../services/features/extra-row/extra-row.service';
-import { ExtraRowConfig } from '../../core/table/config.interface';
+import { ExtraRowConfig, RowAppearanceConfig } from '../../core/table/config.interface';
+import { ResolveRowClassPipe, ResolveRowStylePipe } from '../../pipes/row-appearance.pipe';
 
 import { RenderService } from '../../services/features/render/render.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -117,6 +118,8 @@ type TableSection = 'header' | 'body' | 'footer';
         KlesHeaderComponent,
         HeaderPipe,
         RowContextPipe,
+        ResolveRowStylePipe,
+        ResolveRowClassPipe,
     ],
 })
 export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy {
@@ -152,6 +155,7 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
         @Inject(DATASOURCE_SERVICE) private readonly datasourceService: IDatasourceService,
         @Inject(TABLE_SERVICE) public readonly tableService: ITableService,
         @Inject(ROW_DRAG_DROP) public readonly dragDropRowService: DragDropService,
+        @Inject(ROW_APPEARANCE_CONFIG) public readonly rowAppearance: RowAppearanceConfig,
         @Inject(SELECTION_SERVICE) public readonly selectionService: ISelectionService,
         public readonly columnsService: ColumnsService,
         public readonly loadingService: LoadingService,
