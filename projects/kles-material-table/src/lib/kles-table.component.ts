@@ -42,8 +42,8 @@ import { TreeApi } from './core/api/tree';
     providers: [KlesTableConnectorService],
     styleUrl: './kles-table.component.scss',
 })
-export class KlesTableComponent<TValue = unknown> implements OnInit, KlesTableApi<TValue> {
-    tableConfig = input.required<KlesTableConfig>();
+export class KlesTableComponent<TParams = unknown, TValue = unknown> implements OnInit, KlesTableApi<TValue> {
+    tableConfig = input.required<KlesTableConfig<TParams, TValue>>();
     private readonly destroyRef = inject(DestroyRef);
 
     @Output() tableEvent = new EventEmitter<TableEvent<TValue>>();

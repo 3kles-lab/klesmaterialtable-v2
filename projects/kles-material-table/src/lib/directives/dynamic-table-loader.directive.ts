@@ -87,8 +87,8 @@ import { InfiniteScrollService } from '../services/features/scrollbar/infinite-s
 @Directive({
     selector: '[appDynamicTableLoader]',
 })
-export class DynamicTableLoaderDirective implements OnDestroy {
-    tableConfig = input.required<KlesTableConfig, KlesTableConfig>({
+export class DynamicTableLoaderDirective<TParams = unknown, TValue = unknown> implements OnDestroy {
+    tableConfig = input.required<KlesTableConfig<TParams, TValue>, KlesTableConfig<TParams, TValue>>({
         transform: (v) => {
             v.columns = v.columns.map((col) => {
                 if (col.headerCell?.field) {
