@@ -46,7 +46,7 @@ export class AppComponent implements AfterViewInit {
             '#select': key % 2 === 0,
             _id: `${key}`,
             name: key,
-            test: { a: `${key}` },
+            test: { a: `test ${key}` },
             aa: 'ligne 1 expand key:' + key,
             c: '1565',
             d: '87887',
@@ -317,7 +317,6 @@ export class AppComponent implements AfterViewInit {
                                         icon: 'delete',
                                         color: 'warn',
                                         dividerBefore: true,
-
                                     },
                                 ],
 
@@ -360,9 +359,7 @@ export class AppComponent implements AfterViewInit {
 
                 // Demo: rows 0, 10, 20, etc. simulate a backend failure after 800 ms.
                 if (rowId % 10 === 0) {
-                    return timer(800).pipe(
-                        switchMap(() => throwError(() => new Error(`Demo backend error for row ${rowId}.`))),
-                    );
+                    return timer(800).pipe(switchMap(() => throwError(() => new Error(`Demo backend error for row ${rowId}.`))));
                 }
 
                 return of({ selected }).pipe(delay(800));
@@ -435,7 +432,8 @@ export class AppComponent implements AfterViewInit {
                 },
                 cell: {
                     field: {
-                        component: KlesFormInputComponent,
+                        component: KlesFormTextComponent,
+                        property: 'a',
                         clearable: true,
                     },
                 },
@@ -446,7 +444,7 @@ export class AppComponent implements AfterViewInit {
 
                 filterable: true,
                 visible: true,
-                canExpand: true,
+
                 align: AlignCell.LEFT,
                 headerCell: {
                     label: 'Colonne C',
@@ -510,7 +508,9 @@ export class AppComponent implements AfterViewInit {
         ],
 
         lazy: true,
-        paginator: true,
+        infinite: true,
+        pageSize: 20,
+        scrollThreshold: 160,
         lines: linesLazyLoader({
             params: () => this.toto,
             loader: (params, query) => {
@@ -521,7 +521,7 @@ export class AppComponent implements AfterViewInit {
                         (query?.pagination?.page ?? 0) * (query?.pagination?.perPage ?? 50) + (query?.pagination?.perPage ?? 50),
                     ),
                     total: this.data.length,
-                }).pipe(delay(1000));
+                }).pipe(delay(400));
             },
             hasChildren: (parent, depth) => {
                 return depth < 2;
