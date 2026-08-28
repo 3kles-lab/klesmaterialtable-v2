@@ -29,6 +29,8 @@ import { CommonModule } from '@angular/common';
 import { CustomTableIntl } from './table-intl';
 import { NestedTableFieldComponent } from './nested-table-field.component';
 
+
+
 @Component({
     selector: 'app-root',
     templateUrl: './app.component.html',
@@ -74,6 +76,13 @@ export class AppComponent implements AfterViewInit {
 
     config: KlesTableConfig = {
         columnSeparator: false,
+        rowStyle: (row) => {
+            const provider = row['provider'] as { enabled?: boolean | number } | undefined;
+
+            return provider && !provider.enabled
+                ? { background: 'color-mix(in srgb, var(--mat-sys-error) 10%, var(--mat-sys-surface))' }
+                : {};
+        },
         columns: [
             {
                 columnDef: '#select',
@@ -508,9 +517,10 @@ export class AppComponent implements AfterViewInit {
         ],
 
         lazy: true,
-        infinite: true,
+        // infinite: true,
+        paginator: true,
         pageSize: 20,
-        scrollThreshold: 160,
+        // scrollThreshold: 160,
         lines: linesLazyLoader({
             params: () => this.toto,
             loader: (params, query) => {
