@@ -41,8 +41,13 @@ export interface PaginatorConfig {
 }
 
 export interface InfiniteScrollConfig {
-    /** Reserved for the future infinite-scroll implementation. */
     infinite?: boolean;
+    /** Number of rows requested per page. Defaults to 10. */
+    pageSize?: number;
+    /** Distance, in pixels, from the bottom at which the next page is requested. Defaults to 200. */
+    scrollThreshold?: number;
+    /** Minimum delay, in milliseconds, between scroll checks. Defaults to 100. */
+    scrollDebounceTime?: number;
 }
 
 export interface DragDropRowChange<TValue = unknown> extends DragDropRowContext<TValue> {
@@ -110,7 +115,9 @@ export type Selection<T> = {
     selection?: SelectionConfig<T>;
 };
 
-type Exclusive<T, U> = (T & { [K in keyof U]?: never }) | (U & { [K in keyof T]?: never });
+type Exclusive<T, U> =
+    | (T & { [K in Exclude<keyof U, keyof T>]?: never })
+    | (U & { [K in Exclude<keyof T, keyof U>]?: never });
 
 export type KlesTableConfig<T = unknown, R = unknown> = DefaultTableConfig &
     Exclusive<PaginatorConfig, InfiniteScrollConfig> &

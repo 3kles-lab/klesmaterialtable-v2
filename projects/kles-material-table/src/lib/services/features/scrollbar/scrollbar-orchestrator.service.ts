@@ -87,3 +87,20 @@ export class ScrollbarLazyOrchestratorService implements IScrollbarOrchestratorS
             });
     }
 }
+
+@Injectable()
+export class ScrollbarInfiniteOrchestratorService implements IScrollbarOrchestratorService {
+    private readonly destroyRef = inject(DestroyRef);
+
+    constructor(
+        @Inject(LINES_SERVICE) private readonly linesService: ILinesService,
+        private readonly scrollbarService: ScrollbarService,
+    ) {}
+
+    register(): void {
+        this.linesService
+            .loaded()
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(() => this.scrollbarService.showScrollbar());
+    }
+}

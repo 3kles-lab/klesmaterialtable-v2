@@ -9,6 +9,7 @@ import { Subject } from 'rxjs';
 import { LoaderLazyService, LoaderService } from '../loader/loader.service';
 import { ExtraRowService } from '../extra-row/extra-row.service';
 import { EventsService } from '../events/events.service';
+import { PaginatorStore } from '../../store/paginator-store.service';
 
 export interface ILinesService {
     register(): void;
@@ -164,5 +165,79 @@ export class LinesLazyService implements ILinesService {
                     }
                 }
             });
+    }
+}
+
+@Injectable()
+export class LinesInfiniteService implements ILinesService {
+    private readonly destroyRef = inject(DestroyRef);
+    private _total = 0;
+    private readonly _loaded = new EventEmitter<void>();
+    private readonly _loading = new EventEmitter<void>();
+
+    constructor(
+        @Inject(LOADER_SERVICE) private readonly loader: LoaderLazyService<any, any>,
+        private readonly fm: KlesForm,
+        private readonly columnsService: ColumnsService,
+        private readonly rowFactory: RowFormFactory,
+        private readonly extraRowService: ExtraRowService,
+        private readonly paginatorStore: PaginatorStore,
+        private readonly eventsService: EventsService,
+    ) {}
+
+    register(): void {
+        this.loader
+            .load()
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((response) => {
+                if (response.loading) {
+                    this._loading.emit();
+                    this.eventsService.emit('loadStart');
+                    return;
+                }
+
+                if (response.error) {
+                    this.eventsService.emit('loadError', {
+                        error: response.error,
+                        message: response.error?.message,
+                    });
+                    return;
+                }
+
+                const rows = this.rowFactory.createRows(
+                    this.columnsService
+                        .columns()
+                        .map((column) => ({ ...column.cell?.field, name: column.columnDef }))
+                        .concat(this.extraRowService.extraFields()),
+                    response.items ?? [],
+                );
+
+                if (this.paginatorStore.snapshot().page === 0) {
+                    this.fm.setRows(rows);
+                } else {
+                    this.fm.insertRows(rows);
+                }
+
+                this._total = response.total ?? 0;
+                this._loaded.emit();
+                this.eventsService.emit('loadSuccess', {
+                    total: this._total,
+                    values: response.items ?? [],
+                    rawValues: this.fm.getRows().getRawValue(),
+                    rows: this.fm.getRows().controls,
+                });
+            });
+    }
+
+    total(): number {
+        return this._total;
+    }
+
+    loaded(): EventEmitter<void> {
+        return this._loaded;
+    }
+
+    loading(): EventEmitter<void> {
+        return this._loading;
     }
 }

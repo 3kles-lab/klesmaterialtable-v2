@@ -42,6 +42,7 @@ import {
     EXTRA_ROWS,
     MULTI_UNFOLD,
     EMPTY_STATE_CONFIG,
+    INFINITE_SCROLL_CONFIG,
 } from '../token';
 import { KlesColumnConfig } from '../core/table/column.interface';
 import { ColumnsService } from '../services/features/columns/columns.service';
@@ -56,11 +57,15 @@ import { HeaderLazyService, HeaderService } from '../services/features/header/he
 import { DatasourceLazyService, DatasourceService } from '../services/features/datasource/datasource.service';
 import { PaginatorService } from '../services/features/paginator/paginator.service';
 import { SelectionLazyService, SelectionService } from '../services/features/selection/selection.service';
-import { LinesLazyService, LinesService } from '../services/features/lines/lines.service';
+import { LinesInfiniteService, LinesLazyService, LinesService } from '../services/features/lines/lines.service';
 import { TableService } from '../services/features/table/table.service';
 import { LoaderLazyService, LoaderService } from '../services/features/loader/loader.service';
-import { LoadingOrchestratorService } from '../services/features/loading/loading-orchestrator.service';
-import { ScrollbarLazyOrchestratorService, ScrollbarOrchestratorService } from '../services/features/scrollbar/scrollbar-orchestrator.service';
+import { InfiniteLoadingOrchestratorService, LoadingOrchestratorService } from '../services/features/loading/loading-orchestrator.service';
+import {
+    ScrollbarInfiniteOrchestratorService,
+    ScrollbarLazyOrchestratorService,
+    ScrollbarOrchestratorService,
+} from '../services/features/scrollbar/scrollbar-orchestrator.service';
 import { FooterService } from '../services/features/footer/footer.service';
 import { KlesExtraCellFieldConfig } from '../core/table/cell.interface';
 import { ExtraRowService } from '../services/features/extra-row/extra-row.service';
@@ -77,6 +82,7 @@ import { KlesTableIntl } from '../components/table/table-intl';
 import { KlesTableEmptyStateComponent } from '../components/empty-state/empty-state.component';
 import { EmptyStateService } from '../services/features/empty-state/empty-state.service';
 import { RowContextStore } from '../services/store/row-context-store.service';
+import { InfiniteScrollService } from '../services/features/scrollbar/infinite-scroll.service';
 
 @Directive({
     selector: '[appDynamicTableLoader]',
@@ -110,6 +116,10 @@ export class DynamicTableLoaderDirective implements OnDestroy {
     }
 
     private loadComponent() {
+        if (this.tableConfig().infinite && !this.tableConfig().lazy) {
+            throw new Error('KlesMaterialTable: infinite scrolling requires a lazy lines loader.');
+        }
+
         if (this.componentRef) {
             this.clearComponent();
         }
@@ -145,7 +155,13 @@ export class DynamicTableLoaderDirective implements OnDestroy {
     }
 
     private initInjector(): DestroyableInjector {
-        const storeProviders = [RowContextStore, SortStore, FilterStore, ...(this.tableConfig().paginator ? [PaginatorStore] : []), ExpandedRowStore];
+        const storeProviders = [
+            RowContextStore,
+            SortStore,
+            FilterStore,
+            ...(this.tableConfig().paginator || this.tableConfig().infinite ? [PaginatorStore] : []),
+            ExpandedRowStore,
+        ];
 
         const emptyState = this.tableConfig().emptyState;
 
@@ -193,6 +209,15 @@ export class DynamicTableLoaderDirective implements OnDestroy {
                     pageSizeOptions: this.tableConfig().pageSizeOptions,
                 },
             },
+            {
+                provide: INFINITE_SCROLL_CONFIG,
+                useValue: {
+                    infinite: this.tableConfig().infinite ?? false,
+                    pageSize: this.tableConfig().pageSize,
+                    scrollThreshold: this.tableConfig().scrollThreshold,
+                    scrollDebounceTime: this.tableConfig().scrollDebounceTime,
+                },
+            },
             ...(this.tableConfig().customMatPaginatorIntl
                 ? [
                       {
@@ -216,8 +241,20 @@ export class DynamicTableLoaderDirective implements OnDestroy {
         ];
 
         const orchestratorProviders = [
-            LoadingOrchestratorService,
-            ...(this.tableConfig().lazy
+            this.tableConfig().infinite
+                ? {
+                      provide: LoadingOrchestratorService,
+                      useClass: InfiniteLoadingOrchestratorService,
+                  }
+                : LoadingOrchestratorService,
+            ...(this.tableConfig().infinite
+                ? [
+                      {
+                          provide: SCROLLBAR_ORCHESTRATOR_SERVICE,
+                          useClass: ScrollbarInfiniteOrchestratorService,
+                      },
+                  ]
+                : this.tableConfig().lazy
                 ? [
                       {
                           provide: SCROLLBAR_ORCHESTRATOR_SERVICE,
@@ -256,6 +293,7 @@ export class DynamicTableLoaderDirective implements OnDestroy {
             ColumnsService,
             FooterService,
             ScrollbarService,
+            ...(this.tableConfig().infinite ? [InfiniteScrollService] : []),
             EventsService,
             RowService,
             CellService,
@@ -281,7 +319,7 @@ export class DynamicTableLoaderDirective implements OnDestroy {
                       },
                       {
                           provide: LINES_SERVICE,
-                          useClass: LinesLazyService,
+                          useClass: this.tableConfig().infinite ? LinesInfiniteService : LinesLazyService,
                       },
                       {
                           provide: SELECTION_SERVICE,

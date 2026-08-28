@@ -1,0 +1,29 @@
+:host {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    height: 100%;
+    overflow: hidden;
+}
+
+kles-table {
+    min-height: 0;
+    flex: 1 1 auto;
+}
+
+.loading-more-indicator {
+    position: absolute;
+    inset-inline-start: 50%;
+    bottom: 24px;
+    z-index: 600;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--mat-sys-outline-variant);
+    border-radius: 50%;
+    background: var(--mat-sys-surface-container-high);
+    box-shadow: var(--mat-sys-level3);
+    transform: translateX(-50%);
+    pointer-events: none;
+}
