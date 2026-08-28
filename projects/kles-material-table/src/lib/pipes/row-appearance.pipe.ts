@@ -2,15 +2,22 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { FormControlStatus } from '@angular/forms';
 import { KlesStyleMap } from '../core/table/cell.interface';
 import { RowClassInput, RowClassValue, RowStyleInput } from '../core/table/config.interface';
+import { KlesRowContext } from '../core/table/row-context.interface';
 
 @Pipe({
     name: 'resolveRowStyle',
     standalone: true,
 })
 export class ResolveRowStylePipe implements PipeTransform {
-    transform(style: RowStyleInput | undefined, row: Record<string, unknown>, status: FormControlStatus, index: number): KlesStyleMap {
+    transform<TSource>(
+        style: RowStyleInput<TSource> | undefined,
+        row: Record<string, unknown>,
+        status: FormControlStatus,
+        index: number,
+        context: KlesRowContext<TSource>,
+    ): KlesStyleMap {
         if (!style) return {};
-        return typeof style === 'function' ? style(row, status, index) : style;
+        return typeof style === 'function' ? style(row, status, index, context) : style;
     }
 }
 
@@ -19,8 +26,14 @@ export class ResolveRowStylePipe implements PipeTransform {
     standalone: true,
 })
 export class ResolveRowClassPipe implements PipeTransform {
-    transform(classes: RowClassInput | undefined, row: Record<string, unknown>, status: FormControlStatus, index: number): RowClassValue {
+    transform<TSource>(
+        classes: RowClassInput<TSource> | undefined,
+        row: Record<string, unknown>,
+        status: FormControlStatus,
+        index: number,
+        context: KlesRowContext<TSource>,
+    ): RowClassValue {
         if (!classes) return [];
-        return typeof classes === 'function' ? classes(row, status, index) : classes;
+        return typeof classes === 'function' ? classes(row, status, index, context) : classes;
     }
 }

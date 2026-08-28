@@ -10,6 +10,7 @@ export * from './lib/core/table/loader.interface';
 export * from './lib/core/table/selection-config.interface';
 export * from './lib/core/table/cell.interface';
 export * from './lib/core/table/column.interface';
+export * from './lib/core/table/row-context.interface';
 
 export * from './lib/components/table/table.component';
 export * from './lib/components/table/table-intl';

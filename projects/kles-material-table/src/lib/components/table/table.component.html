@@ -124,8 +124,8 @@
             cdkDrag
             [cdkDragData]="row"
             [cdkDragDisabled]="dragDropRowService.isDragDisabled(row)"
-            [ngStyle]="rowAppearance.rowStyle | resolveRowStyle: row.value : row.status : (dataIndex ?? index)"
-            [ngClass]="rowAppearance.rowClass | resolveRowClass: row.value : row.status : (dataIndex ?? index)"
+            [ngStyle]="rowAppearance.rowStyle | resolveRowStyle: row.value : row.status : (dataIndex ?? index) : getRowContext(row)"
+            [ngClass]="rowAppearance.rowClass | resolveRowClass: row.value : row.status : (dataIndex ?? index) : getRowContext(row)"
             (cdkDragStarted)="dragDropRowService.rowDragStarted(row, dataIndex ?? index)"
             (cdkDragMoved)="dragDropRowService.rowDragMoved(row, dataIndex ?? index)"
             (cdkDragEnded)="dragDropRowService.rowDragEnded(row, dataIndex ?? index)"

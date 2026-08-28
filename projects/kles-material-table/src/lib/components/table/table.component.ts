@@ -83,6 +83,8 @@ import { EmptyStateApi } from '../../core/api/empty-state';
 import { RenderApi } from '../../core/api/render';
 import { TreeApi } from '../../core/api/tree';
 import { TreeService } from '../../services/features/tree/tree.service';
+import { RowContextStore } from '../../services/store/row-context-store.service';
+import { KlesRowContext } from '../../core/table/row-context.interface';
 
 type TableSection = 'header' | 'body' | 'footer';
 
@@ -173,6 +175,7 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
         public readonly cellService: CellService,
         public readonly emptyStateService: EmptyStateService,
         private readonly treeService: TreeService<unknown, unknown>,
+        private readonly rowContextStore: RowContextStore,
     ) {
         this.columns = this.columnsService.columns;
         this.displayedColumns = this.columnsService.displayedColumns;
@@ -184,6 +187,16 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
 
         this.connectorService.connect(this);
         this.filterService?.register();
+    }
+
+    getRowContext(row: FormGroup): KlesRowContext {
+        const context = this.rowContextStore.get(row)?.();
+
+        if (!context) {
+            throw new Error('KlesMaterialTable: missing row context.');
+        }
+
+        return context;
     }
 
     @HostBinding('class.loading')

@@ -8,16 +8,21 @@ import { SelectionConfig } from './selection-config.interface';
 import { KlesExtraCellFieldConfig, KlesStyleMap } from './cell.interface';
 import { KlesTableIntl } from '../../components/table/table-intl';
 import { Observable } from 'rxjs';
+import { KlesRowContext } from './row-context.interface';
 
 export type TableElevationLevel = 0 | 1 | 2 | 3 | 4 | 5;
 
 export type RowClassValue = string | string[] | Set<string> | Record<string, boolean | null | undefined>;
-export type RowStyleInput = KlesStyleMap | ((row: Record<string, unknown>, status: FormControlStatus, index: number) => KlesStyleMap);
-export type RowClassInput = RowClassValue | ((row: Record<string, unknown>, status: FormControlStatus, index: number) => RowClassValue);
+export type RowStyleInput<TSource = unknown> =
+    | KlesStyleMap
+    | ((row: Record<string, unknown>, status: FormControlStatus, index: number, context: KlesRowContext<TSource>) => KlesStyleMap);
+export type RowClassInput<TSource = unknown> =
+    | RowClassValue
+    | ((row: Record<string, unknown>, status: FormControlStatus, index: number, context: KlesRowContext<TSource>) => RowClassValue);
 
-export interface RowAppearanceConfig {
-    rowStyle?: RowStyleInput;
-    rowClass?: RowClassInput;
+export interface RowAppearanceConfig<TSource = unknown> {
+    rowStyle?: RowStyleInput<TSource>;
+    rowClass?: RowClassInput<TSource>;
 }
 
 export interface EmptyStateConfig {
@@ -26,7 +31,7 @@ export interface EmptyStateConfig {
     intl?: Type<KlesTableIntl>;
 }
 
-export interface DefaultTableConfig extends RowAppearanceConfig {
+export interface DefaultTableConfig<TSource = unknown> extends RowAppearanceConfig<TSource> {
     id?: string;
     columns: KlesColumnConfig[];
     /** Reserved for row-level validation configuration; not applied yet. */
@@ -128,7 +133,7 @@ type Exclusive<T, U> =
     | (T & { [K in Exclude<keyof U, keyof T>]?: never })
     | (U & { [K in Exclude<keyof T, keyof U>]?: never });
 
-export type KlesTableConfig<T = unknown, R = unknown> = DefaultTableConfig &
+export type KlesTableConfig<T = unknown, R = unknown> = DefaultTableConfig<R> &
     Exclusive<PaginatorConfig, InfiniteScrollConfig> &
     LoaderConfig<T, R> &
     DragDrop<R> &
