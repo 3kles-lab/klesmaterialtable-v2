@@ -1,3 +1,10 @@
+# [21.7.0](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v21.6.0...v21.7.0) (2026-08-28)
+
+
+### Features
+
+* add infinite table ([6e6f22f](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/6e6f22fb829f5e693433f7945d2b18c11375299f))
+
 # [21.6.0](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v21.5.0...v21.6.0) (2026-08-27)
 
 
