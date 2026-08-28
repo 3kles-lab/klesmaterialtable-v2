@@ -1,3 +1,10 @@
+## [21.8.1](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v21.8.0...v21.8.1) (2026-08-28)
+
+
+### Bug Fixes
+
+* row appearance with row context ([a942619](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/a942619a4c2d29ebec78a8ab206faae4e6b90a07))
+
 # [21.8.0](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v21.7.1...v21.8.0) (2026-08-28)
 
 
