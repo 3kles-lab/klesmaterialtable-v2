@@ -12,7 +12,8 @@
     justify-content: inherit;
     flex-direction: column;
     display: flex;
-    text-align: center;
+    text-align: var(--align, center);
+    
 }
 
 .tree-indent {
