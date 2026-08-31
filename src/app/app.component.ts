@@ -76,8 +76,8 @@ export class AppComponent implements AfterViewInit {
 
     config: KlesTableConfig = {
         columnSeparator: false,
-        rowStyle: (row) => {
-            const provider = row['provider'] as { enabled?: boolean | number } | undefined;
+        rowStyle: (_row, _status, _index, context) => {
+            const provider = (context.source as { provider?: { enabled?: boolean | number } }).provider;
 
             return provider && !provider.enabled
                 ? { background: 'color-mix(in srgb, var(--mat-sys-error) 10%, var(--mat-sys-surface))' }
@@ -380,6 +380,7 @@ export class AppComponent implements AfterViewInit {
         extraRows: [
             {
                 mode: 'expand',
+                width: 'viewport',
                 cells: [
                     {
                         columnDef: 'details',
