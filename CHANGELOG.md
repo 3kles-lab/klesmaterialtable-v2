@@ -1,3 +1,10 @@
+# [21.9.0](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v21.8.1...v21.9.0) (2026-08-31)
+
+
+### Features
+
+* add extra rows width mode ([56f2fbe](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/56f2fbef8db1243c67ae4e66ffdd989c0dd320d6))
+
 ## [21.8.1](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v21.8.0...v21.8.1) (2026-08-28)
 
 
