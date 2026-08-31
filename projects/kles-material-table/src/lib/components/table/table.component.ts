@@ -132,6 +132,8 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
     headerHeightPx = signal(56);
     scrollHeightPx = signal(0);
     footerHeightPx = signal(0);
+    viewportWidthPx = signal(0);
+    viewportScrollRangePx = signal(0);
 
     dataSource: IKlesDataSource;
     columns: Signal<KlesColumnConfig[]>;
@@ -503,6 +505,7 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
 
     private calculHeaderHeight() {
         const formNativeElem = this.formElemRef?.nativeElement as HTMLElement | null;
+        const tableNativeElem = formNativeElem?.querySelector(':scope > table') as HTMLTableElement | null;
         const header = this.host.nativeElement.querySelector('.mat-mdc-header-row') as HTMLElement | null;
         const footer = this.host.nativeElement.querySelector('.mat-mdc-footer-row') as HTMLElement | null;
 
@@ -510,6 +513,8 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
             this.scrollHeightPx.set(Math.max(0, (formNativeElem?.offsetHeight ?? 0) - (formNativeElem?.clientHeight ?? 0)));
             this.headerHeightPx.set(Math.ceil(header?.getBoundingClientRect().height ?? 0));
             this.footerHeightPx.set(Math.max(0, footer?.getBoundingClientRect().height ?? 0));
+            this.viewportWidthPx.set(formNativeElem?.clientWidth ?? 0);
+            this.viewportScrollRangePx.set(Math.max(0, (formNativeElem?.scrollWidth ?? 0) - (formNativeElem?.clientWidth ?? 0)));
         };
 
         const scheduleCompute = () => {
@@ -529,6 +534,10 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
             this.ro.observe(formNativeElem);
         }
 
+        if (tableNativeElem) {
+            this.ro.observe(tableNativeElem);
+        }
+
         if (header) {
             this.ro.observe(header);
         }
@@ -538,11 +547,9 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
         }
 
         if (formNativeElem) {
-            formNativeElem.addEventListener('scroll', scheduleCompute, { passive: true });
             window.addEventListener('resize', scheduleCompute, { passive: true });
 
             this._cleanup = () => {
-                formNativeElem.removeEventListener('scroll', scheduleCompute);
                 window.removeEventListener('resize', scheduleCompute);
                 this.ro?.disconnect();
                 if (this.rafId) {

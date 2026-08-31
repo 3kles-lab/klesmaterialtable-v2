@@ -110,10 +110,13 @@ export interface DragDrop<TValue = unknown> {
 }
 
 export type ExtraRowMode = 'expand' | 'always';
+export type ExtraRowWidth = 'table' | 'viewport';
 
 export interface ExtraRowConfig {
     cells: KlesExtraCellFieldConfig[];
     mode?: ExtraRowMode;
+    /** Controls whether the content uses the full table width or only the visible scroll viewport. Defaults to `table`. */
+    width?: ExtraRowWidth;
     when?: (index: number, rowData: FormGroup) => boolean;
 }
 

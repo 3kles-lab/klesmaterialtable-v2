@@ -35,6 +35,8 @@ form {
     flex-grow: 1;
     position: relative;
     overflow: auto;
+    scroll-timeline-name: --kles-table-horizontal-scroll;
+    scroll-timeline-axis: inline;
 }
 
 table {
@@ -57,6 +59,28 @@ td {
 
 :host td.kles-extra-row-cell {
     padding: 0;
+}
+
+.kles-extra-row-content--viewport {
+    box-sizing: border-box;
+    animation: kles-extra-row-horizontal-scroll 1ms linear both paused;
+}
+
+@supports (animation-timeline: scroll()) {
+    .kles-extra-row-content--viewport {
+        animation-play-state: running;
+        animation-timeline: --kles-table-horizontal-scroll;
+    }
+}
+
+@keyframes kles-extra-row-horizontal-scroll {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(var(--kles-table-horizontal-scroll-range, 0px));
+    }
 }
 
 th .cell,

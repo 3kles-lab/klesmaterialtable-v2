@@ -177,7 +177,20 @@
                                         : row.status
                             "
                         >
-                            <ng-container klesDynamicField [field]="extraColumn | extraCellField" [group]="row" [ui]="row | uiField" [context]="row | rowContext"></ng-container>
+                            <div
+                                class="kles-extra-row-content"
+                                [class.kles-extra-row-content--viewport]="extraRow.width === 'viewport'"
+                                [style.width.px]="extraRow.width === 'viewport' ? viewportWidthPx() : null"
+                                [style.--kles-table-horizontal-scroll-range.px]="extraRow.width === 'viewport' ? viewportScrollRangePx() : null"
+                            >
+                                <ng-container
+                                    klesDynamicField
+                                    [field]="extraColumn | extraCellField"
+                                    [group]="row"
+                                    [ui]="row | uiField"
+                                    [context]="row | rowContext"
+                                ></ng-container>
+                            </div>
                         </td>
                     </ng-container>
                 }
