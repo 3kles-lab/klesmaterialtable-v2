@@ -17,6 +17,7 @@ export * from './lib/components/table/table-intl';
 export * from './lib/components/empty-state/empty-state.component';
 
 export * from './lib/kles-table.component';
+export * from './lib/directives/table-footer-start.directive';
 export * from './lib/token';
 
 export * from './lib/enums/align.enum';

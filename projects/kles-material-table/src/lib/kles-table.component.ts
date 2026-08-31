@@ -1,4 +1,4 @@
-import { Component, computed, DestroyRef, EventEmitter, HostBinding, inject, input, OnInit, Output } from '@angular/core';
+import { Component, computed, contentChild, DestroyRef, EventEmitter, HostBinding, inject, input, OnInit, Output } from '@angular/core';
 import { DynamicTableLoaderDirective } from './directives/dynamic-table-loader.directive';
 import { KlesTableConfig } from './core/table/config.interface';
 import { KlesTableConnectorService } from './kles-table-connector.service';
@@ -33,6 +33,7 @@ import { EmptyStateApi } from './core/api/empty-state';
 import { RenderApi } from './core/api/render';
 import { EventsApi } from './core/api/events';
 import { TreeApi } from './core/api/tree';
+import { KlesTableFooterStartDirective } from './directives/table-footer-start.directive';
 
 @Component({
     selector: 'kles-dynamic-table',
@@ -44,6 +45,7 @@ import { TreeApi } from './core/api/tree';
 })
 export class KlesTableComponent<TParams = unknown, TValue = unknown> implements OnInit, KlesTableApi<TValue> {
     tableConfig = input.required<KlesTableConfig<TParams, TValue>>();
+    readonly footerStart = contentChild(KlesTableFooterStartDirective);
     private readonly destroyRef = inject(DestroyRef);
 
     @Output() tableEvent = new EventEmitter<TableEvent<TValue>>();

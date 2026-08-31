@@ -1,2 +1,7 @@
 <kles-table></kles-table>
-<mat-paginator [disabled]="disabled()" class="paginator"></mat-paginator>
+<div class="table-footer">
+    <div class="table-footer-start">
+        <ng-content select="[klesTableFooterStart]"></ng-content>
+    </div>
+    <mat-paginator [disabled]="disabled()" class="paginator"></mat-paginator>
+</div>

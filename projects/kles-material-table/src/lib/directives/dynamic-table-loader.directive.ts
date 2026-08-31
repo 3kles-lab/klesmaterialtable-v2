@@ -84,6 +84,7 @@ import { KlesTableEmptyStateComponent } from '../components/empty-state/empty-st
 import { EmptyStateService } from '../services/features/empty-state/empty-state.service';
 import { RowContextStore } from '../services/store/row-context-store.service';
 import { InfiniteScrollService } from '../services/features/scrollbar/infinite-scroll.service';
+import { KlesTableFooterStartDirective } from './table-footer-start.directive';
 
 @Directive({
     selector: '[appDynamicTableLoader]',
@@ -100,6 +101,7 @@ export class DynamicTableLoaderDirective<TParams = unknown, TValue = unknown> im
             return v;
         },
     });
+    footerStart = input<KlesTableFooterStartDirective>();
     private componentRef: ComponentRef<any> | null = null;
 
     constructor(private viewContainerRef: ViewContainerRef) {
@@ -137,8 +139,13 @@ export class DynamicTableLoaderDirective<TParams = unknown, TValue = unknown> im
 
         const injector = this.initInjector();
 
+        const footerStart = this.footerStart();
+
         this.componentRef = this.viewContainerRef.createComponent(component, {
             injector,
+            ...(component === PaginateTableComponent && footerStart
+                ? { projectableNodes: [[footerStart.elementRef.nativeElement]] }
+                : {}),
         });
 
         this.componentRef.onDestroy(() => {
