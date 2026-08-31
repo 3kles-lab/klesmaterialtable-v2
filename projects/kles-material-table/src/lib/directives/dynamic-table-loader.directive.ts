@@ -98,6 +98,7 @@ export class DynamicTableLoaderDirective<TParams = unknown, TValue = unknown> im
                 }
                 return { ...col, separator: col.separator ?? v.columnSeparator ?? false };
             });
+
             return v;
         },
     });

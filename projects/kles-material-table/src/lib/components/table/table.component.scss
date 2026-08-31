@@ -6,7 +6,10 @@
     --kles-table-header-background: var(--mat-sys-surface-container);
     --kles-table-header-color: var(--mat-sys-on-surface);
     --kles-table-header-divider-color: var(--mat-sys-outline-variant);
-    --kles-table-row-hover-background: color-mix(in srgb, var(--mat-sys-primary) 7%, var(--mat-sys-surface));
+    --kles-table-row-hover-background: color-mix(in srgb, var(--mat-sys-primary) 4%, var(--mat-sys-surface));
+    --kles-table-row-selected-background: color-mix(in srgb, var(--mat-sys-primary) 7%, var(--mat-sys-surface));
+    --kles-table-row-selected-hover-background: color-mix(in srgb, var(--mat-sys-primary) 10%, var(--mat-sys-surface));
+    --kles-table-row-selected-indicator-color: var(--mat-sys-primary);
 
     overflow: auto;
     display: flex;
@@ -195,8 +198,18 @@ th[appResizableColumn].column-resizing > .resize-handle > .resize-width-label {
 
 :host .mat-mdc-row:not(.kles-extra-row) {
     transition: background-color 120ms ease;
+
     &:hover {
         background: var(--kles-table-row-hover-background);
+    }
+
+    &.kles-row-selected {
+        background: var(--kles-table-row-selected-background);
+        box-shadow: inset 3px 0 0 var(--kles-table-row-selected-indicator-color);
+    }
+
+    &.kles-row-selected:hover {
+        background: var(--kles-table-row-selected-hover-background);
     }
 }
 

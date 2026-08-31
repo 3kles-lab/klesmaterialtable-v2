@@ -5,7 +5,7 @@ import { KlesSelectionModel } from '../../../core/selection/selection-model';
 import { FormGroup } from '@angular/forms';
 import { KlesForm } from '../table/form';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { auditTime, concatMap, map, merge, of, switchMap, withLatestFrom } from 'rxjs';
+import { auditTime, concatMap, map, merge, of, Subject, switchMap, withLatestFrom } from 'rxjs';
 import { SelectionLoaderService } from './selection-loader.service';
 import { ScrollbarService } from '../scrollbar/scrollbar.service';
 import { LoadingService } from '../loading/loading.service';
@@ -24,6 +24,7 @@ export interface ISelectionService {
     selectionModel?: IKlesSelectionModel<FormGroup>;
     readonly loadingRows: Signal<ReadonlySet<FormGroup>>;
     isLoading(row: FormGroup): boolean;
+    onRowClick(event: MouseEvent, row: FormGroup): void;
     count(): Signal<number>;
     disable(): void;
     enable(): void;
@@ -32,6 +33,7 @@ export interface ISelectionService {
 @Injectable()
 export abstract class AbstractSelectionService<T> implements ISelectionService {
     private readonly _loadingRows = signal<ReadonlySet<FormGroup>>(new Set());
+    protected readonly rowSelectionRequests = new Subject<{ row: FormGroup; selected: boolean }>();
     public readonly loadingRows = this._loadingRows.asReadonly();
 
     constructor(
@@ -57,6 +59,29 @@ export abstract class AbstractSelectionService<T> implements ISelectionService {
 
     public isLoading(row: FormGroup): boolean {
         return this._loadingRows().has(row);
+    }
+
+    public onRowClick(event: MouseEvent, row: FormGroup): void {
+        if (!this.selectionConfig?.selectOnRowClick || event.defaultPrevented || this.isInteractiveClick(event)) {
+            return;
+        }
+
+        const control = row.controls[this.key];
+        if (
+            control?.disabled ||
+            this.isLoading(row) ||
+            this.selectionModel.state === KlesSelectionModelState.DISABLED ||
+            this.selectionConfig.isDisabled?.(row)
+        ) {
+            return;
+        }
+
+        const selected = !this.selectionModel.isSelected(row);
+        if (control) {
+            control.setValue(selected);
+        } else {
+            this.rowSelectionRequests.next({ row, selected });
+        }
     }
 
     protected emitSelectionEvents(
@@ -133,6 +158,21 @@ export abstract class AbstractSelectionService<T> implements ISelectionService {
     }
 
     protected abstract linesTotal(): number;
+
+    private isInteractiveClick(event: MouseEvent): boolean {
+        const currentTarget = event.currentTarget;
+        if (currentTarget instanceof HTMLElement && currentTarget.classList.contains('kles-extra-row')) {
+            return true;
+        }
+
+        const target = event.target;
+        return (
+            target instanceof Element &&
+            target.closest(
+                'button, a, input, select, textarea, [role="button"], [role="checkbox"], [role="link"], [contenteditable]:not([contenteditable="false"])',
+            ) !== null
+        );
+    }
 }
 
 @Injectable()
@@ -270,6 +310,7 @@ export class SelectionService<T> extends AbstractSelectionService<T> {
                 auditTime(0),
                 switchMap((rows) => {
                     return merge(
+                        this.rowSelectionRequests,
                         ...rows
                             .map((row) => {
                                 return row.controls[this.selectionLoaderService.key]?.valueChanges.pipe(
@@ -325,11 +366,11 @@ export class SelectionService<T> extends AbstractSelectionService<T> {
     private listenSelection(): void {
         this.selectionModel.changed.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((changed) => {
             changed.removed?.forEach((group: FormGroup) => {
-                group.controls[this.selectionLoaderService.key].patchValue(false, { emitEvent: false });
+                group.controls[this.selectionLoaderService.key]?.patchValue(false, { emitEvent: false });
             });
 
             changed.added?.forEach((group: FormGroup) => {
-                group.controls[this.selectionLoaderService.key].patchValue(true, { emitEvent: false });
+                group.controls[this.selectionLoaderService.key]?.patchValue(true, { emitEvent: false });
             });
             this.fm.getRows().updateValueAndValidity({ emitEvent: false });
             this.updateHeader();
@@ -338,16 +379,16 @@ export class SelectionService<T> extends AbstractSelectionService<T> {
 
         this.selectionModel.stateChanged.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((state) => {
             if (state === KlesSelectionModelState.ENABLED) {
-                this.fm.getHeader().controls[this.key].enable({ emitEvent: false });
+                this.fm.getHeader().controls[this.key]?.enable({ emitEvent: false });
                 this.fm.getRows().controls.forEach((group) => {
                     if (!this.isLoading(group) && !this.selectionConfig?.isDisabled?.(group)) {
-                        group.controls[this.key].enable({ emitEvent: false });
+                        group.controls[this.key]?.enable({ emitEvent: false });
                     }
                 });
             } else {
-                this.fm.getHeader().controls[this.key].disable({ emitEvent: false });
+                this.fm.getHeader().controls[this.key]?.disable({ emitEvent: false });
                 this.fm.getRows().controls.forEach((group) => {
-                    group.controls[this.key].disable({ emitEvent: false });
+                    group.controls[this.key]?.disable({ emitEvent: false });
                 });
             }
         });
@@ -492,6 +533,7 @@ export class SelectionLazyService<T> extends AbstractSelectionService<T> {
 
                 switchMap((rows) => {
                     return merge(
+                        this.rowSelectionRequests,
                         ...rows
                             .map((row) => {
                                 return row.controls[this.selectionLoaderService.key]?.valueChanges.pipe(

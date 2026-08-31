@@ -201,6 +201,11 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
         return context;
     }
 
+    isRowSelected(row: FormGroup): boolean {
+        this.selectionService.selectionModel?.count();
+        return this.selectionService.selectionModel?.isSelected(row) ?? false;
+    }
+
     @HostBinding('class.loading')
     get isLoadingClass() {
         return this.loadingService.loading();

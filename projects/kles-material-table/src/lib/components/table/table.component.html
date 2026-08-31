@@ -121,6 +121,7 @@
         <tr
             mat-row
             *matRowDef="let row; let index = index; let dataIndex = dataIndex; columns: displayedColumns()"
+            [class.kles-row-selected]="isRowSelected(row)"
             cdkDrag
             [cdkDragData]="row"
             [cdkDragDisabled]="dragDropRowService.isDragDisabled(row)"

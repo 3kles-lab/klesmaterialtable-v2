@@ -1,12 +1,18 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { EventsService } from '../events/events.service';
 import { FormGroup } from '@angular/forms';
+import { SELECTION_SERVICE } from '../../../token';
+import { ISelectionService } from '../selection/selection.service';
 
 @Injectable()
 export class RowService {
-    constructor(private readonly eventsService: EventsService) {}
+    constructor(
+        private readonly eventsService: EventsService,
+        @Inject(SELECTION_SERVICE) private readonly selectionService: ISelectionService,
+    ) {}
 
     onClick(event: MouseEvent, row: FormGroup, rowIndex: number): void {
+        this.selectionService.onRowClick(event, row);
         this.eventsService.emit('rowClick', {
             row,
             rowIndex,

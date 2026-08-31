@@ -27,6 +27,8 @@ export interface SelectionState {
 
 type SelectionConfigDef<T> = {
     selectionMode?: boolean;
+    /** Toggles selection when the non-interactive area of a data row is clicked. */
+    selectOnRowClick?: boolean;
     key?: string;
     params?: () => Observable<T>;
     select?: SelectionCallback<

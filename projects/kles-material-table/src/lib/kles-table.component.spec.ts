@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { of } from 'rxjs';
 import { KlesTableConfig } from './core/table/config.interface';
 import { linesLoader } from './core/table/loader.interface';
 import { KlesTableFooterStartDirective } from './directives/table-footer-start.directive';
 import { KlesTableComponent } from './kles-table.component';
+import { selectionConfig } from './core/table/selection-config.interface';
 
 const tableConfig: KlesTableConfig = {
     columns: [],
@@ -35,10 +36,24 @@ class WithoutFooterStartHostComponent {
     readonly tableConfig = tableConfig;
 }
 
-describe('KlesTableComponent footerStart', () => {
+@Component({
+    selector: 'test-row-click-selection-host',
+    standalone: true,
+    imports: [KlesTableComponent],
+    template: '<kles-dynamic-table [tableConfig]="tableConfig"></kles-dynamic-table>',
+})
+class RowClickSelectionHostComponent {
+    readonly tableConfig: KlesTableConfig = {
+        columns: [{ columnDef: 'name' }],
+        lines: linesLoader({ loader: () => of({ items: [{ _id: 1, name: 'First row' }] }) }),
+        selection: selectionConfig({ selectOnRowClick: true }),
+    };
+}
+
+describe('KlesTableComponent', () => {
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            imports: [WithFooterStartHostComponent, WithoutFooterStartHostComponent],
+            imports: [WithFooterStartHostComponent, WithoutFooterStartHostComponent, RowClickSelectionHostComponent],
         }).compileComponents();
     });
 
@@ -62,4 +77,23 @@ describe('KlesTableComponent footerStart', () => {
             Boolean(content.nativeElement.compareDocumentPosition(paginator.nativeElement) & Node.DOCUMENT_POSITION_FOLLOWING),
         ).toBeTrue();
     });
+
+    it('selects a row on click without requiring a checkbox column', fakeAsync(() => {
+        const fixture = TestBed.createComponent(RowClickSelectionHostComponent);
+        fixture.detectChanges();
+        tick();
+        fixture.detectChanges();
+
+        const table = fixture.debugElement.query(By.directive(KlesTableComponent)).componentInstance as KlesTableComponent;
+        const rowElement = fixture.debugElement.query(By.css('tr.mat-mdc-row'));
+        const row = table.form.rows.list().at(0);
+
+        rowElement.triggerEventHandler('click', new MouseEvent('click', { bubbles: true }));
+        tick();
+
+        expect(row.get('#select')).toBeNull();
+        expect(table.selection.selectionModel?.isSelected(row)).toBeTrue();
+        fixture.detectChanges();
+        expect(rowElement.nativeElement.classList.contains('kles-row-selected')).toBeTrue();
+    }));
 });
