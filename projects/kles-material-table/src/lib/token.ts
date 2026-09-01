@@ -11,6 +11,7 @@ import {
     RowAppearanceConfig,
 } from './core/table/config.interface';
 import { DragDropService } from './services/features/dragdrop/dragdrop.service';
+import { ColumnDragDropService } from './services/features/dragdrop/column-dragdrop.service';
 import { Sort } from '@angular/material/sort';
 
 import { SelectionConfig } from './core/table/selection-config.interface';
@@ -35,6 +36,7 @@ export const MULTI_UNFOLD = new InjectionToken<boolean>('MULTI_UNFOLD');
 export const ROW_APPEARANCE_CONFIG = new InjectionToken<RowAppearanceConfig>('ROW_APPEARANCE_CONFIG');
 
 export const ROW_DRAG_DROP = new InjectionToken<DragDropService>('ROW_DRAG_DROP');
+export const COLUMN_DRAG_DROP = new InjectionToken<ColumnDragDropService>('COLUMN_DRAG_DROP');
 export const DRAG_DROP_CONFIG = new InjectionToken<DragDropConfig | undefined>('DRAG_DROP_CONFIG');
 export const KLES_DRAG_DROP_ROW_CONTEXT = new InjectionToken<DragDropRowContext>('KLES_DRAG_DROP_ROW_CONTEXT');
 

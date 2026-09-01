@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSortModule, SortHeaderArrowPosition } from '@angular/material/sort';
 import { IKlesHeaderFieldConfig } from '../../core/table/cell.interface';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 
 @Component({
     selector: 'kles-header',
@@ -18,6 +19,18 @@ import { IKlesHeaderFieldConfig } from '../../core/table/cell.interface';
             [matTooltip]="header().tooltip"
             matTooltipPosition="above"
         >
+            @if (columnDragHandle()) {
+                <button
+                    mat-icon-button
+                    cdkDragHandle
+                    type="button"
+                    class="column-drag-handle"
+                    [attr.aria-label]="'Move column ' + header().label"
+                    (click)="$event.stopPropagation()"
+                >
+                    <mat-icon>drag_indicator</mat-icon>
+                </button>
+            }
             {{ header().label }}
         </div>
 
@@ -57,6 +70,28 @@ import { IKlesHeaderFieldConfig } from '../../core/table/cell.interface';
             align-items: center;
             display: flex;
             justify-content: inherit;
+            gap: 4px;
+        }
+
+        .column-drag-handle {
+            flex: 0 0 28px;
+            width: 28px;
+            height: 28px;
+            padding: 2px;
+            cursor: grab;
+            color: currentColor;
+            opacity: 0.65;
+        }
+
+        .column-drag-handle:active {
+            cursor: grabbing;
+        }
+
+        .column-drag-handle mat-icon {
+            width: 20px;
+            height: 20px;
+            font-size: 20px;
+            line-height: 20px;
         }
 
         .filterHeader {
@@ -105,12 +140,13 @@ import { IKlesHeaderFieldConfig } from '../../core/table/cell.interface';
         }
     `,
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, MatIconModule, MatButtonModule, MatTooltipModule, MatSortModule],
+    imports: [CommonModule, ReactiveFormsModule, MatIconModule, MatButtonModule, MatTooltipModule, MatSortModule, DragDropModule],
 })
 export class KlesHeaderComponent implements OnInit {
     header = input.required<IKlesHeaderFieldConfig & { columnDef: string; sortable?: boolean; sortArrowPosition?: SortHeaderArrowPosition }>();
     group = input.required<FormGroup<any>>();
     dragHandleSpacer = input(false);
+    columnDragHandle = input(false);
 
     ngOnInit(): void {}
 }

@@ -240,6 +240,22 @@ th[appResizableColumn].column-resizing > .resize-handle > .resize-width-label {
     transition: transform 180ms cubic-bezier(0, 0, 0.2, 1);
 }
 
+:host .kles-column-drop-list.cdk-drop-list-dragging .mat-mdc-header-cell:not(.cdk-drag-placeholder),
+:host .mat-mdc-header-cell.cdk-drag-animating {
+    transition: transform 180ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+:host .mat-mdc-header-cell.cdk-drag-placeholder {
+    opacity: 0.25;
+}
+
+.mat-mdc-header-cell.cdk-drag-preview {
+    box-sizing: border-box;
+    background: var(--kles-table-header-background);
+    color: var(--kles-table-header-color);
+    box-shadow: var(--mat-sys-level3);
+}
+
 .kles-row-drag-preview {
     overflow: hidden;
     border-radius: var(--mat-sys-corner-small);

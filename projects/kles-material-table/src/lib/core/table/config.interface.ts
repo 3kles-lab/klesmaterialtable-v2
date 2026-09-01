@@ -105,8 +105,15 @@ export interface DragDropRowContext<TValue = unknown> {
 
 export interface DragDrop<TValue = unknown> {
     dragDropRows?: DragDropConfig<TValue>;
-    /** Reserved for the future column drag-and-drop implementation. */
-    dragDropColumns?: DragDropConfig<TValue>;
+    dragDropColumns?: ColumnDragDropConfig;
+}
+
+export interface ColumnDragDropConfig {
+    enable?: boolean;
+    options?: {
+        /** Prevents specific columns from being moved. */
+        dragDisabled?: (column: KlesColumnConfig) => boolean;
+    };
 }
 
 export type ExtraRowMode = 'expand' | 'always';

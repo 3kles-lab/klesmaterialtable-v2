@@ -10,9 +10,11 @@ import {
     OnDestroy,
     OnInit,
     Optional,
+    QueryList,
     signal,
     Signal,
     ViewChild,
+    ViewChildren,
 } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -29,9 +31,18 @@ import { ArrayUiState, GroupUiState, KlesMaterialDynamicformsModule } from '@3kl
 import { HeaderFieldPipe } from '../../pipes/header-field.pipe';
 import { CellFieldPipe, ExtraCellFieldPipe } from '../../pipes/cell-field.pipe';
 import { MatSort, MatSortModule } from '@angular/material/sort';
-import { DragDropModule } from '@angular/cdk/drag-drop';
+import { CdkDrag, CdkDropList, DragDropModule } from '@angular/cdk/drag-drop';
 import { DragDropService } from '../../services/features/dragdrop/dragdrop.service';
-import { DATASOURCE_SERVICE, LOADER_SERVICE, ROW_APPEARANCE_CONFIG, ROW_DRAG_DROP, SELECTION_SERVICE, SORT_SERVICE, TABLE_SERVICE } from '../../token';
+import {
+    COLUMN_DRAG_DROP,
+    DATASOURCE_SERVICE,
+    LOADER_SERVICE,
+    ROW_APPEARANCE_CONFIG,
+    ROW_DRAG_DROP,
+    SELECTION_SERVICE,
+    SORT_SERVICE,
+    TABLE_SERVICE,
+} from '../../token';
 import { ResolveNgStylePipe } from '../../pipes/ng-style.pipe';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ResizableColumnDirective } from '../../directives/resizable-column.directive';
@@ -85,6 +96,7 @@ import { TreeApi } from '../../core/api/tree';
 import { TreeService } from '../../services/features/tree/tree.service';
 import { RowContextStore } from '../../services/store/row-context-store.service';
 import { KlesRowContext } from '../../core/table/row-context.interface';
+import { ColumnDragDropService } from '../../services/features/dragdrop/column-dragdrop.service';
 
 type TableSection = 'header' | 'body' | 'footer';
 
@@ -128,6 +140,8 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
     @ViewChild(MatTable) table!: MatTable<FormGroup>;
     @ViewChild(MatSort, { static: true }) matSort!: MatSort;
     @ViewChild('form', { static: true }) formElemRef!: ElementRef<HTMLElement>;
+    @ViewChildren(CdkDropList) private readonly dropLists!: QueryList<CdkDropList>;
+    @ViewChildren(CdkDrag) private readonly drags!: QueryList<CdkDrag>;
 
     headerHeightPx = signal(56);
     scrollHeightPx = signal(0);
@@ -159,6 +173,7 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
         @Inject(DATASOURCE_SERVICE) private readonly datasourceService: IDatasourceService,
         @Inject(TABLE_SERVICE) public readonly tableService: ITableService,
         @Inject(ROW_DRAG_DROP) public readonly dragDropRowService: DragDropService,
+        @Inject(COLUMN_DRAG_DROP) public readonly columnDragDropService: ColumnDragDropService,
         @Inject(ROW_APPEARANCE_CONFIG) public readonly rowAppearance: RowAppearanceConfig,
         @Inject(SELECTION_SERVICE) public readonly selectionService: ISelectionService,
         public readonly columnsService: ColumnsService,
@@ -426,11 +441,42 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
 
     ngAfterViewInit(): void {
         this.calculHeaderHeight();
+
+        if (this.columnDragDropService.enable) {
+            this.scheduleColumnDragBinding();
+            this.drags.changes.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.scheduleColumnDragBinding());
+        }
     }
 
     ngOnDestroy(): void {
         this._cleanup?.();
         this.scrollbarService.unregister();
+    }
+
+    private bindColumnDragsToHeader(): void {
+        const headerDropList = this.dropLists.find((dropList) =>
+            dropList.element.nativeElement.classList.contains('kles-column-drop-list'),
+        );
+
+        if (!headerDropList) return;
+
+        const columns = this.columnsService.columns();
+
+        this.drags.forEach((drag) => {
+            if (!columns.includes(drag.data) || drag.dropContainer === headerDropList) return;
+
+            drag.dropContainer?.removeItem(drag);
+            drag.dropContainer = headerDropList;
+            headerDropList.addItem(drag);
+        });
+    }
+
+    private scheduleColumnDragBinding(): void {
+        queueMicrotask(() => {
+            if (!this.destroyRef.destroyed) {
+                this.bindColumnDragsToHeader();
+            }
+        });
     }
 
     getColumnSeparator(column: KlesColumnConfig, section: TableSection): string | null {

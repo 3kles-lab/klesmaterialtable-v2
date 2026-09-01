@@ -31,6 +31,10 @@
                 <th
                     mat-header-cell
                     *matHeaderCellDef
+                    cdkDrag
+                    cdkDragLockAxis="x"
+                    [cdkDragData]="column"
+                    [cdkDragDisabled]="columnDragDropService.isDragDisabled(column)"
                     [appResizableColumn]="column"
                     [style.border-inline-end]="getColumnSeparator(column, 'header') ?? getStickyStartSeparator(column, 'header')"
                     [style.border-inline-start]="getStickyEndSeparator(column, 'header')"
@@ -47,6 +51,7 @@
                         <kles-header
                             [header]="column | header"
                             [group]="tableService.form.controls.header"
+                            [columnDragHandle]="columnDragDropService.enable && !columnDragDropService.isDragDisabled(column)"
                             [dragHandleSpacer]="dragDropRowService.handleOnly && column.columnDef === displayedColumns()?.[0]"
                         >
                             <ng-container
@@ -116,7 +121,18 @@
             </ng-container>
         }
 
-        <tr mat-header-row *matHeaderRowDef="displayedColumns(); sticky: true"></tr>
+        <tr
+            mat-header-row
+            class="kles-column-drop-list"
+            *matHeaderRowDef="displayedColumns(); sticky: true"
+            cdkDropList
+            cdkDropListOrientation="horizontal"
+            [cdkDropListData]="columnDragDropService.visibleColumns()"
+            [cdkDropListDisabled]="!columnDragDropService.enable"
+            [cdkDropListAutoScrollDisabled]="true"
+            [cdkDropListSortPredicate]="columnDragDropService.sortPredicate"
+            (cdkDropListDropped)="columnDragDropService.listDropped($event)"
+        ></tr>
 
         <tr
             mat-row

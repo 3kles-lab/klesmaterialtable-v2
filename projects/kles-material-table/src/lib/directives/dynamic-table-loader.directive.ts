@@ -25,6 +25,7 @@ import { FilterStore } from '../services/store/filter-store.service';
 import { DragDropLazyService, DragDropService } from '../services/features/dragdrop/dragdrop.service';
 import {
     COLUMNS,
+    COLUMN_DRAG_DROP,
     DATASOURCE_SERVICE,
     FOOTER,
     HEADER_SERVICE,
@@ -85,6 +86,7 @@ import { EmptyStateService } from '../services/features/empty-state/empty-state.
 import { RowContextStore } from '../services/store/row-context-store.service';
 import { InfiniteScrollService } from '../services/features/scrollbar/infinite-scroll.service';
 import { KlesTableFooterStartDirective } from './table-footer-start.directive';
+import { ColumnDragDropService } from '../services/features/dragdrop/column-dragdrop.service';
 
 @Directive({
     selector: '[appDynamicTableLoader]',
@@ -307,6 +309,10 @@ export class DynamicTableLoaderDirective<TParams = unknown, TValue = unknown> im
             LoadingService,
             KlesForm,
             ColumnsService,
+            {
+                provide: COLUMN_DRAG_DROP,
+                useFactory: () => new ColumnDragDropService(this.tableConfig().dragDropColumns, inject(ColumnsService)),
+            },
             FooterService,
             ScrollbarService,
             ...(this.tableConfig().infinite ? [InfiniteScrollService] : []),

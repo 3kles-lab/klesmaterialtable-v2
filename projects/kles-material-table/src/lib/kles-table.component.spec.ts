@@ -1,3 +1,4 @@
+import { CdkDrag, CdkDropList } from '@angular/cdk/drag-drop';
 import { Component } from '@angular/core';
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
@@ -50,10 +51,29 @@ class RowClickSelectionHostComponent {
     };
 }
 
+@Component({
+    selector: 'test-column-drag-drop-host',
+    standalone: true,
+    imports: [KlesTableComponent],
+    template: '<kles-dynamic-table [tableConfig]="tableConfig"></kles-dynamic-table>',
+})
+class ColumnDragDropHostComponent {
+    readonly tableConfig: KlesTableConfig = {
+        columns: [{ columnDef: 'first' }, { columnDef: 'second' }],
+        lines: linesLoader({ loader: () => of({ items: [] }) }),
+        dragDropColumns: { enable: true },
+    };
+}
+
 describe('KlesTableComponent', () => {
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            imports: [WithFooterStartHostComponent, WithoutFooterStartHostComponent, RowClickSelectionHostComponent],
+            imports: [
+                WithFooterStartHostComponent,
+                WithoutFooterStartHostComponent,
+                RowClickSelectionHostComponent,
+                ColumnDragDropHostComponent,
+            ],
         }).compileComponents();
     });
 
@@ -95,5 +115,28 @@ describe('KlesTableComponent', () => {
         expect(table.selection.selectionModel?.isSelected(row)).toBeTrue();
         fixture.detectChanges();
         expect(rowElement.nativeElement.classList.contains('kles-row-selected')).toBeTrue();
+    }));
+
+    it('renders one column drag handle per movable column', () => {
+        const fixture = TestBed.createComponent(ColumnDragDropHostComponent);
+        fixture.detectChanges();
+
+        expect(fixture.debugElement.queryAll(By.css('.column-drag-handle')).length).toBe(2);
+    });
+
+    it('attaches header drags to the horizontal header list when row drag also exists on the table', fakeAsync(() => {
+        const fixture = TestBed.createComponent(ColumnDragDropHostComponent);
+        fixture.detectChanges();
+        tick();
+        fixture.detectChanges();
+
+        const headerListElement = fixture.debugElement.query(By.css('.kles-column-drop-list'));
+        const headerList = headerListElement.injector.get(CdkDropList);
+        const headerElements = fixture.debugElement.queryAll(By.css('th.cdk-drag'));
+        const headerDrags = headerElements.map((element) => element.injector.get(CdkDrag));
+
+        expect(headerDrags.length).toBe(2);
+        expect(headerDrags.every((drag) => drag.dropContainer === headerList)).toBeTrue();
+        expect(headerList.autoScrollDisabled).toBeTrue();
     }));
 });
