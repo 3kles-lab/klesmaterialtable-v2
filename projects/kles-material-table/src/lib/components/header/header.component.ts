@@ -1,4 +1,4 @@
-import { Component, input, OnInit } from '@angular/core';
+import { Component, input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
@@ -140,6 +140,7 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
         }
     `,
     standalone: true,
+    changeDetection: ChangeDetectionStrategy.Eager,
     imports: [CommonModule, ReactiveFormsModule, MatIconModule, MatButtonModule, MatTooltipModule, MatSortModule, DragDropModule],
 })
 export class KlesHeaderComponent implements OnInit {

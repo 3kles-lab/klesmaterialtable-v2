@@ -39,10 +39,10 @@
                     [style.border-inline-end]="getColumnSeparator(column, 'header') ?? getStickyStartSeparator(column, 'header')"
                     [style.border-inline-start]="getStickyEndSeparator(column, 'header')"
                     [ngStyle]="
-                        column.headerCell?.style?.ngStyle
+                        $safeNavigationMigration(column.headerCell?.style?.ngStyle)
                             | resolveNgStyle
-                                : tableService.form.get(['header', column.columnDef])?.value
-                                : tableService.form.get(['header', column.columnDef])?.status
+                                : $safeNavigationMigration(tableService.form.get(['header', column.columnDef])?.value)
+                                : $safeNavigationMigration(tableService.form.get(['header', column.columnDef])?.status)
                                 : tableService.form.controls.header.value
                                 : tableService.form.controls.header.status
                     "
@@ -70,7 +70,7 @@
                     [style.border-inline-end]="getColumnSeparator(column, 'body') ?? getStickyStartSeparator(column, 'body')"
                     [style.border-inline-start]="getStickyEndSeparator(column, 'body')"
                     [ngStyle]="
-                        column.cell?.style?.ngStyle
+                        $safeNavigationMigration(column.cell?.style?.ngStyle)
                             | resolveNgStyle: row.controls[column.columnDef].value : row.controls[column.columnDef].status : row.value : row.status
                     "
                     (click)="cellService.onClick($event, row, dataIndex ?? index, column.columnDef)"
@@ -100,10 +100,10 @@
                     [style.border-inline-end]="getColumnSeparator(column, 'footer') ?? getStickyStartSeparator(column, 'footer')"
                     [style.border-inline-start]="getStickyEndSeparator(column, 'footer')"
                     [ngStyle]="
-                        column.footerCell?.style?.ngStyle
+                        $safeNavigationMigration(column.footerCell?.style?.ngStyle)
                             | resolveNgStyle
-                                : tableService.form.get(['footer', column.columnDef])?.value
-                                : tableService.form.get(['footer', column.columnDef])?.status
+                                : $safeNavigationMigration(tableService.form.get(['footer', column.columnDef])?.value)
+                                : $safeNavigationMigration(tableService.form.get(['footer', column.columnDef])?.status)
                                 : tableService.form.controls.footer.value
                                 : tableService.form.controls.footer.status
                     "
@@ -186,7 +186,7 @@
                             [attr.colspan]="extraColumn.colspan | spanPipe: displayedColumns().length"
                             [attr.rowspan]="extraColumn.rowspan"
                             [ngStyle]="
-                                extraColumn?.style?.ngStyle
+                                $safeNavigationMigration(extraColumn?.style?.ngStyle)
                                     | resolveNgStyle
                                         : row.controls[extraColumn.columnDef].value
                                         : row.controls[extraColumn.columnDef].status

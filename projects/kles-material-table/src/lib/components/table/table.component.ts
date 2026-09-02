@@ -1,20 +1,21 @@
 import { CommonModule } from '@angular/common';
 import {
-    AfterViewInit,
-    Component,
-    DestroyRef,
-    ElementRef,
-    HostBinding,
-    inject,
-    Inject,
-    OnDestroy,
-    OnInit,
-    Optional,
-    QueryList,
-    signal,
-    Signal,
-    ViewChild,
-    ViewChildren,
+  AfterViewInit,
+  Component,
+  DestroyRef,
+  ElementRef,
+  HostBinding,
+  inject,
+  Inject,
+  OnDestroy,
+  OnInit,
+  Optional,
+  QueryList,
+  signal,
+  Signal,
+  ViewChild,
+  ViewChildren,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -105,6 +106,7 @@ type TableSection = 'header' | 'body' | 'footer';
     styleUrl: './table.component.scss',
     templateUrl: './table.component.html',
     standalone: true,
+    changeDetection: ChangeDetectionStrategy.Eager,
     imports: [
         CommonModule,
         ReactiveFormsModule,

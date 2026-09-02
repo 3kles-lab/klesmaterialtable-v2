@@ -1,4 +1,4 @@
-import { Component, computed, contentChild, DestroyRef, EventEmitter, HostBinding, inject, input, OnInit, Output } from '@angular/core';
+import { Component, computed, contentChild, DestroyRef, EventEmitter, HostBinding, inject, input, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
 import { DynamicTableLoaderDirective } from './directives/dynamic-table-loader.directive';
 import { KlesTableConfig } from './core/table/config.interface';
 import { KlesTableConnectorService } from './kles-table-connector.service';
@@ -41,6 +41,7 @@ import { KlesTableFooterStartDirective } from './directives/table-footer-start.d
     standalone: true,
     imports: [DynamicTableLoaderDirective],
     providers: [KlesTableConnectorService],
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './kles-table.component.scss',
 })
 export class KlesTableComponent<TParams = unknown, TValue = unknown> implements OnInit, KlesTableApi<TValue> {

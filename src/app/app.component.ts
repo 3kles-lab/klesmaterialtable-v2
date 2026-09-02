@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, signal, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { MaterialModule } from './modules/material.module';
 import {
     AlignCell,
@@ -35,6 +35,7 @@ import { NestedTableFieldComponent } from './nested-table-field.component';
     styleUrls: ['./app.component.scss'],
     providers: [],
     standalone: true,
+    changeDetection: ChangeDetectionStrategy.Eager,
     imports: [MaterialModule, KlesMaterialTableModule, CommonModule],
 })
 export class AppComponent implements AfterViewInit {

@@ -1,5 +1,5 @@
 import { GroupUiState } from '@3kles/kles-material-dynamicforms';
-import { Component, computed, DestroyRef, inject, input, OnInit } from '@angular/core';
+import { Component, computed, DestroyRef, inject, input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormGroup } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
@@ -17,6 +17,7 @@ import { CdkDragHandle } from '@angular/cdk/drag-drop';
     templateUrl: './cell.component.html',
     styleUrl: './cell.component.scss',
     standalone: true,
+    changeDetection: ChangeDetectionStrategy.Eager,
     imports: [CommonModule, MatIconModule, MatButtonModule, CdkDragHandle],
 })
 export class KlesCellComponent implements OnInit {

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KlesFieldAbstract, KlesFormTextComponent } from '@3kles/kles-material-dynamicforms';
 import { KlesTableComponent, KlesTableConfig, linesLoader } from 'kles-material-table';
 import { of } from 'rxjs';
@@ -17,6 +17,7 @@ interface NestedRow {
             <kles-dynamic-table [tableConfig]="nestedTableConfig"></kles-dynamic-table>
         </div>
     `,
+    changeDetection: ChangeDetectionStrategy.Eager,
     styles: `
         .nested-table {
             width: 100%;

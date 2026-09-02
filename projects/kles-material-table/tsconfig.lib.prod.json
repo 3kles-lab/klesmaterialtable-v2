@@ -5,6 +5,12 @@
   },
   "angularCompilerOptions": {
     "compilationMode": "partial",
-    "enableIvy": true
+    "enableIvy": true,
+    "extendedDiagnostics": {
+      "checks": {
+        "nullishCoalescingNotNullable": "suppress",
+        "optionalChainNotNullable": "suppress"
+      }
+    }
   }
 }
