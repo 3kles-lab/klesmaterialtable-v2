@@ -29,8 +29,6 @@ import { CommonModule } from '@angular/common';
 import { CustomTableIntl } from './table-intl';
 import { NestedTableFieldComponent } from './nested-table-field.component';
 
-
-
 @Component({
     selector: 'app-root',
     templateUrl: './app.component.html',
@@ -45,14 +43,14 @@ export class AppComponent implements AfterViewInit {
 
     data = Array.from(Array(500).keys()).map((key) => {
         return {
-            '#select': key % 2 === 0,
+            '#select': false,
             _id: `${key}`,
             name: key,
             test: { a: `test ${key}` },
             aa: 'ligne 1 expand key:' + key,
             c: '1565',
             d: '87887',
-            e: 'ceci est une phrase',
+            e: 'ceci est une phrase ceci est une phrase ceci est une phrase ceci est une phrase ceci est une phrase',
             ddd: 'ligne 2 expand key: ' + key,
             eee: 'ceci est une phrase dans une extra row qui prend le maximum de place dispo',
             details: [
@@ -76,13 +74,13 @@ export class AppComponent implements AfterViewInit {
 
     config: KlesTableConfig = {
         columnSeparator: false,
-        rowStyle: (_row, _status, _index, context) => {
-            const provider = (context.source as { provider?: { enabled?: boolean | number } }).provider;
+        // rowStyle: (_row, _status, _index, context) => {
+        //     const provider = (context.source as { provider?: { enabled?: boolean | number } }).provider;
 
-            return provider && !provider.enabled
-                ? { background: 'color-mix(in srgb, var(--mat-sys-error) 10%, var(--mat-sys-surface))' }
-                : {};
-        },
+        //     return provider && !provider.enabled
+        //         ? { background: 'color-mix(in srgb, var(--mat-sys-error) 10%, var(--mat-sys-surface))' }
+        //         : {};
+        // },
         columns: [
             {
                 columnDef: '#select',
@@ -109,6 +107,11 @@ export class AppComponent implements AfterViewInit {
                     label: '_id',
                     tooltip: 'aaaa',
                     filterClearable: true,
+                },
+                cell:{
+                    field: {
+                        component: KlesFormTextComponent
+                    }
                 },
                 footerCell: {
                     field: { component: KlesFormTextComponent, value: 'ceci est un footer' },
@@ -183,7 +186,6 @@ export class AppComponent implements AfterViewInit {
                 align: AlignCell.RIGHT,
                 filterable: true,
                 visible: true,
-
                 headerCell: {
                     label: 'D',
                     field: {
@@ -209,7 +211,7 @@ export class AppComponent implements AfterViewInit {
 
                 filterable: true,
                 visible: true,
-
+                align: AlignCell.LEFT,
                 headerCell: {
                     label: 'E',
                     field: {
@@ -358,11 +360,18 @@ export class AppComponent implements AfterViewInit {
                 handleOnly: true,
             },
         },
+        dragDropColumns: {
+            enable: true,
+            options: {
+                dragDisabled: (column) => column.columnDef === 'actions',
+            },
+        },
         selection: selectionConfig({
             selectionMode: true,
-            isDisabled: (row) => {
-                return +row.value._id % 2 !== 0;
-            },
+            selectOnRowClick: true,
+            // isDisabled: (row) => {
+            //     return +row.value._id % 2 !== 0;
+            // },
             select: (_params, row, selected) => {
                 const rowId = Number(row.getRawValue()._id);
 
@@ -371,10 +380,10 @@ export class AppComponent implements AfterViewInit {
                     return timer(800).pipe(switchMap(() => throwError(() => new Error(`Demo backend error for row ${rowId}.`))));
                 }
 
-                return of({ selected }).pipe(delay(800));
+                return of({ selected })/*.pipe(delay(400))*/;
             },
             selectAll: (_params, selected) => {
-                return of({ selected }).pipe(delay(800));
+                return of({ selected }).pipe(delay(400));
             },
         }),
         extraRows: [

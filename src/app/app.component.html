@@ -5,8 +5,18 @@
     <p class="selection-demo-error" role="alert">{{ message }}</p>
 }
 
-<div style="height: 800px;">
-    <kles-dynamic-table #table [tableConfig]="config" (selectionError)="onSelectionError($event)"></kles-dynamic-table>
+<div style="height: 800px">
+    <kles-dynamic-table #table [tableConfig]="config" (selectionError)="onSelectionError($event)">
+        <div klesTableFooterStart>
+            <mat-icon>warning</mat-icon>
+            Événement déprécié
+
+            <mat-divider class="footer-divider" vertical></mat-divider>
+
+            <mat-icon>warning</mat-icon>
+            Connexion invalide ou manquante
+        </div>
+    </kles-dynamic-table>
 </div>
 
 <div>Lazy</div>
