@@ -1,3 +1,22 @@
+# [22.0.0](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v21.10.0...v22.0.0) (2026-09-02)
+
+
+### Bug Fixes
+
+* deps ([3ec2108](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/3ec2108c96d09aed5356890c7a7b47cc882f8cd9))
+
+
+### Features
+
+* clear code to use angular 22 ([75af937](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/75af9370a3fca1e9a25baea647e6da73f52727a7))
+* upgrade angular ([eea0b74](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/eea0b740f46400e22f19ed7f72ddf094c434c5da))
+* upgrade angular material ([ab742cf](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/ab742cf38e01620dcfabad7dec31377aa0d2db3b))
+
+
+### BREAKING CHANGES
+
+* upgrade angular 21 to angular 22
+
 # [21.10.0](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v21.9.0...v21.10.0) (2026-09-01)
 
 
