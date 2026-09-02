@@ -7,7 +7,7 @@ import { KlesTableFooterStartDirective } from './directives/table-footer-start.d
 
 const components = [TableComponent];
 const directives = [KlesTableFooterStartDirective];
-const pipes = [];
+const pipes: any[] = [];
 
 @NgModule({
     imports: [CommonModule, components, directives, KlesTableComponent, KlesMaterialDynamicformsModule],

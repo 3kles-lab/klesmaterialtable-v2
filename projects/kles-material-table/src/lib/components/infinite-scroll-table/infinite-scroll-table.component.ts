@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, Signal, ViewChild, ChangeDetectionStrategy } from '@angular/core';
+import { AfterViewInit, Component, Signal, ViewChild } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { InfiniteScrollService } from '../../services/features/scrollbar/infinite-scroll.service';
 import { TableComponent } from '../table/table.component';
@@ -8,7 +8,6 @@ import { TableComponent } from '../table/table.component';
     templateUrl: './infinite-scroll-table.component.html',
     styleUrl: './infinite-scroll-table.component.scss',
     standalone: true,
-    changeDetection: ChangeDetectionStrategy.Eager,
     imports: [TableComponent, MatProgressSpinnerModule],
 })
 export class InfiniteScrollTableComponent implements AfterViewInit {

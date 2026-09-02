@@ -1,4 +1,4 @@
-import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { PaginatorService } from '../../services/features/paginator/paginator.service';
@@ -9,7 +9,6 @@ import { PaginateTableComponent } from './paginate-table.component';
 @Component({
     selector: 'kles-table',
     standalone: true,
-    changeDetection: ChangeDetectionStrategy.Eager,
     template: '',
 })
 class TableStubComponent {}
@@ -17,7 +16,6 @@ class TableStubComponent {}
 @Component({
     standalone: true,
     imports: [PaginateTableComponent, KlesTableFooterStartDirective],
-    changeDetection: ChangeDetectionStrategy.Eager,
     template: `
         <kles-paginate-table>
             <div klesTableFooterStart data-testid="footer-start">12 éléments sélectionnés</div>
@@ -29,7 +27,6 @@ class WithFooterStartHostComponent {}
 @Component({
     standalone: true,
     imports: [PaginateTableComponent],
-    changeDetection: ChangeDetectionStrategy.Eager,
     template: '<kles-paginate-table></kles-paginate-table>',
 })
 class WithoutFooterStartHostComponent {}

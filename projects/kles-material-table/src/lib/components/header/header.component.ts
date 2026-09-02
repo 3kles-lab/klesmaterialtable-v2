@@ -1,4 +1,5 @@
-import { Component, input, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
@@ -7,6 +8,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSortModule, SortHeaderArrowPosition } from '@angular/material/sort';
 import { IKlesHeaderFieldConfig } from '../../core/table/cell.interface';
 import { DragDropModule } from '@angular/cdk/drag-drop';
+import { of, startWith, switchMap } from 'rxjs';
 
 @Component({
     selector: 'kles-header',
@@ -15,7 +17,7 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
             class="header"
             mat-sort-header
             [disabled]="!header().sortable"
-            [arrowPosition]="header().sortArrowPosition"
+            [arrowPosition]="header().sortArrowPosition ?? 'after'"
             [matTooltip]="header().tooltip"
             matTooltipPosition="above"
         >
@@ -42,7 +44,7 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
                 <ng-content></ng-content>
             </div>
 
-            @if (header().filterClearable && group().get(header().columnDef).value) {
+            @if (header().filterClearable && filterValue()) {
                 <div class="icon-button">
                     <button
                         mat-icon-button
@@ -140,14 +142,18 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
         }
     `,
     standalone: true,
-    changeDetection: ChangeDetectionStrategy.Eager,
     imports: [CommonModule, ReactiveFormsModule, MatIconModule, MatButtonModule, MatTooltipModule, MatSortModule, DragDropModule],
 })
-export class KlesHeaderComponent implements OnInit {
+export class KlesHeaderComponent {
     header = input.required<IKlesHeaderFieldConfig & { columnDef: string; sortable?: boolean; sortArrowPosition?: SortHeaderArrowPosition }>();
     group = input.required<FormGroup<any>>();
     dragHandleSpacer = input(false);
     columnDragHandle = input(false);
 
-    ngOnInit(): void {}
+    readonly filterValue = toSignal(
+        toObservable(computed(() => this.group().get(this.header().columnDef))).pipe(
+            switchMap((control) => (control ? control.valueChanges.pipe(startWith(control.value)) : of(null))),
+        ),
+        { initialValue: null },
+    );
 }

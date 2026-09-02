@@ -5,7 +5,7 @@ import { EventsService } from '../events/events.service';
 
 @Injectable()
 export class ColumnsService {
-    public displayedColumns: Signal<string[]> | undefined;
+    public displayedColumns!: Signal<string[]>;
 
     constructor(
         @Inject(COLUMNS) private _columns: WritableSignal<KlesColumnConfig[]>,

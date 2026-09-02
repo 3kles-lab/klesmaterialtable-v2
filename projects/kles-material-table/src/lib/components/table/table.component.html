@@ -3,7 +3,7 @@
         mat-table
         [dataSource]="dataSource"
         matSort
-        [trackBy]="multiTemplateDataRows() ? null : tableService.trackBy"
+        [trackBy]="multiTemplateDataRows() ? identityTrackBy : tableService.trackBy"
         formArrayName="rows"
         cdkDropList
         [id]="dragDropRowService.dropListId"
@@ -12,7 +12,7 @@
         [cdkDropListDisabled]="!dragDropRowService.enable"
         [cdkDropListAutoScrollStep]="dragDropRowService.autoScrollStep"
         [cdkDropListSortPredicate]="dragDropRowService.sortPredicate"
-        [cdkDropListConnectedTo]="dragDropRowService.connectedTo"
+        [cdkDropListConnectedTo]="dragDropRowService.connectedTo ?? []"
         [multiTemplateDataRows]="multiTemplateDataRows()"
     >
         <colgroup>
@@ -49,14 +49,14 @@
                 >
                     <div class="cell">
                         <kles-header
-                            [header]="column | header"
+                            [header]="(column | header)!"
                             [group]="tableService.form.controls.header"
                             [columnDragHandle]="columnDragDropService.enable && !columnDragDropService.isDragDisabled(column)"
                             [dragHandleSpacer]="dragDropRowService.handleOnly && column.columnDef === displayedColumns()?.[0]"
                         >
                             <ng-container
                                 klesDynamicField
-                                [field]="column | headerField"
+                                [field]="(column | headerField)!"
                                 [group]="tableService.form.controls.header"
                                 [ui]="tableService.ui.states.header"
                             ></ng-container>
@@ -80,7 +80,7 @@
                     <div class="cell" [style.--align]="column.align">
                         <kles-cell
                             [group]="row"
-                            [ui]="row | uiField"
+                            [ui]="(row | uiField)!"
                             [column]="column"
                             [rowIndex]="dataIndex ?? index"
                             [dragHandle]="dragDropRowService.handleOnly && column.columnDef === displayedColumns()?.[0]"
@@ -88,7 +88,13 @@
                             @if (column.columnDef === selectionService.key && selectionService.isLoading(row)) {
                                 <mat-spinner class="selection-row-spinner" [diameter]="20"></mat-spinner>
                             } @else {
-                                <ng-container klesDynamicField [field]="column | cellField" [group]="row" [ui]="row | uiField" [context]="row | rowContext"></ng-container>
+                                <ng-container
+                                    klesDynamicField
+                                    [field]="(column | cellField)!"
+                                    [group]="row"
+                                    [ui]="(row | uiField)!"
+                                    [context]="row | rowContext"
+                                ></ng-container>
                             }
                         </kles-cell>
                     </div>
@@ -111,7 +117,7 @@
                     @if (column.footerCell) {
                         <ng-container
                             klesDynamicField
-                            [field]="column | footerField"
+                            [field]="(column | footerField)!"
                             [group]="tableService.form.controls.footer"
                             [ui]="tableService.ui.states.footer"
                         >
@@ -183,7 +189,7 @@
                             mat-cell
                             class="kles-extra-row-cell"
                             *cdkCellDef="let row"
-                            [attr.colspan]="extraColumn.colspan | spanPipe: displayedColumns().length"
+                            [attr.colspan]="(extraColumn.colspan ?? 1) | spanPipe: displayedColumns().length"
                             [attr.rowspan]="extraColumn.rowspan"
                             [ngStyle]="
                                 $safeNavigationMigration(extraColumn?.style?.ngStyle)
@@ -202,9 +208,9 @@
                             >
                                 <ng-container
                                     klesDynamicField
-                                    [field]="extraColumn | extraCellField"
+                                    [field]="(extraColumn | extraCellField)!"
                                     [group]="row"
-                                    [ui]="row | uiField"
+                                    [ui]="(row | uiField)!"
                                     [context]="row | rowContext"
                                 ></ng-container>
                             </div>

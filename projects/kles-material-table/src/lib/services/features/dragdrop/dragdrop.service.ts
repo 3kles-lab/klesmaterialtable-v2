@@ -7,12 +7,12 @@ import { EventsService } from '../events/events.service';
 import { KlesForm } from '../table/form';
 import { defaultIfEmpty, defer, take } from 'rxjs';
 
-export abstract class DragDropBase {
+export abstract class DragDropBase<TValue = unknown> {
     private static nextDropListId = 0;
     readonly dropListId: string;
 
     constructor(
-        protected config: DragDropConfig | undefined,
+        protected config: DragDropConfig<TValue> | undefined,
         protected readonly eventsService: EventsService,
         protected readonly klesForm: KlesForm,
         protected readonly injector: Injector,
@@ -152,7 +152,7 @@ export abstract class DragDropBase {
         }
     }
 
-    private handleDrop(change: DragDropRowChange): void {
+    private handleDrop(change: DragDropRowChange<TValue>): void {
         this.eventsService.emit('rowDrop', change);
 
         const drop = this.config?.options?.drop;
@@ -173,9 +173,9 @@ export abstract class DragDropBase {
     }
 }
 
-export class DragDropService extends DragDropBase {
+export class DragDropService<TValue = unknown> extends DragDropBase<TValue> {
     constructor(
-        @Optional() @Inject(DRAG_DROP_CONFIG) config: DragDropConfig | undefined,
+        @Optional() @Inject(DRAG_DROP_CONFIG) config: DragDropConfig<TValue> | undefined,
         eventsService: EventsService,
         klesForm: KlesForm,
         injector: Injector,
@@ -193,9 +193,9 @@ export class DragDropService extends DragDropBase {
     }
 }
 
-export class DragDropLazyService extends DragDropBase {
+export class DragDropLazyService<TValue = unknown> extends DragDropBase<TValue> {
     constructor(
-        @Optional() @Inject(DRAG_DROP_CONFIG) config: DragDropConfig | undefined,
+        @Optional() @Inject(DRAG_DROP_CONFIG) config: DragDropConfig<TValue> | undefined,
         eventsService: EventsService,
         klesForm: KlesForm,
         injector: Injector,

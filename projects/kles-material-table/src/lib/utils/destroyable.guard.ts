@@ -1,5 +1,5 @@
 export interface Destroyable {
-    destroy();
+    destroy(): void;
 }
 
 export function isDestroyable(value: unknown): value is Destroyable {

@@ -1,5 +1,5 @@
 import { CdkDrag, CdkDropList } from '@angular/cdk/drag-drop';
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component } from '@angular/core';
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { of } from 'rxjs';
@@ -18,7 +18,6 @@ const tableConfig: KlesTableConfig = {
 @Component({
     standalone: true,
     imports: [KlesTableComponent, KlesTableFooterStartDirective],
-    changeDetection: ChangeDetectionStrategy.Eager,
     template: `
         <kles-dynamic-table [tableConfig]="tableConfig">
             <div klesTableFooterStart data-testid="footer-start">12 éléments sélectionnés</div>
@@ -32,7 +31,6 @@ class WithFooterStartHostComponent {
 @Component({
     standalone: true,
     imports: [KlesTableComponent],
-    changeDetection: ChangeDetectionStrategy.Eager,
     template: '<kles-dynamic-table [tableConfig]="tableConfig"></kles-dynamic-table>',
 })
 class WithoutFooterStartHostComponent {
@@ -43,7 +41,6 @@ class WithoutFooterStartHostComponent {
     selector: 'test-row-click-selection-host',
     standalone: true,
     imports: [KlesTableComponent],
-    changeDetection: ChangeDetectionStrategy.Eager,
     template: '<kles-dynamic-table [tableConfig]="tableConfig"></kles-dynamic-table>',
 })
 class RowClickSelectionHostComponent {
@@ -58,7 +55,6 @@ class RowClickSelectionHostComponent {
     selector: 'test-column-drag-drop-host',
     standalone: true,
     imports: [KlesTableComponent],
-    changeDetection: ChangeDetectionStrategy.Eager,
     template: '<kles-dynamic-table [tableConfig]="tableConfig"></kles-dynamic-table>',
 })
 class ColumnDragDropHostComponent {

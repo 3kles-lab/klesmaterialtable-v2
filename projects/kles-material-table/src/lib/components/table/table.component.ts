@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import {
   AfterViewInit,
+  ChangeDetectorRef,
   Component,
   DestroyRef,
   ElementRef,
@@ -14,8 +15,7 @@ import {
   signal,
   Signal,
   ViewChild,
-  ViewChildren,
-  ChangeDetectionStrategy
+  ViewChildren
 } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -106,7 +106,6 @@ type TableSection = 'header' | 'body' | 'footer';
     styleUrl: './table.component.scss',
     templateUrl: './table.component.html',
     standalone: true,
-    changeDetection: ChangeDetectionStrategy.Eager,
     imports: [
         CommonModule,
         ReactiveFormsModule,
@@ -153,7 +152,7 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
 
     dataSource: IKlesDataSource;
     columns: Signal<KlesColumnConfig[]>;
-    displayedColumns: Signal<string[]> | undefined;
+    displayedColumns: Signal<string[]>;
     showFooter: Signal<boolean>;
 
     multiTemplateDataRows: Signal<boolean>;
@@ -162,11 +161,13 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
     readonly isEmpty: Signal<boolean>;
 
     private ro?: ResizeObserver;
+    private readonly changeDetectorRef = inject(ChangeDetectorRef);
     private readonly destroyRef = inject(DestroyRef);
     private rafId?: number;
     private _cleanup?: () => void;
 
     emptyStateComponent = KlesTableEmptyStateComponent;
+    readonly identityTrackBy = (_: number, row: FormGroup): FormGroup => row;
 
     constructor(
         private readonly host: ElementRef<HTMLElement>,
@@ -203,6 +204,10 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
         this.isEmpty = this.datasourceService.isEmpty;
         this.multiTemplateDataRows = this.extraRowService.multiTemplateDataRows;
         this.extraRows = this.extraRowService.rows;
+
+        this.tableService.form.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+            this.changeDetectorRef.markForCheck();
+        });
 
         this.connectorService.connect(this);
         this.filterService?.register();
