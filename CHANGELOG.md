@@ -1,3 +1,17 @@
+# [21.10.0](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v21.9.0...v21.10.0) (2026-09-01)
+
+
+### Bug Fixes
+
+* remove text-align center ([bf667cb](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/bf667cbfe23f1ca9e8166a702139fc3379f26e26))
+
+
+### Features
+
+* add column drag and drop ([8c9285a](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/8c9285adceb7e2a1292a6d19e6d0bf2d440725e6))
+* add FooterStart directive ([9fc5313](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/9fc5313976488c1024dbbb0f041abbf3170c0f08))
+* add select on row click and add background color on selected row ([215ed69](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/215ed69e4132c6997e73b492bbb392180295a433))
+
 # [21.9.0](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v21.8.1...v21.9.0) (2026-08-31)
 
 
