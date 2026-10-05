@@ -8,5 +8,6 @@ import { Subject } from 'rxjs';
 export class CustomTableIntl extends KlesTableIntl {
     emptyStateTitle = 'Pas de donnée';
     emptyStateDescription = 'Aucune ligne a afficher.';
+    emptyStateRefreshLabel = 'Actualiser';
     keyboardNavigationEntryLabel = 'Accéder aux lignes du tableau';
 }
