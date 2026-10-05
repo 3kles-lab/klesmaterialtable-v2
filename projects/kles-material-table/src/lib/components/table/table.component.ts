@@ -141,6 +141,7 @@ type TableSection = 'header' | 'body' | 'footer';
         ResolveRowClassPipe,
         KeyboardGridDirective,
         KeyboardCellDirective,
+        KlesTableEmptyStateComponent,
     ],
 })
 export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy {

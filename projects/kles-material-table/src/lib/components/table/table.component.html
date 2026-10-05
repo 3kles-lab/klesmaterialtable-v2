@@ -264,7 +264,11 @@
         [style.--footer-h.px]="footerHeightPx()"
     >
         <div class="table-empty-state-content">
-            <ng-container *ngComponentOutlet="emptyStateService.component"></ng-container>
+            @if (emptyStateService.component === emptyStateComponent) {
+                <kles-table-empty-state (refreshRequested)="refresh()"></kles-table-empty-state>
+            } @else {
+                <ng-container *ngComponentOutlet="emptyStateService.component"></ng-container>
+            }
         </div>
     </div>
 }

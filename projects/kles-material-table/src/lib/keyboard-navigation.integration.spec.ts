@@ -31,7 +31,11 @@ class KeyboardTableHost {
 
 describe('keyboard navigation in a dynamic material table', () => {
     let fixture: ComponentFixture<KeyboardTableHost>;
-    const render = (): void => { fixture.detectChanges(); tick(); fixture.detectChanges(); tick(); fixture.detectChanges(); };
+    const createFixture = (): void => {
+        fixture = TestBed.createComponent(KeyboardTableHost);
+        document.body.appendChild(fixture.nativeElement);
+    };
+    const render = (): void => { fixture.detectChanges(); tick(20); fixture.detectChanges(); tick(20); fixture.detectChanges(); };
     const cells = (): HTMLElement[] => [...fixture.nativeElement.querySelectorAll('[data-kles-keyboard-cell]')];
     const table = (): KlesTableComponent => fixture.debugElement.query(By.directive(KlesTableComponent)).componentInstance;
     const key = (element: HTMLElement, name: string): void => {
@@ -40,12 +44,11 @@ describe('keyboard navigation in a dynamic material table', () => {
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({ imports: [KeyboardTableHost] }).compileComponents();
-        fixture = TestBed.createComponent(KeyboardTableHost);
-        document.body.appendChild(fixture.nativeElement);
     });
     afterEach(() => { fixture.destroy(); fixture.nativeElement.remove(); });
 
     it('wires configuration, edits a dynamic field and selects through the normal selection pipeline', fakeAsync(() => {
+        createFixture();
         render();
         expect(fixture.nativeElement.querySelector('table').getAttribute('role')).toBe('grid');
         expect(cells().length).toBe(4);
@@ -64,6 +67,7 @@ describe('keyboard navigation in a dynamic material table', () => {
     }));
 
     it('reconciles public column visibility changes', fakeAsync(() => {
+        createFixture();
         render();
         cells()[1].focus();
         table().column.setVisible('other', false);
@@ -75,6 +79,7 @@ describe('keyboard navigation in a dynamic material table', () => {
     }));
 
     it('offers direct entry before the header without traversing its filters', fakeAsync(() => {
+        createFixture();
         render();
         const entry = fixture.nativeElement.querySelector('.kles-grid-entry') as HTMLButtonElement;
         const header = fixture.nativeElement.querySelector('thead');
@@ -87,6 +92,7 @@ describe('keyboard navigation in a dynamic material table', () => {
     }));
 
     it('scrolls the first row fully below the sticky header when navigating upwards', fakeAsync(() => {
+        createFixture();
         fixture.componentInstance.config.lines = linesLoader({ loader: () => of({ items:
             Array.from({ length: 20 }, (_, index) => ({ _id: index, name: `Row ${index}`, other: index })),
         }) });
@@ -110,6 +116,7 @@ describe('keyboard navigation in a dynamic material table', () => {
     }));
 
     it('supports pagination and server selection without requiring row click selection', fakeAsync(() => {
+        createFixture();
         const select = jasmine.createSpy('select').and.callFake((_params, _row, selected) => of({ selected, count: selected ? 1 : 0 }));
         fixture.componentInstance.config = {
             columns: fixture.componentInstance.config.columns,
@@ -137,6 +144,7 @@ describe('keyboard navigation in a dynamic material table', () => {
     }));
 
     it('does not automatically request another infinite page when pressing Down at the last row', fakeAsync(() => {
+        createFixture();
         const loader = jasmine.createSpy('loader').and.returnValue(of({ total: 2, items: [
             { _id: 1, name: 'First' }, { _id: 2, name: 'Second' },
         ] }));

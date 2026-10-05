@@ -21,6 +21,10 @@
             <p class="empty-state__description">
                 {{ intl.emptyStateDescription }}
             </p>
+            <button mat-stroked-button type="button" class="empty-state__refresh" (click)="refreshRequested.emit()">
+                <mat-icon>refresh</mat-icon>
+                {{ intl.emptyStateRefreshLabel }}
+            </button>
         </div>
     </div>
 </section>

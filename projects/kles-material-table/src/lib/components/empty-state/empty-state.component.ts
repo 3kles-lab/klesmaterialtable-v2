@@ -1,17 +1,19 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, inject, output } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
 import { KlesTableIntl } from '../table/table-intl';
 
 @Component({
     selector: 'kles-table-empty-state',
     standalone: true,
-    imports: [MatIconModule],
+    imports: [MatIconModule, MatButtonModule],
     templateUrl: './empty-state.component.html',
     styleUrl: './empty-state.component.scss',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KlesTableEmptyStateComponent {
+    readonly refreshRequested = output<void>();
     readonly intl = inject(KlesTableIntl);
 
     private readonly changeDetectorRef = inject(ChangeDetectorRef);
