@@ -42,6 +42,38 @@ form {
     scroll-timeline-axis: inline;
 }
 
+.kles-row-pointer {
+    cursor: pointer;
+}
+
+.kles-keyboard-cell:focus-visible {
+    outline: 2px solid var(--mat-sys-primary, Highlight);
+    outline-offset: -2px;
+}
+
+.kles-grid-entry {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.kles-grid-entry:focus-visible {
+    top: 4px;
+    left: 4px;
+    z-index: 10;
+    width: auto;
+    height: auto;
+    padding: 8px 12px;
+    clip-path: none;
+    background: var(--mat-sys-surface, white);
+    color: var(--mat-sys-on-surface, black);
+    outline: 2px solid var(--mat-sys-primary, Highlight);
+}
+
 table {
     width: 100%;
     flex-grow: 1;

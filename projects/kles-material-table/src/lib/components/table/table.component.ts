@@ -55,6 +55,8 @@ import { ColumnApi } from '../../core/api/column';
 import { ColumnsService } from '../../services/features/columns/columns.service';
 import { PaginationApi } from '../../core/api/pagination';
 import { SelectionApi } from '../../core/api/selection';
+import { CursorApi } from '../../core/api/cursor';
+import { CursorService } from '../../services/features/cursor/cursor.service';
 import { LoadingService } from '../../services/features/loading/loading.service';
 import { PaginatorService } from '../../services/features/paginator/paginator.service';
 import { SortApi } from '../../core/api/sort';
@@ -98,6 +100,8 @@ import { TreeService } from '../../services/features/tree/tree.service';
 import { RowContextStore } from '../../services/store/row-context-store.service';
 import { KlesRowContext } from '../../core/table/row-context.interface';
 import { ColumnDragDropService } from '../../services/features/dragdrop/column-dragdrop.service';
+import { KeyboardCellDirective, KeyboardGridDirective } from '../../directives/keyboard-navigation.directive';
+import { KlesTableIntl } from './table-intl';
 
 type TableSection = 'header' | 'body' | 'footer';
 
@@ -135,6 +139,8 @@ type TableSection = 'header' | 'body' | 'footer';
         RowContextPipe,
         ResolveRowStylePipe,
         ResolveRowClassPipe,
+        KeyboardGridDirective,
+        KeyboardCellDirective,
     ],
 })
 export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy {
@@ -168,6 +174,12 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
 
     emptyStateComponent = KlesTableEmptyStateComponent;
     readonly identityTrackBy = (_: number, row: FormGroup): FormGroup => row;
+    readonly cursorService = inject(CursorService);
+    readonly intl = inject(KlesTableIntl);
+
+    get cursor(): CursorApi {
+        return this.cursorService;
+    }
 
     constructor(
         private readonly host: ElementRef<HTMLElement>,

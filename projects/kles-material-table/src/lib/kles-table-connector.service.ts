@@ -13,6 +13,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { EmptyStateApi } from './core/api/empty-state';
 import { RenderApi } from './core/api/render';
 import { TreeApi } from './core/api/tree';
+import { CursorApi } from './core/api/cursor';
 
 @Injectable()
 export class KlesTableConnectorService {
@@ -64,6 +65,10 @@ export class KlesTableConnectorService {
 
     get selection(): SelectionApi {
         return this.table.selection;
+    }
+
+    get cursor(): CursorApi {
+        return this.table.cursor;
     }
 
     get footer(): FooterApi {

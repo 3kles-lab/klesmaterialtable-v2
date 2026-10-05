@@ -1,6 +1,19 @@
-<form #form cdkScrollable [formGroup]="tableService.form">
+<form
+    #form
+    cdkScrollable
+    [formGroup]="tableService.form"
+    [style.scroll-padding-top.px]="keyboardGrid.navigation.enabled ? headerHeightPx() : null"
+    [style.scroll-padding-bottom.px]="keyboardGrid.navigation.enabled && showFooter() ? footerHeightPx() : null"
+>
+    @if (keyboardGrid.navigation.enabled && !isEmpty()) {
+        <button type="button" class="kles-grid-entry" (click)="keyboardGrid.navigation.focusActive()">
+            {{ intl.keyboardNavigationEntryLabel }}
+        </button>
+    }
     <table
         mat-table
+        klesKeyboardGrid
+        #keyboardGrid="klesKeyboardGrid"
         [dataSource]="dataSource"
         matSort
         [trackBy]="multiTemplateDataRows() ? identityTrackBy : tableService.trackBy"
@@ -67,6 +80,8 @@
                 <td
                     mat-cell
                     *cdkCellDef="let row; let index = index; let dataIndex = dataIndex"
+                    [klesKeyboardCell]="row"
+                    [columnDef]="column.columnDef"
                     [style.border-inline-end]="getColumnSeparator(column, 'body') ?? getStickyStartSeparator(column, 'body')"
                     [style.border-inline-start]="getStickyEndSeparator(column, 'body')"
                     [ngStyle]="
@@ -144,6 +159,7 @@
             mat-row
             *matRowDef="let row; let index = index; let dataIndex = dataIndex; columns: displayedColumns()"
             [class.kles-row-selected]="isRowSelected(row)"
+            [class.kles-row-pointer]="cursorService.isPointer(row)"
             cdkDrag
             [cdkDragData]="row"
             [cdkDragDisabled]="dragDropRowService.isDragDisabled(row)"

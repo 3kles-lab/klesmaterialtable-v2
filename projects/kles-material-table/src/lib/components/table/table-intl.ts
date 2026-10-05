@@ -9,4 +9,5 @@ export class KlesTableIntl {
 
     emptyStateTitle = 'No data';
     emptyStateDescription = 'There are no rows to display.';
+    keyboardNavigationEntryLabel = 'Go to table rows';
 }

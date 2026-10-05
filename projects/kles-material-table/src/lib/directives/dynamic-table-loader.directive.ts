@@ -45,6 +45,7 @@ import {
     EMPTY_STATE_CONFIG,
     INFINITE_SCROLL_CONFIG,
     ROW_APPEARANCE_CONFIG,
+    KEYBOARD_NAVIGATION_CONFIG,
 } from '../token';
 import { KlesColumnConfig } from '../core/table/column.interface';
 import { ColumnsService } from '../services/features/columns/columns.service';
@@ -77,6 +78,7 @@ import { TreeService } from '../services/features/tree/tree.service';
 import { LoaderChildrensService } from '../services/features/loader/loader-childrens.service';
 import { EventsService } from '../services/features/events/events.service';
 import { RowService } from '../services/features/row/row.service';
+import { CursorService } from '../services/features/cursor/cursor.service';
 import { CellService } from '../services/features/cell/cell.service';
 import { CellValueChangeService } from '../services/features/cell/cell-valuechange.service';
 import { ValidationService } from '../services/features/validation/validation.service';
@@ -179,6 +181,10 @@ export class DynamicTableLoaderDirective<TParams = unknown, TValue = unknown> im
         const emptyStateIntl = typeof emptyState === 'object' && emptyState !== null ? emptyState.intl : undefined;
 
         const configProviders = [
+            {
+                provide: KEYBOARD_NAVIGATION_CONFIG,
+                useValue: this.tableConfig().keyboardNavigation ?? { enabled: false },
+            },
             {
                 provide: COLUMNS,
                 useValue: signal<KlesColumnConfig[]>(this.tableConfig().columns || []),
@@ -318,6 +324,7 @@ export class DynamicTableLoaderDirective<TParams = unknown, TValue = unknown> im
             ...(this.tableConfig().infinite ? [InfiniteScrollService] : []),
             EventsService,
             RowService,
+            CursorService,
             CellService,
             CellValueChangeService,
             ValidationService,

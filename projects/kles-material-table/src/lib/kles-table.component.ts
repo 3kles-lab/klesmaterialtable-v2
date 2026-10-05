@@ -9,6 +9,7 @@ import { PaginationApi } from './core/api/pagination';
 import { SortApi } from './core/api/sort';
 import { LoadingApi } from './core/api/loading';
 import { SelectionApi } from './core/api/selection';
+import { CursorApi } from './core/api/cursor';
 import { FormApi, TableFormValue } from './core/api/form';
 import { FooterApi } from './core/api/footer';
 import { ArrayUiState, GroupUiState } from '@3kles/kles-material-dynamicforms';
@@ -128,6 +129,10 @@ export class KlesTableComponent<TParams = unknown, TValue = unknown> implements 
 
     get selection(): SelectionApi {
         return this.connectorService.selection;
+    }
+
+    get cursor(): CursorApi {
+        return this.connectorService.cursor;
     }
 
     get form(): FormApi<TableFormValue<TValue>> {

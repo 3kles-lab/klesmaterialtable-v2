@@ -11,6 +11,7 @@ import { EmptyStateApi } from './empty-state';
 import { EventsApi } from './events';
 import { RenderApi } from './render';
 import { TreeApi } from './tree';
+import { CursorApi } from './cursor';
 
 export interface KlesTableApi<TValue = unknown> {
     refresh(): void;
@@ -20,6 +21,7 @@ export interface KlesTableApi<TValue = unknown> {
     get sort(): SortApi;
     get loading(): LoadingApi;
     get selection(): SelectionApi;
+    get cursor(): CursorApi;
     get form(): FormApi<TableFormValue<TValue>>;
     get footer(): FooterApi;
     get emptyState(): EmptyStateApi;

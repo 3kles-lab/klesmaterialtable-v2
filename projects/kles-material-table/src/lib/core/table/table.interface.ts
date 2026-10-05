@@ -11,12 +11,14 @@ import { EventsApi } from '../api/events';
 import { EmptyStateApi } from '../api/empty-state';
 import { RenderApi } from '../api/render';
 import { TreeApi } from '../api/tree';
+import { CursorApi } from '../api/cursor';
 
 export interface ITable {
     scrollbar: ScrollbarApi;
     column: ColumnApi;
     pagination?: PaginationApi | undefined;
     selection: SelectionApi;
+    cursor: CursorApi;
     sort: SortApi;
     footer: FooterApi;
     loading: LoadingApi;

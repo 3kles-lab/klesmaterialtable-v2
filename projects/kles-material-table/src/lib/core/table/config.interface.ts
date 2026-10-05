@@ -31,6 +31,13 @@ export interface EmptyStateConfig {
     intl?: Type<KlesTableIntl>;
 }
 
+export interface KeyboardNavigationConfig {
+    /** Enables roving cell focus and keyboard editing. Defaults to false. */
+    enabled: boolean;
+    /** Accessible name of the keyboard-navigable grid. */
+    ariaLabel?: string;
+}
+
 export interface DefaultTableConfig<TSource = unknown> extends RowAppearanceConfig<TSource> {
     id?: string;
     columns: KlesColumnConfig[];
@@ -43,6 +50,20 @@ export interface DefaultTableConfig<TSource = unknown> extends RowAppearanceConf
     columnSeparator?: boolean | ColumnSeparatorConfig;
     elevation?: TableElevationLevel;
     emptyState?: boolean | EmptyStateConfig;
+    /**
+     * Optional data-cell navigation: arrows, Home/End, Enter/F2 to enter a field,
+     * Escape to return to the cell, Space to select an eligible row.
+     * A skip button before the header and Ctrl+Enter provide direct access to rows.
+     * Tab leaves navigation mode; inside a cell it traverses its controls first.
+     * Only currently rendered data rows participate (no automatic page loading).
+     */
+    /**
+     * Optional data-cell navigation: arrows, Home/End, Enter/F2 to enter a field,
+     * Escape to return to the cell, Space to select an eligible row.
+     * Tab leaves navigation mode; inside a cell it traverses its controls first.
+     * Only currently rendered data rows participate (no automatic page loading).
+     */
+    keyboardNavigation?: KeyboardNavigationConfig;
 }
 
 export interface PaginatorConfig {

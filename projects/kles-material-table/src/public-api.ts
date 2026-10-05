@@ -18,6 +18,7 @@ export * from './lib/components/empty-state/empty-state.component';
 
 export * from './lib/kles-table.component';
 export * from './lib/directives/table-footer-start.directive';
+export * from './lib/directives/keyboard-navigation.directive';
 export * from './lib/token';
 
 export * from './lib/enums/align.enum';
@@ -25,6 +26,8 @@ export * from './lib/enums/span.enum';
 
 export * from './lib/core/api/table';
 export * from './lib/core/api/column';
+export * from './lib/core/api/cursor';
+export * from './lib/services/features/cursor/cursor.service';
 export * from './lib/core/api/empty-state';
 export * from './lib/core/api/events';
 export * from './lib/core/api/footer';

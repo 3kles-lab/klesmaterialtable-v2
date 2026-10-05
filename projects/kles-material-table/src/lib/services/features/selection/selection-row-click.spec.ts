@@ -27,6 +27,26 @@ class RowClickSelectionService extends AbstractSelectionService<unknown> {
 describe('selection on row click', () => {
     const createRow = () => new FormGroup({ '#select': new FormControl(false) });
 
+    it('allows keyboard selection without enabling selection on row click', () => {
+        const service = new RowClickSelectionService(selectionConfig({}));
+        const row = createRow();
+        expect(service.canSelectOnRowClick(row)).toBeFalse();
+        service.toggleRowSelection(row);
+        expect(row.controls['#select'].value).toBeTrue();
+    });
+
+    it('blocks keyboard selection when the row or model is disabled', () => {
+        const service = new RowClickSelectionService(selectionConfig({}));
+        const row = createRow();
+        row.disable();
+        service.toggleRowSelection(row);
+        expect(row.controls['#select'].value).toBeFalse();
+        row.enable();
+        service.selectionModel.disable();
+        service.toggleRowSelection(row);
+        expect(row.controls['#select'].value).toBeFalse();
+    });
+
     it('toggles the selection control when enabled', () => {
         const service = new RowClickSelectionService(selectionConfig({ selectOnRowClick: true }));
         const row = createRow();

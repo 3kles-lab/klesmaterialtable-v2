@@ -6,6 +6,7 @@ import {
     EmptyStateConfig,
     ExtraRowConfig,
     InfiniteScrollConfig,
+    KeyboardNavigationConfig,
     LoaderConfig,
     PaginatorConfig,
     RowAppearanceConfig,
@@ -55,3 +56,4 @@ export const SCROLLBAR_ORCHESTRATOR_SERVICE = new InjectionToken<IScrollbarOrche
 export const TABLE_SERVICE = new InjectionToken<ITableService>('TABLE_SERVICE');
 
 export const EMPTY_STATE_CONFIG = new InjectionToken<boolean | EmptyStateConfig | undefined>('EMPTY_STATE_CONFIG');
+export const KEYBOARD_NAVIGATION_CONFIG = new InjectionToken<KeyboardNavigationConfig>('KEYBOARD_NAVIGATION_CONFIG');

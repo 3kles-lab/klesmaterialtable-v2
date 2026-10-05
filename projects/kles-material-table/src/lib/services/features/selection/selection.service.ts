@@ -24,6 +24,9 @@ export interface ISelectionService {
     selectionModel?: IKlesSelectionModel<FormGroup>;
     readonly loadingRows: Signal<ReadonlySet<FormGroup>>;
     isLoading(row: FormGroup): boolean;
+    canSelectOnRowClick(row: FormGroup): boolean;
+    canSelectRow(row: FormGroup): boolean;
+    toggleRowSelection(row: FormGroup): void;
     onRowClick(event: MouseEvent, row: FormGroup): void;
     count(): Signal<number>;
     disable(): void;
@@ -61,21 +64,32 @@ export abstract class AbstractSelectionService<T> implements ISelectionService {
         return this._loadingRows().has(row);
     }
 
+    public canSelectOnRowClick(row: FormGroup): boolean {
+        return !!this.selectionConfig?.selectOnRowClick && this.canSelectRow(row);
+    }
+
+    public canSelectRow(row: FormGroup): boolean {
+        return (
+            !!this.selectionConfig &&
+            !row.controls[this.key]?.disabled &&
+            !this.isLoading(row) &&
+            this.selectionModel.state !== KlesSelectionModelState.DISABLED &&
+            !this.selectionConfig.isDisabled?.(row)
+        );
+    }
+
     public onRowClick(event: MouseEvent, row: FormGroup): void {
-        if (!this.selectionConfig?.selectOnRowClick || event.defaultPrevented || this.isInteractiveClick(event)) {
+        if (!this.canSelectOnRowClick(row) || event.defaultPrevented || this.isInteractiveClick(event)) {
             return;
         }
+
+        this.toggleRowSelection(row);
+    }
+
+    public toggleRowSelection(row: FormGroup): void {
+        if (!this.canSelectRow(row)) return;
 
         const control = row.controls[this.key];
-        if (
-            control?.disabled ||
-            this.isLoading(row) ||
-            this.selectionModel.state === KlesSelectionModelState.DISABLED ||
-            this.selectionConfig.isDisabled?.(row)
-        ) {
-            return;
-        }
-
         const selected = !this.selectionModel.isSelected(row);
         if (control) {
             control.setValue(selected);

@@ -73,6 +73,7 @@ export class AppComponent implements AfterViewInit {
     });
 
     config: KlesTableConfig = {
+        keyboardNavigation: { enabled: true, ariaLabel: 'Tableau de démonstration' },
         columnSeparator: false,
         // rowStyle: (_row, _status, _index, context) => {
         //     const provider = (context.source as { provider?: { enabled?: boolean | number } }).provider;
@@ -363,7 +364,7 @@ export class AppComponent implements AfterViewInit {
         dragDropColumns: {
             enable: true,
             options: {
-                dragDisabled: (column) => column.columnDef === 'actions',
+                dragDisabled: (column) => column.columnDef === 'actions' || column.columnDef === '#select',
             },
         },
         selection: selectionConfig({
