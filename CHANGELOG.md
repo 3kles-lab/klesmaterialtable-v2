@@ -1,3 +1,12 @@
+# [22.1.0](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v22.0.0...v22.1.0) (2026-10-05)
+
+
+### Features
+
+* add keyboard navigation & cursor service ([45e422c](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/45e422c12ad757b3a23d5ed557841ad5db9cd85a))
+* add line validations ([a55bde2](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/a55bde20ec428731648e4195b2661a5f08620321))
+* improve empty state ([bacb6b5](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/bacb6b595ef2c8ad9625897bc68ab8b4d7c82fdf))
+
 # [22.0.0](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v21.10.0...v22.0.0) (2026-09-02)
 
 
