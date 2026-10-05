@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable, Optional } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup } from '@angular/forms';
 import {
     AbstractUiState,
@@ -9,6 +9,8 @@ import {
     klesFieldUiFactory,
 } from '@3kles/kles-material-dynamicforms';
 import { KlesRowContext } from '../../../core/table/row-context.interface';
+import { RowValidationConfig } from '../../../core/table/config.interface';
+import { ROW_VALIDATION_CONFIG } from '../../../token';
 
 export interface KlesCreatedRow<TSource = unknown> {
     formGroup: FormGroup;
@@ -18,6 +20,8 @@ export interface KlesCreatedRow<TSource = unknown> {
 
 @Injectable({ providedIn: 'root' })
 export class RowFormFactory {
+    constructor(@Optional() @Inject(ROW_VALIDATION_CONFIG) private readonly validationConfig: RowValidationConfig | null = null) {}
+
     createControl(field: IKlesFieldConfig, value?: any): { control: AbstractControl; ui: AbstractUiState } {
         let control: AbstractControl;
         let ui: AbstractUiState;
@@ -56,7 +60,10 @@ export class RowFormFactory {
             uis[field.name] = ui;
         }
         return {
-            formGroup: new FormGroup<any>(controls),
+            formGroup: new FormGroup<any>(controls, {
+                validators: this.validationConfig?.lineValidations,
+                asyncValidators: this.validationConfig?.lineAsyncValidations,
+            }),
             groupUi: new GroupUiState(uis),
             context: {
                 source: record,

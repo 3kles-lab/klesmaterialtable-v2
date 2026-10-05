@@ -45,6 +45,7 @@ import {
     EMPTY_STATE_CONFIG,
     INFINITE_SCROLL_CONFIG,
     ROW_APPEARANCE_CONFIG,
+    ROW_VALIDATION_CONFIG,
     KEYBOARD_NAVIGATION_CONFIG,
 } from '../token';
 import { KlesColumnConfig } from '../core/table/column.interface';
@@ -54,6 +55,7 @@ import { ScrollbarService } from '../services/features/scrollbar/scrollbar.servi
 import { InfiniteScrollTableComponent } from '../components/infinite-scroll-table/infinite-scroll-table.component';
 
 import { KlesForm } from '../services/features/table/form';
+import { RowFormFactory } from '../services/features/table/row-factory.service';
 import { SelectionLoaderService } from '../services/features/selection/selection-loader.service';
 import { LoadingService } from '../services/features/loading/loading.service';
 import { HeaderLazyService, HeaderService } from '../services/features/header/header.service';
@@ -205,6 +207,13 @@ export class DynamicTableLoaderDirective<TParams = unknown, TValue = unknown> im
                 },
             },
             {
+                provide: ROW_VALIDATION_CONFIG,
+                useValue: {
+                    lineValidations: this.tableConfig().lineValidations,
+                    lineAsyncValidations: this.tableConfig().lineAsyncValidations,
+                },
+            },
+            {
                 provide: FOOTER,
                 useValue: signal<boolean>(this.tableConfig().footer ?? false),
             },
@@ -308,6 +317,7 @@ export class DynamicTableLoaderDirective<TParams = unknown, TValue = unknown> im
               ];
 
         const featureProviders = [
+            RowFormFactory,
             TreeService,
             RenderService,
             ExtraRowService,

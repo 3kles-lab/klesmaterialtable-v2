@@ -1,110 +1,94 @@
 import { DestroyRef, inject, Injectable } from '@angular/core';
-import { filter, Subscription } from 'rxjs';
+import { filter, startWith, Subscription } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { EventsService } from '../events/events.service';
 import { AbstractControl, FormGroup } from '@angular/forms';
 
+interface ValidationSubscription {
+    row: FormGroup;
+    rowIndex: number;
+    subscription?: Subscription;
+}
+
 @Injectable()
 export class ValidationService {
     private readonly destroyRef = inject(DestroyRef);
-    private readonly columnSubscriptions = new Map<string, Subscription>();
-    private readonly rowSubscriptions = new Map<string, Subscription>();
+    private readonly columnSubscriptions = new Map<AbstractControl, ValidationSubscription>();
+    private readonly rowSubscriptions = new Map<FormGroup, ValidationSubscription>();
 
     constructor(private readonly eventsService: EventsService) {}
 
     public listen(visibleRows: FormGroup[], visibleColumns: string[]): void {
-        const expectedColumnKeys = new Set<string>();
-        const expectedRowKeys = new Set<string>();
+        const expectedControls = new Set<AbstractControl>();
+        const expectedRows = new Set(visibleRows);
         visibleRows.forEach((row, rowIndex) => {
-            const rowSubscription = this.subscribeToRow(row, rowIndex);
-            const key = this.getRowKey(row);
-            expectedRowKeys.add(key);
-            this.rowSubscriptions.set(key, rowSubscription);
-
-            visibleColumns.forEach((column) => {
-                const columnKey = column;
-                const control = row.get(columnKey);
-
-                if (!control) {
+            let rowEntry = this.rowSubscriptions.get(row);
+            if (rowEntry) {
+                rowEntry.rowIndex = rowIndex;
+            } else {
+                rowEntry = { row, rowIndex };
+                this.rowSubscriptions.set(row, rowEntry);
+                rowEntry.subscription = this.subscribeToRow(rowEntry);
+            }
+            visibleColumns.forEach((columnDef) => {
+                const control = row.get(columnDef);
+                if (!control) return;
+                expectedControls.add(control);
+                const existing = this.columnSubscriptions.get(control);
+                if (existing) {
+                    existing.rowIndex = rowIndex;
                     return;
                 }
-
-                const key = this.getCellKey(row, columnKey);
-                expectedColumnKeys.add(key);
-
-                if (this.columnSubscriptions.has(key)) {
-                    return;
-                }
-
-                const subscription = this.subscribeToCell(row, rowIndex, columnKey, control);
-
-                this.columnSubscriptions.set(key, subscription);
+                const entry: ValidationSubscription = { row, rowIndex };
+                this.columnSubscriptions.set(control, entry);
+                entry.subscription = control.statusChanges.pipe(
+                    takeUntilDestroyed(this.destroyRef),
+                    filter((status) => status === 'INVALID'),
+                ).subscribe(() => {
+                    this.eventsService.emit('cellValidationError', {
+                        row,
+                        rowIndex: entry.rowIndex,
+                        rawValue: row.getRawValue(),
+                        value: row.value,
+                        errors: control.errors,
+                        controlsErrors: { [columnDef]: control.errors },
+                    });
+                });
             });
         });
-
-        this.unsubscribe(expectedRowKeys, expectedColumnKeys);
-    }
-
-    private getCellKey(row: FormGroup, columnDef: string): string {
-        return `${this.getRowKey(row)}:${columnDef}`;
-    }
-
-    private getRowKey(row: FormGroup): string {
-        return `${row.get('_id')?.value}`;
-    }
-
-    private subscribeToCell(row: FormGroup, rowIndex: number, columnDef: string, control: AbstractControl): Subscription {
-        return control.statusChanges
-            .pipe(
-                takeUntilDestroyed(this.destroyRef),
-                filter((status) => status === 'INVALID'),
-            )
-            .subscribe(() => {
-                this.eventsService.emit('cellValidationError', {
-                    row,
-                    rowIndex,
-                    rawValue: row.getRawValue(),
-                    value: row.value,
-                    errors: control.errors,
-                    controlsErrors: { columnDef: control.errors },
-                });
-            });
-    }
-
-    private subscribeToRow(row: FormGroup, rowIndex: number): Subscription {
-        return row.statusChanges
-            .pipe(
-                takeUntilDestroyed(this.destroyRef),
-                filter((status) => status === 'INVALID'),
-            )
-            .subscribe(() => {
-                this.eventsService.emit('rowValidationError', {
-                    row,
-                    rowIndex,
-                    rawValue: row.getRawValue(),
-                    value: row.value,
-                    errors: row.errors,
-                    controlsErrors: Object.keys(row.controls)
-                        .filter((key) => row.get(key)?.errors)
-                        .map((key) => ({ [key]: row.get(key)?.errors }))
-                        .reduce((a, b) => ({ ...a, ...b })),
-                });
-            });
-    }
-
-    private unsubscribe(expectedRowKeys: Set<string>, expectedColumnKeys: Set<string>): void {
-        for (const [key, subscription] of this.columnSubscriptions.entries()) {
-            if (!expectedColumnKeys.has(key)) {
-                subscription.unsubscribe();
-                this.columnSubscriptions.delete(key);
+        for (const [control, entry] of this.columnSubscriptions) {
+            if (!expectedControls.has(control)) {
+                entry.subscription?.unsubscribe();
+                this.columnSubscriptions.delete(control);
             }
         }
-
-        for (const [key, subscription] of this.rowSubscriptions.entries()) {
-            if (!expectedRowKeys.has(key)) {
-                subscription.unsubscribe();
-                this.rowSubscriptions.delete(key);
+        for (const [row, entry] of this.rowSubscriptions) {
+            if (!expectedRows.has(row)) {
+                entry.subscription?.unsubscribe();
+                this.rowSubscriptions.delete(row);
             }
         }
+    }
+
+    private subscribeToRow(entry: ValidationSubscription): Subscription {
+        const row = entry.row;
+        return row.statusChanges.pipe(
+            startWith(row.status),
+            takeUntilDestroyed(this.destroyRef),
+            filter((status) => status === 'INVALID'),
+        ).subscribe(() => {
+            this.eventsService.emit('rowValidationError', {
+                row,
+                rowIndex: entry.rowIndex,
+                rawValue: row.getRawValue(),
+                value: row.value,
+                errors: row.errors,
+                controlsErrors: Object.fromEntries(
+                    Object.entries(row.controls)
+                        .filter(([, control]) => control.errors)
+                        .map(([name, control]) => [name, control.errors]),
+                ),
+            });
+        });
     }
 }

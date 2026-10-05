@@ -10,6 +10,7 @@ import {
     LoaderConfig,
     PaginatorConfig,
     RowAppearanceConfig,
+    RowValidationConfig,
 } from './core/table/config.interface';
 import { DragDropService } from './services/features/dragdrop/dragdrop.service';
 import { ColumnDragDropService } from './services/features/dragdrop/column-dragdrop.service';
@@ -35,6 +36,7 @@ export const FOOTER = new InjectionToken<WritableSignal<boolean>>('FOOTER');
 export const EXTRA_ROWS = new InjectionToken<WritableSignal<ExtraRowConfig[]>>('EXTRA_ROWS');
 export const MULTI_UNFOLD = new InjectionToken<boolean>('MULTI_UNFOLD');
 export const ROW_APPEARANCE_CONFIG = new InjectionToken<RowAppearanceConfig>('ROW_APPEARANCE_CONFIG');
+export const ROW_VALIDATION_CONFIG = new InjectionToken<RowValidationConfig>('ROW_VALIDATION_CONFIG');
 
 export const ROW_DRAG_DROP = new InjectionToken<DragDropService>('ROW_DRAG_DROP');
 export const COLUMN_DRAG_DROP = new InjectionToken<ColumnDragDropService>('COLUMN_DRAG_DROP');

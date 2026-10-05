@@ -38,13 +38,16 @@ export interface KeyboardNavigationConfig {
     ariaLabel?: string;
 }
 
-export interface DefaultTableConfig<TSource = unknown> extends RowAppearanceConfig<TSource> {
+export interface RowValidationConfig {
+    /** Validators applied to each row FormGroup, including newly created and child rows. */
+    lineValidations?: ValidatorFn[];
+    /** Async row validators, run after synchronous validation succeeds. */
+    lineAsyncValidations?: AsyncValidatorFn[];
+}
+
+export interface DefaultTableConfig<TSource = unknown> extends RowAppearanceConfig<TSource>, RowValidationConfig {
     id?: string;
     columns: KlesColumnConfig[];
-    /** Reserved for row-level validation configuration; not applied yet. */
-    lineValidations?: ValidatorFn[];
-    /** Reserved for asynchronous row-level validation configuration; not applied yet. */
-    lineAsyncValidations?: AsyncValidatorFn[];
     footer?: boolean;
     sortConfig?: Sort;
     columnSeparator?: boolean | ColumnSeparatorConfig;
