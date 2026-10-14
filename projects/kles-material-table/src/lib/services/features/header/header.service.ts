@@ -9,6 +9,7 @@ import { IDatasourceService } from '../datasource/datasource.service';
 import { ColumnsService } from '../columns/columns.service';
 import { ILoader } from '../loader/loader.interface';
 import { EventsService } from '../events/events.service';
+import { PaginatorService } from '../paginator/paginator.service';
 import _ from 'lodash';
 
 export interface IHeaderService {
@@ -28,6 +29,7 @@ export class HeaderService implements IHeaderService {
         @Inject(LOADER_SERVICE) private loader: ILoader<any>,
         private columnsService: ColumnsService,
         private readonly eventsService: EventsService,
+        private readonly paginatorService: PaginatorService,
     ) {
         this.filterableColumns = this.columnsService
             .columns()
@@ -98,6 +100,8 @@ export class HeaderService implements IHeaderService {
                 ),
             )
             .subscribe(({ filters, changedFilter }) => {
+                this.paginatorService.firstPage();
+
                 if (this.filterService) {
                     const prepared = this.filterService.formatData(filters);
                     this.datasourceService.datasource.filter = JSON.stringify(prepared);
@@ -143,6 +147,7 @@ export class HeaderLazyService implements IHeaderService {
         @Inject(LOADER_SERVICE) private loader: ILoader<any>,
         private columnsService: ColumnsService,
         private readonly eventsService: EventsService,
+        private readonly paginatorService: PaginatorService,
     ) {
         this.filterableColumns = this.columnsService
             .columns()
@@ -213,6 +218,8 @@ export class HeaderLazyService implements IHeaderService {
                 ),
             )
             .subscribe(({ filters, changedFilter }) => {
+                this.paginatorService.firstPage();
+
                 this.filterStore?.setFilters(filters);
 
                 this.eventsService.emit('filterChange', {
