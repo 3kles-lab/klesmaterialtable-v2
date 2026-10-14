@@ -1,3 +1,10 @@
+## [22.1.1](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v22.1.0...v22.1.1) (2026-10-14)
+
+
+### Bug Fixes
+
+* reset page after filter' ([db3aa81](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/db3aa8191a45c57521f174773a4175fa0e49ec3a))
+
 # [22.1.0](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v22.0.0...v22.1.0) (2026-10-05)
 
 
