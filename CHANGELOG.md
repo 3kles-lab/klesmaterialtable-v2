@@ -1,3 +1,10 @@
+## [22.1.2](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v22.1.1...v22.1.2) (2026-10-30)
+
+
+### Bug Fixes
+
+* intl for expand and add conditionnal expand ([42539bc](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/42539bc03ebd1417b0221623e1e481fc6c957095))
+
 ## [22.1.1](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v22.1.0...v22.1.1) (2026-10-14)
 
 
