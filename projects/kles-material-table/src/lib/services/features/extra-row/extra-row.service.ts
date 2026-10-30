@@ -31,10 +31,14 @@ export class ExtraRowService {
             .map((cell) => ({ ...cell.field, name: cell.columnDef }));
     }
 
+    public canExpand(index: number, row: FormGroup): boolean {
+        return this._extraRowsConfig().some(config => config.mode === 'expand' && (config.when?.(index, row) ?? true));
+    }
+
     private createWhen(config: ExtraRowConfig): ((index: number, row: FormGroup<any>) => boolean) | undefined {
         if (config.mode === 'expand') {
-            return (_, row) => {
-                return this.expandedRowStore.isExpanded(row.getRawValue()._id);
+            return (index, row) => {
+                return (config.when?.(index, row) ?? true) && this.expandedRowStore.isExpanded(row.getRawValue()._id);
             };
         } else {
             return config?.when;

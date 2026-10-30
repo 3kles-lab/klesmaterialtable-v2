@@ -148,6 +148,7 @@ export interface ExtraRowConfig {
     mode?: ExtraRowMode;
     /** Controls whether the content uses the full table width or only the visible scroll viewport. Defaults to `table`. */
     width?: ExtraRowWidth;
+    /** Row eligibility; in expand mode it also controls whether the row can be unfolded. */
     when?: (index: number, rowData: FormGroup) => boolean;
 }
 

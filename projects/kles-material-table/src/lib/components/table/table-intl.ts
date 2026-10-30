@@ -11,4 +11,7 @@ export class KlesTableIntl {
     emptyStateDescription = 'There are no rows to display.';
     emptyStateRefreshLabel = 'Refresh';
     keyboardNavigationEntryLabel = 'Go to table rows';
+    expandRowLabel = 'Expand row';
+    collapseRowLabel = 'Collapse row';
+    moveRowLabel = 'Move row';
 }

@@ -4,7 +4,7 @@
         matIconButton
         cdkDragHandle
         class="drag-handle"
-        aria-label="Déplacer la ligne"
+        [attr.aria-label]="intl.moveRowLabel"
         (click)="stopPropagation($event)"
         (dblclick)="stopPropagation($event)"
     >
@@ -12,7 +12,10 @@
     </button>
 }
 @if (column().canExpand) {
-    <button matIconButton class="expand-button" (click)="expandRow(); stopPropagation($event)">
+    <button type="button" matIconButton class="expand-button" [disabled]="!canExpandRow()"
+        [attr.aria-expanded]="expandedRow()"
+        [attr.aria-label]="expandedRow() ? intl.collapseRowLabel : intl.expandRowLabel"
+        (click)="expandRow(); stopPropagation($event)">
         @if (this.expandedRow()) {
             <mat-icon>keyboard_arrow_down</mat-icon>
         } @else {
@@ -28,7 +31,7 @@
             class="expand-button"
             [disabled]="loadingNode()"
             [attr.aria-expanded]="expandedNode()"
-            [attr.aria-label]="expandedNode() ? 'Réduire la ligne' : 'Développer la ligne'"
+            [attr.aria-label]="expandedNode() ? intl.collapseRowLabel : intl.expandRowLabel"
             (click)="expandNode(); stopPropagation($event)"
         >
             @if (loadingNode()) {
