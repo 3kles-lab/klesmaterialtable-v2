@@ -1,3 +1,10 @@
+## [22.1.3](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v22.1.2...v22.1.3) (2026-11-09)
+
+
+### Bug Fixes
+
+* column visible [secure] ([edcf30d](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/edcf30dbbb206ea3a0859fe918e553212cf37d6e))
+
 ## [22.1.2](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v22.1.1...v22.1.2) (2026-10-30)
 
 
