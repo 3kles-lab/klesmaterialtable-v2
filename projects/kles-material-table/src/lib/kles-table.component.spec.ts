@@ -1,5 +1,5 @@
 import { CdkDrag, CdkDropList } from '@angular/cdk/drag-drop';
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { delay, of } from 'rxjs';
@@ -80,6 +80,25 @@ class ColumnDragDropHostComponent {
     };
 }
 
+@Component({
+    selector: 'test-column-visibility-host',
+    standalone: true,
+    imports: [KlesTableComponent],
+    template: '<kles-dynamic-table [tableConfig]="tableConfig"></kles-dynamic-table>',
+})
+class ColumnVisibilityHostComponent {
+    readonly showConditional = signal(false);
+    readonly tableConfig: KlesTableConfig = {
+        columns: [
+            { columnDef: 'hidden', visible: false, width: '500px' },
+            { columnDef: 'first', width: '120px', minWidth: '80px', maxWidth: '240px' },
+            { columnDef: 'conditional', visible: false, visibleWhen: this.showConditional, width: '160px' },
+            { columnDef: 'last', width: '180px' },
+        ],
+        lines: linesLoader({ loader: () => of({ items: [{ _id: 1, hidden: '', first: '', conditional: '', last: '' }] }) }),
+    };
+}
+
 describe('KlesTableComponent', () => {
     beforeEach(async () => {
         await TestBed.configureTestingModule({
@@ -88,6 +107,7 @@ describe('KlesTableComponent', () => {
                 WithoutFooterStartHostComponent,
                 RowClickSelectionHostComponent,
                 ColumnDragDropHostComponent,
+                ColumnVisibilityHostComponent,
                 EmptyStateRefreshHostComponent,
                 KlesTableEmptyStateComponent,
             ],
@@ -226,6 +246,50 @@ describe('KlesTableComponent', () => {
 
         expect(fixture.debugElement.queryAll(By.css('.column-drag-handle')).length).toBe(2);
     });
+
+    it('only reserves colgroup space for rendered columns and preserves their width constraints', fakeAsync(() => {
+        const fixture = TestBed.createComponent(ColumnVisibilityHostComponent);
+        fixture.detectChanges();
+        tick();
+        fixture.detectChanges();
+
+        const cols = Array.from(fixture.nativeElement.querySelectorAll('colgroup col')) as HTMLTableColElement[];
+        expect(cols.map((col) => col.dataset.columnDef)).toEqual(['first', 'last']);
+        expect(cols.map((col) => col.style.width)).toEqual(['120px', '180px']);
+        expect(cols[0].style.minWidth).toBe('80px');
+        expect(cols[0].style.maxWidth).toBe('240px');
+        expect(fixture.nativeElement.querySelectorAll('th.mat-mdc-header-cell').length).toBe(cols.length);
+        expect(fixture.nativeElement.querySelectorAll('td.mat-mdc-cell').length).toBe(cols.length);
+        expect(fixture.nativeElement.querySelectorAll('td.mat-mdc-footer-cell').length).toBe(cols.length);
+        fixture.destroy();
+    }));
+
+    it('keeps the colgroup aligned when column visibility and order change', fakeAsync(() => {
+        const fixture = TestBed.createComponent(ColumnVisibilityHostComponent);
+        fixture.detectChanges();
+        tick();
+        fixture.detectChanges();
+        const table = fixture.debugElement.query(By.directive(KlesTableComponent)).componentInstance as KlesTableComponent;
+        const expectColumns = (expected: string[]) => {
+            fixture.detectChanges();
+            const cols = Array.from(fixture.nativeElement.querySelectorAll('colgroup col')) as HTMLTableColElement[];
+            const headers = Array.from(fixture.nativeElement.querySelectorAll('th.mat-mdc-header-cell')) as HTMLElement[];
+            expect(cols.map((col) => col.dataset.columnDef)).toEqual(expected);
+            expect(headers.length).toBe(expected.length);
+            headers.forEach((header, index) => expect(header.classList.contains(`cdk-column-${expected[index]}`)).toBeTrue());
+        };
+
+        table.column.setVisible('hidden', true);
+        expectColumns(['hidden', 'first', 'last']);
+        fixture.componentInstance.showConditional.set(true);
+        expectColumns(['hidden', 'first', 'conditional', 'last']);
+        table.column.setVisible('first', false);
+        table.column.setColumnPosition('last', 0);
+        expectColumns(['last', 'hidden', 'conditional']);
+        fixture.componentInstance.showConditional.set(false);
+        expectColumns(['last', 'hidden']);
+        fixture.destroy();
+    }));
 
     it('attaches header drags to the horizontal header list when row drag also exists on the table', fakeAsync(() => {
         const fixture = TestBed.createComponent(ColumnDragDropHostComponent);

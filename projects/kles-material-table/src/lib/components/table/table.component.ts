@@ -3,6 +3,7 @@ import {
   AfterViewInit,
   ChangeDetectorRef,
   Component,
+  computed,
   DestroyRef,
   ElementRef,
   HostBinding,
@@ -160,6 +161,10 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
     dataSource: IKlesDataSource;
     columns: Signal<KlesColumnConfig[]>;
     displayedColumns: Signal<string[]>;
+    readonly visibleColumns = computed(() => {
+        const displayedColumns = new Set(this.displayedColumns());
+        return this.columns().filter((column) => displayedColumns.has(column.columnDef));
+    });
     showFooter: Signal<boolean>;
 
     multiTemplateDataRows: Signal<boolean>;

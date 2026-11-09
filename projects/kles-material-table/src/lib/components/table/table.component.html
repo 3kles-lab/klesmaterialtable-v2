@@ -29,7 +29,7 @@
         [multiTemplateDataRows]="multiTemplateDataRows()"
     >
         <colgroup>
-            @for (column of columns(); track column.columnDef) {
+            @for (column of visibleColumns(); track column.columnDef) {
                 <col
                     [attr.data-column-def]="column.columnDef"
                     [style.width]="column.width ?? null"
