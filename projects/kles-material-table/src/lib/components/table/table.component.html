@@ -1,3 +1,9 @@
+@if (keyboardGrid.navigation.enabled && !isEmpty()) {
+    <button type="button" class="kles-grid-entry" (click)="keyboardGrid.navigation.focusActive()">
+        {{ intl.keyboardNavigationEntryLabel }}
+    </button>
+}
+
 <form
     #form
     cdkScrollable
@@ -5,11 +11,6 @@
     [style.scroll-padding-top.px]="keyboardGrid.navigation.enabled && stickyRows() ? headerHeightPx() : null"
     [style.scroll-padding-bottom.px]="keyboardGrid.navigation.enabled && stickyRows() && showFooter() ? footerHeightPx() : null"
 >
-    @if (keyboardGrid.navigation.enabled && !isEmpty()) {
-        <button type="button" class="kles-grid-entry" (click)="keyboardGrid.navigation.focusActive()">
-            {{ intl.keyboardNavigationEntryLabel }}
-        </button>
-    }
     <table
         mat-table
         klesKeyboardGrid

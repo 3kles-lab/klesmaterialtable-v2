@@ -15,6 +15,7 @@
     display: flex;
     flex-direction: column;
     position: relative;
+    isolation: isolate;
     height: 100%;
 
     @include mat.form-field-overrides(
@@ -38,6 +39,8 @@ form {
     flex-grow: 1;
     position: relative;
     overflow: auto;
+    // Keep the CDK's sticky rows and columns below the table overlays.
+    isolation: isolate;
     scroll-timeline-name: --kles-table-horizontal-scroll;
     scroll-timeline-axis: inline;
 }
@@ -64,7 +67,7 @@ form {
 .kles-grid-entry:focus-visible {
     top: 4px;
     left: 4px;
-    z-index: 10;
+    z-index: 2;
     width: auto;
     height: auto;
     padding: 8px 12px;
@@ -210,7 +213,7 @@ th[appResizableColumn] > .resize-handle > .resize-width-label {
     position: absolute;
     top: calc(100% + 8px);
     inset-inline-start: 50%;
-    z-index: 30;
+    z-index: 1;
     display: none;
     padding: 3px 7px;
     color: var(--mat-sys-on-primary);
@@ -249,7 +252,7 @@ th[appResizableColumn].column-resizing > .resize-handle > .resize-width-label {
     place-items: center;
     background: color-mix(in srgb, var(--mat-sys-surface-container-highest) 75%, transparent);
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mat-sys-outline-variant) 30%, transparent);
-    z-index: 500;
+    z-index: 1;
 }
 
 :host .mat-mdc-row:not(.kles-extra-row) {
@@ -388,7 +391,7 @@ tr.mat-mdc-row.cdk-drag-preview {
     inset-inline: 0;
     top: var(--header-h, 56px);
     bottom: calc(var(--scroll-h, 0px) + var(--footer-h, 0px));
-    z-index: 400;
+    z-index: 1;
     overflow-x: hidden;
     overflow-y: auto;
     container-type: size;
