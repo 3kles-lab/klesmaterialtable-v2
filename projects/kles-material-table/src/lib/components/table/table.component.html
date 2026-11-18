@@ -41,7 +41,11 @@
         </colgroup>
 
         @for (column of columns(); track column.columnDef) {
-            <ng-container [cdkColumnDef]="column.columnDef" [sticky]="column.sticky ?? false" [stickyEnd]="column.stickyEnd ?? false">
+            <ng-container
+                [cdkColumnDef]="column.columnDef"
+                [sticky]="stickyStart() && (column.sticky ?? false)"
+                [stickyEnd]="stickyEnd() && (column.stickyEnd ?? false)"
+            >
                 <th
                     mat-header-cell
                     *matHeaderCellDef

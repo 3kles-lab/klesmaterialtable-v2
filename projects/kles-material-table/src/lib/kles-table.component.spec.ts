@@ -99,6 +99,24 @@ class ColumnVisibilityHostComponent {
     };
 }
 
+@Component({
+    selector: 'test-sticky-columns-host',
+    standalone: true,
+    imports: [KlesTableComponent],
+    template: '<kles-dynamic-table [tableConfig]="tableConfig"></kles-dynamic-table>',
+})
+class StickyColumnsHostComponent {
+    readonly tableConfig: KlesTableConfig = {
+        footer: true,
+        columns: [
+            { columnDef: 'start', width: '160px', sticky: true },
+            { columnDef: 'middle', width: '180px' },
+            { columnDef: 'end', width: '140px', stickyEnd: true },
+        ],
+        lines: linesLoader({ loader: () => of({ items: [{ _id: 1, start: 'Start', middle: 'Middle', end: 'End' }] }) }),
+    };
+}
+
 describe('KlesTableComponent', () => {
     beforeEach(async () => {
         await TestBed.configureTestingModule({
@@ -108,10 +126,68 @@ describe('KlesTableComponent', () => {
                 RowClickSelectionHostComponent,
                 ColumnDragDropHostComponent,
                 ColumnVisibilityHostComponent,
+                StickyColumnsHostComponent,
                 EmptyStateRefreshHostComponent,
                 KlesTableEmptyStateComponent,
             ],
         }).compileComponents();
+    });
+
+    it('keeps a horizontal scrollable area and restores sticky columns after widening', async () => {
+        const fixture = TestBed.createComponent(StickyColumnsHostComponent);
+        const container = fixture.nativeElement as HTMLElement;
+        Object.assign(container.style, { display: 'block', width: '400px', height: '240px' });
+        fixture.detectChanges();
+        await fixture.whenStable();
+        fixture.detectChanges();
+
+        const form = container.querySelector('form')!;
+        form.querySelector('table')!.style.minWidth = '480px';
+        const resize = async (width: number) => {
+            container.style.width = `${width}px`;
+            await new Promise<void>((resolve) => {
+                const observer = new ResizeObserver(() => {
+                    observer.disconnect();
+                    requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+                });
+                observer.observe(form);
+            });
+            fixture.detectChanges();
+        };
+
+        await resize(400);
+        const start = form.querySelector<HTMLTableCellElement>('td.mat-mdc-cell.cdk-column-start')!;
+        const middle = form.querySelector<HTMLTableCellElement>('td.mat-mdc-cell.cdk-column-middle')!;
+        const end = form.querySelector<HTMLTableCellElement>('td.mat-mdc-cell.cdk-column-end')!;
+        const expectSticky = (startPosition: string, endPosition: string) => {
+            expect(getComputedStyle(start).position).toBe(startPosition);
+            expect(getComputedStyle(end).position).toBe(endPosition);
+        };
+
+        expect(form.scrollWidth).toBeGreaterThan(form.clientWidth);
+        expectSticky('sticky', 'sticky');
+
+        await resize(270);
+        expectSticky('sticky', 'static');
+        expect(form.querySelector<HTMLElement>('thead .cdk-column-end')!.style.right).toBe('');
+        expect(form.querySelector<HTMLElement>('tfoot .cdk-column-end')!.style.right).toBe('');
+        form.scrollLeft = 60;
+        const viewportRight = form.getBoundingClientRect().right;
+        const middleBounds = middle.getBoundingClientRect();
+        const visibleMiddleWidth = Math.min(middleBounds.right, viewportRight) - Math.max(middleBounds.left, start.getBoundingClientRect().right);
+        expect(visibleMiddleWidth).toBeGreaterThanOrEqual(52);
+        expect(end.getBoundingClientRect().left).toBeGreaterThan(viewportRight);
+
+        await resize(205);
+        expectSticky('static', 'sticky');
+
+        await resize(150);
+        expectSticky('static', 'static');
+        form.scrollLeft = form.scrollWidth;
+        expect(end.getBoundingClientRect().right).toBeCloseTo(form.getBoundingClientRect().right, 0);
+
+        await resize(400);
+        expectSticky('sticky', 'sticky');
     });
 
     it('keeps the paginator when footerStart is not provided', () => {

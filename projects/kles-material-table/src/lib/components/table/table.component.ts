@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import {
   AfterViewInit,
+  afterRenderEffect,
   ChangeDetectorRef,
   Component,
   computed,
@@ -9,6 +10,7 @@ import {
   HostBinding,
   inject,
   Inject,
+  Injector,
   OnDestroy,
   OnInit,
   Optional,
@@ -107,6 +109,7 @@ import { KlesTableIntl } from './table-intl';
 type TableSection = 'header' | 'body' | 'footer';
 
 const MIN_SCROLLABLE_BODY_HEIGHT_PX = 52;
+const MIN_SCROLLABLE_COLUMNS_WIDTH_PX = 52;
 
 @Component({
     selector: 'kles-table',
@@ -160,6 +163,8 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
     viewportWidthPx = signal(0);
     viewportScrollRangePx = signal(0);
     protected readonly stickyRows = signal(true);
+    protected readonly stickyStart = signal(true);
+    protected readonly stickyEnd = signal(true);
     protected readonly rowDragPreviewContainer = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
     protected readonly customRowDragPreviewContainer = inject(CDK_DRAG_CONFIG, { optional: true })?.previewContainer ?? 'global';
 
@@ -177,9 +182,9 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
 
     readonly isEmpty: Signal<boolean>;
 
-    private ro?: ResizeObserver;
     private readonly changeDetectorRef = inject(ChangeDetectorRef);
     private readonly destroyRef = inject(DestroyRef);
+    private readonly injector = inject(Injector);
     private rafId?: number;
     private _cleanup?: () => void;
 
@@ -610,18 +615,36 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
         const table = form.querySelector<HTMLTableElement>(':scope > table');
         const header = table?.tHead;
         const footer = table?.tFoot;
+        let stickyCells: { cell: HTMLTableCellElement; column: KlesColumnConfig }[] = [];
 
         const compute = () => {
             const viewportHeight = form.clientHeight;
+            const viewportWidth = form.clientWidth;
+            const horizontalScrollRange = Math.max(0, form.scrollWidth - viewportWidth);
             const headerHeight = Math.ceil(header?.getBoundingClientRect().height ?? 0);
             const footerHeight = footer?.getBoundingClientRect().height ?? 0;
 
             this.scrollHeightPx.set(Math.max(0, form.offsetHeight - viewportHeight));
             this.headerHeightPx.set(headerHeight);
             this.footerHeightPx.set(footerHeight);
-            this.viewportWidthPx.set(form.clientWidth);
-            this.viewportScrollRangePx.set(Math.max(0, form.scrollWidth - form.clientWidth));
+            this.viewportWidthPx.set(viewportWidth);
+            this.viewportScrollRangePx.set(horizontalScrollRange);
             this.stickyRows.set(viewportHeight - headerHeight - footerHeight >= MIN_SCROLLABLE_BODY_HEIGHT_PX);
+
+            let startWidth = 0;
+            let endWidth = 0;
+            for (const { cell, column } of stickyCells) {
+                const width = cell.getBoundingClientRect().width;
+                if (column.sticky) startWidth += width;
+                if (column.stickyEnd) endWidth += width;
+            }
+
+            const availableStickyWidth = viewportWidth - MIN_SCROLLABLE_COLUMNS_WIDTH_PX;
+            const bothFit = horizontalScrollRange === 0 || startWidth + endWidth <= availableStickyWidth;
+            const startFits = startWidth <= availableStickyWidth;
+            // Prefer the start side when only one side can stay pinned.
+            this.stickyStart.set(bothFit || startFits);
+            this.stickyEnd.set(bothFit || (!startFits && endWidth <= availableStickyWidth));
         };
 
         const scheduleCompute = () => {
@@ -636,26 +659,45 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
 
         scheduleCompute();
 
-        this.ro = new ResizeObserver(scheduleCompute);
-        this.ro.observe(form);
+        const observer = new ResizeObserver(scheduleCompute);
+        observer.observe(form);
 
         if (table) {
-            this.ro.observe(table);
+            observer.observe(table);
         }
 
         if (header) {
-            this.ro.observe(header);
+            observer.observe(header);
         }
 
         if (footer) {
-            this.ro.observe(footer);
+            observer.observe(footer);
         }
+
+        afterRenderEffect(
+            {
+                read: (onCleanup) => {
+                    const cells = header?.rows[0]?.cells;
+                    const observedCells = this.visibleColumns().flatMap((column, index) => {
+                        const cell = cells?.[index];
+                        return cell && (column.sticky || column.stickyEnd) ? [{ cell, column }] : [];
+                    });
+                    stickyCells = observedCells;
+                    for (const { cell } of observedCells) observer.observe(cell, { box: 'border-box' });
+                    onCleanup(() => {
+                        for (const { cell } of observedCells) observer.unobserve(cell);
+                    });
+                    scheduleCompute();
+                },
+            },
+            { injector: this.injector },
+        );
 
         window.addEventListener('resize', scheduleCompute, { passive: true });
 
         this._cleanup = () => {
             window.removeEventListener('resize', scheduleCompute);
-            this.ro?.disconnect();
+            observer.disconnect();
             if (this.rafId) {
                 cancelAnimationFrame(this.rafId);
             }
