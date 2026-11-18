@@ -115,6 +115,52 @@ describe('keyboard navigation in a dynamic material table', () => {
         expect(form.scrollTop).toBeLessThanOrEqual(1);
     }));
 
+    it('scrolls the header and footer with the rows in a short container and pins them again after resizing', async () => {
+        createFixture();
+        fixture.componentInstance.config.footer = true;
+        const container = fixture.nativeElement as HTMLElement;
+        container.style.display = 'block';
+        container.style.height = '240px';
+        fixture.detectChanges();
+        await fixture.whenStable();
+        fixture.detectChanges();
+
+        const form = container.querySelector('form')!;
+        const header = form.querySelector('thead th')!;
+        const footer = form.querySelector('tfoot td')!;
+        const waitForLayout = async () => {
+            await new Promise<void>((resolve) => {
+                const observer = new ResizeObserver(() => {
+                    observer.disconnect();
+                    requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+                });
+                observer.observe(form);
+            });
+            fixture.detectChanges();
+        };
+
+        await waitForLayout();
+        expect(getComputedStyle(header).position).toBe('sticky');
+        expect(getComputedStyle(footer).position).toBe('sticky');
+        expect(parseFloat(form.style.scrollPaddingTop)).toBeGreaterThan(0);
+        expect(parseFloat(form.style.scrollPaddingBottom)).toBeGreaterThan(0);
+
+        container.style.height = '80px';
+        await waitForLayout();
+        expect(getComputedStyle(header).position).toBe('static');
+        expect(getComputedStyle(footer).position).toBe('static');
+        expect(form.style.scrollPaddingTop).toBe('');
+        expect(form.style.scrollPaddingBottom).toBe('');
+        expect(footer.getBoundingClientRect().top).toBeGreaterThanOrEqual(form.getBoundingClientRect().bottom);
+        form.scrollTop = form.scrollHeight;
+        expect(header.getBoundingClientRect().bottom).toBeLessThan(form.getBoundingClientRect().top);
+
+        container.style.height = '240px';
+        await waitForLayout();
+        expect(getComputedStyle(header).position).toBe('sticky');
+        expect(getComputedStyle(footer).position).toBe('sticky');
+    });
+
     it('supports pagination and server selection without requiring row click selection', fakeAsync(() => {
         createFixture();
         const select = jasmine.createSpy('select').and.callFake((_params, _row, selected) => of({ selected, count: selected ? 1 : 0 }));

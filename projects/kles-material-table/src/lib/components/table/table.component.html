@@ -2,8 +2,8 @@
     #form
     cdkScrollable
     [formGroup]="tableService.form"
-    [style.scroll-padding-top.px]="keyboardGrid.navigation.enabled ? headerHeightPx() : null"
-    [style.scroll-padding-bottom.px]="keyboardGrid.navigation.enabled && showFooter() ? footerHeightPx() : null"
+    [style.scroll-padding-top.px]="keyboardGrid.navigation.enabled && stickyRows() ? headerHeightPx() : null"
+    [style.scroll-padding-bottom.px]="keyboardGrid.navigation.enabled && stickyRows() && showFooter() ? footerHeightPx() : null"
 >
     @if (keyboardGrid.navigation.enabled && !isEmpty()) {
         <button type="button" class="kles-grid-entry" (click)="keyboardGrid.navigation.focusActive()">
@@ -145,7 +145,7 @@
         <tr
             mat-header-row
             class="kles-column-drop-list"
-            *matHeaderRowDef="displayedColumns(); sticky: true"
+            *matHeaderRowDef="displayedColumns(); sticky: stickyRows()"
             cdkDropList
             cdkDropListOrientation="horizontal"
             [cdkDropListData]="columnDragDropService.visibleColumns()"
@@ -246,7 +246,7 @@
             }
         }
 
-        <tr mat-footer-row *matFooterRowDef="displayedColumns(); sticky: true" [style.display]="showFooter() ? '' : 'none'"></tr>
+        <tr mat-footer-row *matFooterRowDef="displayedColumns(); sticky: stickyRows()" [style.display]="showFooter() ? '' : 'none'"></tr>
     </table>
 </form>
 

@@ -106,6 +106,8 @@ import { KlesTableIntl } from './table-intl';
 
 type TableSection = 'header' | 'body' | 'footer';
 
+const MIN_SCROLLABLE_BODY_HEIGHT_PX = 52;
+
 @Component({
     selector: 'kles-table',
     styleUrl: './table.component.scss',
@@ -157,6 +159,7 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
     footerHeightPx = signal(0);
     viewportWidthPx = signal(0);
     viewportScrollRangePx = signal(0);
+    protected readonly stickyRows = signal(true);
 
     dataSource: IKlesDataSource;
     columns: Signal<KlesColumnConfig[]>;
@@ -188,7 +191,6 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
     }
 
     constructor(
-        private readonly host: ElementRef<HTMLElement>,
         private readonly connectorService: KlesTableConnectorService,
         @Inject(LOADER_SERVICE) private readonly loader: ILoader<unknown>,
         @Inject(DATASOURCE_SERVICE) private readonly datasourceService: IDatasourceService,
@@ -465,7 +467,7 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
     }
 
     ngAfterViewInit(): void {
-        this.calculHeaderHeight();
+        this.observeTableLayout();
 
         if (this.columnDragDropService.enable) {
             this.scheduleColumnDragBinding();
@@ -579,18 +581,23 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
         return `${width} ${style} ${color}`;
     }
 
-    private calculHeaderHeight() {
-        const formNativeElem = this.formElemRef?.nativeElement as HTMLElement | null;
-        const tableNativeElem = formNativeElem?.querySelector(':scope > table') as HTMLTableElement | null;
-        const header = this.host.nativeElement.querySelector('.mat-mdc-header-row') as HTMLElement | null;
-        const footer = this.host.nativeElement.querySelector('.mat-mdc-footer-row') as HTMLElement | null;
+    private observeTableLayout(): void {
+        const form = this.formElemRef.nativeElement;
+        const table = form.querySelector<HTMLTableElement>(':scope > table');
+        const header = table?.tHead;
+        const footer = table?.tFoot;
 
         const compute = () => {
-            this.scrollHeightPx.set(Math.max(0, (formNativeElem?.offsetHeight ?? 0) - (formNativeElem?.clientHeight ?? 0)));
-            this.headerHeightPx.set(Math.ceil(header?.getBoundingClientRect().height ?? 0));
-            this.footerHeightPx.set(Math.max(0, footer?.getBoundingClientRect().height ?? 0));
-            this.viewportWidthPx.set(formNativeElem?.clientWidth ?? 0);
-            this.viewportScrollRangePx.set(Math.max(0, (formNativeElem?.scrollWidth ?? 0) - (formNativeElem?.clientWidth ?? 0)));
+            const viewportHeight = form.clientHeight;
+            const headerHeight = Math.ceil(header?.getBoundingClientRect().height ?? 0);
+            const footerHeight = footer?.getBoundingClientRect().height ?? 0;
+
+            this.scrollHeightPx.set(Math.max(0, form.offsetHeight - viewportHeight));
+            this.headerHeightPx.set(headerHeight);
+            this.footerHeightPx.set(footerHeight);
+            this.viewportWidthPx.set(form.clientWidth);
+            this.viewportScrollRangePx.set(Math.max(0, form.scrollWidth - form.clientWidth));
+            this.stickyRows.set(viewportHeight - headerHeight - footerHeight >= MIN_SCROLLABLE_BODY_HEIGHT_PX);
         };
 
         const scheduleCompute = () => {
@@ -606,12 +613,10 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
         scheduleCompute();
 
         this.ro = new ResizeObserver(scheduleCompute);
-        if (formNativeElem) {
-            this.ro.observe(formNativeElem);
-        }
+        this.ro.observe(form);
 
-        if (tableNativeElem) {
-            this.ro.observe(tableNativeElem);
+        if (table) {
+            this.ro.observe(table);
         }
 
         if (header) {
@@ -622,16 +627,14 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
             this.ro.observe(footer);
         }
 
-        if (formNativeElem) {
-            window.addEventListener('resize', scheduleCompute, { passive: true });
+        window.addEventListener('resize', scheduleCompute, { passive: true });
 
-            this._cleanup = () => {
-                window.removeEventListener('resize', scheduleCompute);
-                this.ro?.disconnect();
-                if (this.rafId) {
-                    cancelAnimationFrame(this.rafId);
-                }
-            };
-        }
+        this._cleanup = () => {
+            window.removeEventListener('resize', scheduleCompute);
+            this.ro?.disconnect();
+            if (this.rafId) {
+                cancelAnimationFrame(this.rafId);
+            }
+        };
     }
 }
