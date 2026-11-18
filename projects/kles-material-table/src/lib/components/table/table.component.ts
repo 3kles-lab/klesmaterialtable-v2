@@ -33,7 +33,7 @@ import { ArrayUiState, GroupUiState, KlesMaterialDynamicformsModule } from '@3kl
 import { HeaderFieldPipe } from '../../pipes/header-field.pipe';
 import { CellFieldPipe, ExtraCellFieldPipe } from '../../pipes/cell-field.pipe';
 import { MatSort, MatSortModule } from '@angular/material/sort';
-import { CdkDrag, CdkDropList, DragDropModule } from '@angular/cdk/drag-drop';
+import { CDK_DRAG_CONFIG, CdkDrag, CdkDragStart, CdkDropList, DragDropModule } from '@angular/cdk/drag-drop';
 import { DragDropService } from '../../services/features/dragdrop/dragdrop.service';
 import {
     COLUMN_DRAG_DROP,
@@ -160,6 +160,8 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
     viewportWidthPx = signal(0);
     viewportScrollRangePx = signal(0);
     protected readonly stickyRows = signal(true);
+    protected readonly rowDragPreviewContainer = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+    protected readonly customRowDragPreviewContainer = inject(CDK_DRAG_CONFIG, { optional: true })?.previewContainer ?? 'global';
 
     dataSource: IKlesDataSource;
     columns: Signal<KlesColumnConfig[]>;
@@ -241,6 +243,28 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
         }
 
         return context;
+    }
+
+    protected onRowDragStarted({ source }: CdkDragStart<FormGroup>, row: FormGroup, rowIndex: number): void {
+        const table = source.dropContainer.element.nativeElement as HTMLTableElement;
+        const selection = table.ownerDocument.getSelection();
+        if (selection?.containsNode(table, true)) {
+            selection.removeAllRanges();
+        }
+
+        const preview = this.rowDragPreviewContainer.querySelector<HTMLTableRowElement>(':scope > tr.mat-mdc-row.cdk-drag-preview');
+        if (preview) {
+            // The CDK clones the row outside its table, so its cells need the original column widths.
+            const placeholder = source.getPlaceholderElement() as HTMLTableRowElement;
+            const cells = this.dragDropRowService.placeholderComponent ? table.tHead?.rows[0]?.cells : placeholder.cells;
+            const widths = Array.from(cells ?? [], (cell) => cell.getBoundingClientRect().width);
+            Array.from(preview.cells).forEach((cell, index) => {
+                if (widths[index] > 0) cell.style.width = `${widths[index]}px`;
+            });
+            preview.inert = true;
+        }
+
+        this.dragDropRowService.rowDragStarted(row, rowIndex);
     }
 
     isRowSelected(row: FormGroup): boolean {

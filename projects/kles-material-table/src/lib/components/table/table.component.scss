@@ -271,24 +271,26 @@ th[appResizableColumn].column-resizing > .resize-handle > .resize-width-label {
 
 // Conserve un emplacement clairement visible pendant le déplacement d'une ligne.
 :host tr.mat-mdc-row.cdk-drag-placeholder {
+    position: relative;
     opacity: 1;
-    background: color-mix(in srgb, var(--mat-sys-primary) 12%, var(--mat-sys-surface)) !important;
+    background: color-mix(in srgb, var(--mat-sys-primary) 12%, var(--mat-sys-surface, white)) !important;
 }
 
-:host tr.mat-mdc-row.cdk-drag-placeholder td {
-    border-block: 2px dashed var(--mat-sys-primary);
+:host tr.mat-mdc-row.cdk-drag-placeholder::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    border: 2px dashed var(--mat-sys-primary, Highlight);
+    pointer-events: none;
 }
 
-:host tr.mat-mdc-row.cdk-drag-placeholder td > * {
+:host tr.mat-mdc-row.cdk-drag-placeholder > td > * {
     visibility: hidden;
 }
 
-:host tr.mat-mdc-row.cdk-drag-placeholder td:first-child {
-    border-inline-start: 2px dashed var(--mat-sys-primary);
-}
-
-:host tr.mat-mdc-row.cdk-drag-placeholder td:last-child {
-    border-inline-end: 2px dashed var(--mat-sys-primary);
+table.cdk-drop-list-dragging {
+    user-select: none;
 }
 
 :host .cdk-drop-list-dragging tr.mat-mdc-row:not(.cdk-drag-placeholder),
@@ -310,6 +312,26 @@ th[appResizableColumn].column-resizing > .resize-handle > .resize-width-label {
     background: var(--kles-table-header-background);
     color: var(--kles-table-header-color);
     box-shadow: var(--mat-sys-level3);
+}
+
+tr.mat-mdc-row.cdk-drag-preview {
+    display: table;
+    table-layout: fixed;
+    border-spacing: 0;
+    box-sizing: border-box;
+    vertical-align: middle;
+    overflow: hidden;
+    border-radius: var(--mat-sys-corner-small, 4px);
+    background: var(--mat-table-background-color, var(--mat-sys-surface, white));
+    box-shadow: var(--mat-sys-level3, 0 4px 12px rgb(0 0 0 / 20%));
+
+    &.kles-row-selected {
+        background: var(--kles-table-row-selected-background);
+    }
+
+    > .mat-mdc-table-sticky {
+        position: static !important;
+    }
 }
 
 .kles-row-drag-preview {
