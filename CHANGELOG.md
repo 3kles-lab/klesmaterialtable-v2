@@ -1,3 +1,10 @@
+## [22.1.5](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v22.1.4...v22.1.5) (2026-11-18)
+
+
+### Bug Fixes
+
+* empty table size ([9a62445](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/9a6244584bab44eb1df13ec3397e518da7acab67))
+
 ## [22.1.4](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v22.1.3...v22.1.4) (2026-11-18)
 
 
