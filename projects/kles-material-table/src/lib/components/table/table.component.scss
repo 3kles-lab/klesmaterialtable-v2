@@ -154,6 +154,16 @@ td.mat-mdc-cell > .cell {
 
 th[appResizableColumn].resizable-column {
     position: relative;
+
+    &.column-resizing {
+        // The resize guide and width label extend below the header cell.
+        overflow: visible;
+
+        &.mat-mdc-table-sticky {
+            // The CDK uses 100 for the sticky header plus 1 per sticky side.
+            z-index: 103 !important;
+        }
+    }
 }
 
 th[appResizableColumn] > .resize-handle {
@@ -181,8 +191,7 @@ th[appResizableColumn] > .resize-handle::before {
     opacity: 0;
     transition:
         opacity 120ms ease,
-        background-color 120ms ease,
-        transform 120ms ease;
+        background-color 120ms ease;
 }
 
 th[appResizableColumn].resizable-column:hover > .resize-handle::before,
@@ -192,27 +201,17 @@ th[appResizableColumn] > .resize-handle:focus-visible::before {
 
 th[appResizableColumn].column-resizing > .resize-handle::before {
     top: 0;
-    bottom: 0;
-    background: var(--mat-sys-primary);
-    opacity: 1;
-    transform: scaleX(1.25);
-}
-
-th[appResizableColumn].column-resizing > .resize-handle::after {
-    content: '';
-    position: absolute;
-    top: 100%;
-    inset-inline-start: 6px;
-    width: 2px;
-    height: 100vh;
+    bottom: -100vh;
+    border-radius: 0;
     background: color-mix(in srgb, var(--mat-sys-primary) 70%, transparent);
+    opacity: 1;
     pointer-events: none;
 }
 
 th[appResizableColumn] > .resize-handle > .resize-width-label {
     position: absolute;
     top: calc(100% + 8px);
-    inset-inline-start: 50%;
+    left: 50%;
     z-index: 1;
     display: none;
     padding: 3px 7px;

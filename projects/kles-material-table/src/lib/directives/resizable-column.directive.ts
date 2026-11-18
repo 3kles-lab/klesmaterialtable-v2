@@ -69,6 +69,7 @@ export class ResizableColumnDirective implements OnInit, OnChanges, OnDestroy {
         this.startWidth = th.getBoundingClientRect().width;
         this.currentWidth = this.startWidth;
         this.cacheResizeTargets();
+        this.resizeRoot?.style.setProperty('--kles-column-resize-width', `${this.startWidth}px`);
         this.resizing = true;
         this.setActiveState(true);
         this.updateWidthLabel(this.currentWidth);
