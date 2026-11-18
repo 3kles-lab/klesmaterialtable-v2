@@ -1,3 +1,15 @@
+## [22.1.4](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v22.1.3...v22.1.4) (2026-11-18)
+
+
+### Bug Fixes
+
+* drag and drop preview ([bfb848d](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/bfb848d0221a2e55e035b39d45f430ba20420708))
+* reduce field size ([ba62238](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/ba62238a8310ac05baa33102ee047fcb28f04aee))
+* resize column ([f34dd85](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/f34dd8530325cc066d3a13ca22744bed230074e9))
+* set header not fixed when table height is too small ([19b89bb](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/19b89bbb49bdfb88bd86e974187cbaa52ba62c16))
+* sticky with small table ([2d6189c](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/2d6189c274bdcdcda2d310bf1c10754089606e05))
+* z index header and spinner ([2bf52f2](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/2bf52f2965ae69728515e82539704157fb322038))
+
 ## [22.1.3](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v22.1.2...v22.1.3) (2026-11-09)
 
 
