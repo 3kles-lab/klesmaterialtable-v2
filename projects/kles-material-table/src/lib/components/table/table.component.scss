@@ -125,6 +125,30 @@ td .cell {
     justify-content: var(--align, center);
 }
 
+th.mat-mdc-header-cell > .cell,
+td.mat-mdc-cell > .cell {
+    @include mat.form-field-overrides(
+        (
+            container-height: 40px,
+            container-vertical-padding: 8px,
+            filled-container-shape: var(--mat-sys-corner-small),
+            outlined-container-shape: var(--mat-sys-corner-small),
+        )
+    );
+
+    // Fit the filled label and input text within the compact field.
+    &:has(mat-form-field.mat-form-field-appearance-fill mat-label) {
+        @include mat.form-field-overrides(
+            (
+                container-height: max(40px, 2.5rem),
+                container-text-line-height: max(20px, 1.25em),
+                filled-with-label-container-padding-top: 1.125rem,
+                filled-with-label-container-padding-bottom: 0.125rem,
+            )
+        );
+    }
+}
+
 th[appResizableColumn].resizable-column {
     position: relative;
 }
