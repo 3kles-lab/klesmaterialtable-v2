@@ -1,5 +1,7 @@
 @use '@angular/material' as mat;
 
+$state-block-size: 280px;
+
 :host {
     --kles-table-divider-color: color-mix(in srgb, var(--mat-sys-outline-variant) 65%, transparent);
     --kles-table-divider-strong-color: var(--mat-sys-outline-variant);
@@ -30,7 +32,17 @@
 
 :host(.loading),
 :host(.empty) {
-    min-height: 280px;
+    min-block-size: $state-block-size;
+}
+
+:host(.paginated) {
+    min-block-size: 0;
+    overflow: clip;
+}
+
+:host(.paginated.loading),
+:host(.paginated.empty) {
+    flex: 1 1 $state-block-size;
 }
 
 form {
@@ -43,6 +55,10 @@ form {
     isolation: isolate;
     scroll-timeline-name: --kles-table-horizontal-scroll;
     scroll-timeline-axis: inline;
+}
+
+:host(.paginated.empty) > form {
+    overflow-y: hidden;
 }
 
 .kles-row-pointer {

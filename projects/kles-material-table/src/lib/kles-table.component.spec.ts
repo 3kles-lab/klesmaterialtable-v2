@@ -198,6 +198,56 @@ describe('KlesTableComponent', () => {
         expect(fixture.debugElement.query(By.css('mat-paginator'))).not.toBeNull();
     });
 
+    it('keeps the paginator visible from the empty state through loading the rows', fakeAsync(() => {
+        const fixture = TestBed.createComponent(EmptyStateRefreshHostComponent);
+        const container = fixture.nativeElement as HTMLElement;
+        Object.assign(container.style, { display: 'block', width: '560px', height: '166px' });
+        fixture.componentInstance.tableConfig.paginator = true;
+        fixture.detectChanges();
+        tick();
+        fixture.detectChanges();
+
+        const paginatedTable = container.querySelector<HTMLElement>('kles-paginate-table')!;
+        const paginator = paginatedTable.querySelector('mat-paginator')!;
+        const form = paginatedTable.querySelector('form')!;
+        const checkPaginator = () => {
+            const bounds = paginator.getBoundingClientRect();
+            expect(bounds.height).toBeGreaterThan(0);
+            expect(bounds.bottom).toBeLessThanOrEqual(paginatedTable.getBoundingClientRect().bottom + 1);
+            expect(paginatedTable.scrollHeight).toBeLessThanOrEqual(paginatedTable.clientHeight + 1);
+        };
+
+        const emptyState = paginatedTable.querySelector<HTMLElement>('.table-empty-state-overlay')!;
+        const refreshButton = emptyState.querySelector<HTMLButtonElement>('.empty-state__refresh')!;
+        checkPaginator();
+        expect(emptyState.scrollHeight).toBeGreaterThan(emptyState.clientHeight);
+        expect(getComputedStyle(form).overflowY).toBe('hidden');
+        emptyState.scrollTop = emptyState.scrollHeight;
+        expect(refreshButton.getBoundingClientRect().bottom).toBeLessThanOrEqual(emptyState.getBoundingClientRect().bottom + 1);
+
+        const items = Array.from({ length: 25 }, (_, index) => ({ _id: index, name: `Row ${index}` }));
+        fixture.componentInstance.loader.and.returnValue(of({ items }).pipe(delay(20)));
+        refreshButton.click();
+        tick(0);
+        fixture.detectChanges();
+        expect(paginatedTable.querySelector('.table-overlay')).not.toBeNull();
+        checkPaginator();
+
+        tick(20);
+        fixture.detectChanges();
+        tick();
+        fixture.detectChanges();
+        expect(paginatedTable.querySelector('.table-overlay')).toBeNull();
+        expect(form.querySelectorAll('tbody tr').length).toBeGreaterThan(0);
+        expect(form.scrollHeight).toBeGreaterThan(form.clientHeight);
+        const paginatorTop = paginator.getBoundingClientRect().top;
+        form.scrollTop = form.scrollHeight;
+        expect(form.scrollTop).toBeGreaterThan(0);
+        expect(paginator.getBoundingClientRect().top).toBe(paginatorTop);
+        checkPaginator();
+        fixture.destroy();
+    }));
+
     it('refreshes from the empty state and hides the button during loading and after data arrives', fakeAsync(() => {
         const fixture = TestBed.createComponent(EmptyStateRefreshHostComponent);
         fixture.detectChanges();
