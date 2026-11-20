@@ -12,6 +12,7 @@ export interface IDatasourceService {
     get datasource(): IKlesDataSource;
     readonly isEmpty: Signal<boolean>;
     register(): void;
+    refreshView?(): void;
 }
 
 @Injectable()
@@ -38,13 +39,17 @@ export class DatasourceService implements IDatasourceService {
         return this._datasource;
     }
 
+    public refreshView(): void {
+        this._datasource.data = this.fm.rows;
+    }
+
     private createDataSource() {
         this._datasource = new KlesDataSource();
     }
 
     private listen() {
         this.fm.rowsStructureChanged$.pipe(takeUntilDestroyed(this.destroyRef), startWith(void 0)).subscribe(() => {
-            this._datasource.data = this.fm.rows;
+            this.refreshView();
         });
 
         this.datasource

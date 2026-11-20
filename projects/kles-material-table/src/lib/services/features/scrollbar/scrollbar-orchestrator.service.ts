@@ -30,16 +30,16 @@ export class ScrollbarOrchestratorService implements IScrollbarOrchestratorServi
             .loaded()
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(() => {
-                this.scrollbarService.toTop('instant');
+                if (this.linesService.showLoading !== false) {
+                    this.scrollbarService.toTop('instant');
+                }
                 this.scrollbarService.showScrollbar();
             });
 
         this.linesService
             .loading()
             .pipe(takeUntilDestroyed(this.destroyRef))
-            .subscribe(() => {
-                this.scrollbarService.hideScrollbar();
-            });
+            .subscribe(() => this.scrollbarService.setScrollbarVisible(this.linesService.showLoading === false));
 
         this.paginatorService
             ?.pageChanged()
@@ -75,16 +75,16 @@ export class ScrollbarLazyOrchestratorService implements IScrollbarOrchestratorS
             .loaded()
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(() => {
-                this.scrollbarService.toTop('instant');
+                if (this.linesService.showLoading !== false) {
+                    this.scrollbarService.toTop('instant');
+                }
                 this.scrollbarService.showScrollbar();
             });
 
         this.linesService
             .loading()
             .pipe(takeUntilDestroyed(this.destroyRef))
-            .subscribe(() => {
-                this.scrollbarService.hideScrollbar();
-            });
+            .subscribe(() => this.scrollbarService.setScrollbarVisible(this.linesService.showLoading === false));
     }
 }
 

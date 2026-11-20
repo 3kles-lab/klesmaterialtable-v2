@@ -14,6 +14,7 @@ import { PaginatorStore } from '../../store/paginator-store.service';
 export interface ILinesService {
     register(): void;
     total(): number;
+    readonly showLoading?: boolean;
     loaded(): EventEmitter<void>;
     loading(): EventEmitter<void>;
 }
@@ -23,6 +24,7 @@ export class LinesService implements ILinesService {
     private readonly destroyRef = inject(DestroyRef);
     private _loaded = new EventEmitter<void>();
     private _loading = new EventEmitter<void>();
+    public showLoading = true;
 
     private _total: number | undefined;
 
@@ -57,13 +59,14 @@ export class LinesService implements ILinesService {
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((response) => {
                 if (response.loading) {
+                    this.showLoading = response.showLoading !== false;
                     this.eventsService.emit('loadStart');
                     this._loading.next();
                 } else {
                     if (response.error) {
                         this.eventsService.emit('loadError', {
                             error: response.error,
-                            message: response.error?.message,
+                            message: (response.error as { message?: string }).message,
                         });
                     } else {
                         this.fm.setRows(
@@ -97,6 +100,7 @@ export class LinesLazyService implements ILinesService {
     private _total?: number;
     private _loaded = new EventEmitter<void>();
     private _loading = new EventEmitter<void>();
+    public showLoading = true;
 
     constructor(
         @Inject(LOADER_SERVICE) private loader: LoaderLazyService<any, any>,
@@ -134,13 +138,14 @@ export class LinesLazyService implements ILinesService {
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((response) => {
                 if (response.loading) {
+                    this.showLoading = response.showLoading !== false;
                     this._loading.next();
                     this.eventsService.emit('loadStart');
                 } else {
                     if (response.error) {
                         this.eventsService.emit('loadError', {
                             error: response.error,
-                            message: response.error?.message,
+                            message: (response.error as { message?: string }).message,
                         });
                     } else {
                         this.fm.setRows(
@@ -154,6 +159,9 @@ export class LinesLazyService implements ILinesService {
                         );
                         this.paginatorService.setlength(response.total ?? 0);
                         this._total = response.total ?? 0;
+                        if (response.pagination) {
+                            this.paginatorService.applyLoadedPage(response.pagination);
+                        }
                         this._loaded.next();
 
                         this.eventsService.emit('loadSuccess', {
@@ -199,7 +207,7 @@ export class LinesInfiniteService implements ILinesService {
                 if (response.error) {
                     this.eventsService.emit('loadError', {
                         error: response.error,
-                        message: response.error?.message,
+                        message: (response.error as { message?: string }).message,
                     });
                     return;
                 }

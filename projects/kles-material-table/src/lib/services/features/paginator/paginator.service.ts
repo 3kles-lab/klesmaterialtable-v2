@@ -6,6 +6,7 @@ import { DATASOURCE_SERVICE, PAGINATOR_CONFIG } from '../../../token';
 import { IDatasourceService } from '../datasource/datasource.service';
 import { PaginatorConfig } from '../../../core/table/config.interface';
 import { EventsService } from '../events/events.service';
+import { Pagination } from '../../../core/query/query.interface';
 
 @Injectable()
 export class PaginatorService {
@@ -34,15 +35,7 @@ export class PaginatorService {
 
             this._paginator.page.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
                 this.paginatorStore?.setPage({ page: event.pageIndex, perPage: event.pageSize });
-                this._pageChanged.next(event);
-
-                this.eventsService.emit('pageChange', {
-                    pageIndex: event.pageIndex,
-                    previousPageIndex: event.previousPageIndex,
-                    pageSize: event.pageSize,
-                    totalItems: event.length,
-                    sourceEvent: event,
-                });
+                this.emitPageChange(event);
             });
         }
     }
@@ -82,6 +75,23 @@ export class PaginatorService {
         }
     }
 
+    public applyLoadedPage(pagination: Pagination): void {
+        const paginator = this._paginator;
+        if (!paginator || paginator.pageIndex === pagination.page) {
+            return;
+        }
+
+        const previousPageIndex = paginator.pageIndex;
+        paginator.pageIndex = pagination.page;
+        this.paginatorStore?.setPage(pagination, false);
+        this.emitPageChange({
+            pageIndex: paginator.pageIndex,
+            previousPageIndex,
+            pageSize: paginator.pageSize,
+            length: paginator.length,
+        });
+    }
+
     public firstPage(): void {
         this._paginator?.firstPage();
     }
@@ -100,6 +110,17 @@ export class PaginatorService {
 
     public enable(): void {
         this._disabled.set(false);
+    }
+
+    private emitPageChange(event: PageEvent): void {
+        this._pageChanged.next(event);
+        this.eventsService.emit('pageChange', {
+            pageIndex: event.pageIndex,
+            previousPageIndex: event.previousPageIndex,
+            pageSize: event.pageSize,
+            totalItems: event.length,
+            sourceEvent: event,
+        });
     }
 
     private setSizeIndex(size: number, index: number): void {

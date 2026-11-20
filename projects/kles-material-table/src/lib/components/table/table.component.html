@@ -110,6 +110,7 @@
                             } @else {
                                 <ng-container
                                     klesDynamicField
+                                    [klesTableCellControl]="row.controls[column.columnDef]"
                                     [field]="(column | cellField)!"
                                     [group]="row"
                                     [ui]="(row | uiField)!"
@@ -230,6 +231,7 @@
                             >
                                 <ng-container
                                     klesDynamicField
+                                    [klesTableCellControl]="row.controls[extraColumn.columnDef]"
                                     [field]="(extraColumn | extraCellField)!"
                                     [group]="row"
                                     [ui]="(row | uiField)!"

@@ -28,6 +28,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatTable, MatTableModule } from '@angular/material/table';
 
 import { ITable } from '../../core/table/table.interface';
+import { RefreshOptions } from '../../core/api/table';
+import { LiveUpdatesService } from '../../services/features/live-updates/live-updates.service';
 
 import { CdkTableModule } from '@angular/cdk/table';
 import { ScrollingModule } from '@angular/cdk/scrolling';
@@ -104,6 +106,7 @@ import { RowContextStore } from '../../services/store/row-context-store.service'
 import { KlesRowContext } from '../../core/table/row-context.interface';
 import { ColumnDragDropService } from '../../services/features/dragdrop/column-dragdrop.service';
 import { KeyboardCellDirective, KeyboardGridDirective } from '../../directives/keyboard-navigation.directive';
+import { TableCellChangeDetectionDirective } from '../../directives/table-cell-change-detection.directive';
 import { KlesTableIntl } from './table-intl';
 
 type TableSection = 'header' | 'body' | 'footer';
@@ -147,6 +150,7 @@ const MIN_SCROLLABLE_COLUMNS_WIDTH_PX = 52;
         ResolveRowClassPipe,
         KeyboardGridDirective,
         KeyboardCellDirective,
+        TableCellChangeDetectionDirective,
         KlesTableEmptyStateComponent,
     ],
 })
@@ -183,6 +187,7 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
     readonly isEmpty: Signal<boolean>;
 
     private readonly changeDetectorRef = inject(ChangeDetectorRef);
+    private readonly liveUpdatesService = inject(LiveUpdatesService, { optional: true });
     private readonly destroyRef = inject(DestroyRef);
     private readonly injector = inject(Injector);
     private rafId?: number;
@@ -282,6 +287,11 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
         return this.loadingService.loading();
     }
 
+    @HostBinding('class.loading-empty')
+    get isLoadingEmptyClass(): boolean {
+        return this.loadingService.loading() && this.isEmpty();
+    }
+
     @HostBinding('class.empty')
     get isEmptyClass() {
         return this.isEmpty() && this.emptyStateService.enabled();
@@ -339,7 +349,7 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
             },
             rows: {
                 list: () => this.tableService.klesForm.getRows(),
-                get: (_id) => this.tableService.klesForm.getRows().controls.find((row) => row.value._id === _id),
+                get: (_id) => this.tableService.klesForm.getRows().controls.find((row) => row.getRawValue()._id === _id),
                 create: (value, index, options) => {
                     const row = this.tableService.klesForm.insertRow(
                         this.rowFactory.createRow(
@@ -464,9 +474,9 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
         return this.tableService.ui;
     }
 
-    refresh() {
+    refresh(options?: RefreshOptions): void {
         this.treeService.collapseAll();
-        this.loader.refresh();
+        this.loader.refresh(options);
     }
 
     private rowEventPayload(row: FormGroup) {
@@ -493,6 +503,8 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
         this.expandedRowStore.expandedIds$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
             this.table?.renderRows();
         });
+
+        this.liveUpdatesService?.register(this.form.rows);
     }
 
     ngAfterViewInit(): void {

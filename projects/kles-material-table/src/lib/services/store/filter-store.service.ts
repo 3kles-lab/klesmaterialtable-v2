@@ -11,6 +11,10 @@ export class FilterStore implements ITableStore {
         this.s.next(v);
     }
 
+    snapshot() {
+        return this.s.value;
+    }
+
     reset(): void {
         this.s.next({});
     }

@@ -13,8 +13,13 @@ import { RenderApi } from './render';
 import { TreeApi } from './tree';
 import { CursorApi } from './cursor';
 
+export interface RefreshOptions {
+    /** Displays the table's loading indicator during the refresh. Defaults to true. */
+    showLoading?: boolean;
+}
+
 export interface KlesTableApi<TValue = unknown> {
-    refresh(): void;
+    refresh(options?: RefreshOptions): void;
     get scrollbar(): ScrollbarApi;
     get column(): ColumnApi;
     get pagination(): PaginationApi | undefined;

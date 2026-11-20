@@ -5,7 +5,7 @@ import { KlesSelectionModel } from '../../../core/selection/selection-model';
 import { FormGroup } from '@angular/forms';
 import { KlesForm } from '../table/form';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { auditTime, concatMap, map, merge, of, Subject, switchMap, withLatestFrom } from 'rxjs';
+import { auditTime, concatMap, EMPTY, finalize, map, merge, of, Subject, switchMap, withLatestFrom } from 'rxjs';
 import { SelectionLoaderService } from './selection-loader.service';
 import { ScrollbarService } from '../scrollbar/scrollbar.service';
 import { LoadingService } from '../loading/loading.service';
@@ -211,6 +211,7 @@ export class SelectionService<T> extends AbstractSelectionService<T> {
     public register(): void {
         this.listenSelection();
         this.setSelection();
+        this.listenRowsStructure();
         this.listenDatasource();
         this.listenRowSelection();
         this.listenHeaderSelection();
@@ -237,18 +238,18 @@ export class SelectionService<T> extends AbstractSelectionService<T> {
             .loaded()
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(() => {
-                // Build the initial model silently, then update the header once.
-                this.fm.getRows().controls.forEach((group) => {
-                    if (group.controls[this.selectionLoaderService.key]?.value === true) {
-                        this.selectionModel.select(group, { emitEvent: false });
-                    } else if (this.selectionConfig?.isSelected != undefined && this.selectionConfig.isSelected(group)) {
-                        this.selectionModel.select(group, { emitEvent: false });
-                        group.controls[this.selectionLoaderService.key]?.patchValue(true, { emitEvent: false });
-                    } else {
-                        this.selectionModel.deselect(group, { emitEvent: false });
+                const rows = this.fm.rows;
+                const selectedRows = rows.filter((row) => row.controls[this.key]?.value === true || this.selectionConfig?.isSelected?.(row));
+                this.selectionModel.reset(this.selectionModel.isMultipleSelection() ? selectedRows : selectedRows.slice(-1), { emitEvent: false });
+
+                rows.forEach((row) => {
+                    const control = row.controls[this.key];
+                    const selected = this.selectionModel.isSelected(row);
+                    if (control && (control.value === true) !== selected) {
+                        control.patchValue(selected, { emitEvent: false });
                     }
-                    if (this.selectionConfig?.isDisabled && this.selectionConfig.isDisabled(group)) {
-                        group.controls[this.selectionLoaderService.key]?.disable({ emitEvent: false });
+                    if (this.selectionModel.state === KlesSelectionModelState.DISABLED || this.selectionConfig?.isDisabled?.(row)) {
+                        control?.disable({ emitEvent: false });
                     }
                 });
                 this.updateHeader();
@@ -259,23 +260,24 @@ export class SelectionService<T> extends AbstractSelectionService<T> {
         this.fm
             .getHeader()
             .controls[this.key]?.valueChanges.pipe(
-                takeUntilDestroyed(this.destroyRef),
                 switchMap((value) => {
                     const requestedSelected = !!value;
                     const previousSelected = this.areAllFilteredRowsSelected();
-                    return this.selectionLoaderService
-                        .selectAll(requestedSelected, this.fm.getHeader().getRawValue())
-                        .pipe(map((response) => ({ response, requestedSelected, previousSelected })));
+                    return this.selectionLoaderService.selectAll(requestedSelected, this.fm.getHeader().getRawValue()).pipe(
+                        map((response) => ({ response, requestedSelected, previousSelected })),
+                        finalize(() => this.loadingService.setSelectionLoading(false)),
+                    );
                 }),
+                takeUntilDestroyed(this.destroyRef),
             )
             .subscribe(({ response, requestedSelected, previousSelected }) => {
                 if (response.loading) {
                     this.scrollbarService.toTop('instant');
-                    this.loadingService.start();
+                    this.loadingService.setSelectionLoading(true);
                     return;
                 }
 
-                this.loadingService.stop();
+                this.loadingService.setSelectionLoading(false);
                 if (!response.success || response.selected === undefined) {
                     this.updateHeader();
                     this.emitSelectionError(
@@ -337,6 +339,8 @@ export class SelectionService<T> extends AbstractSelectionService<T> {
                     );
                 }),
                 concatMap(({ row, selected }) => {
+                    if (!this.fm.rows.includes(row)) return EMPTY;
+
                     const previousSelected = this.selectionModel.isSelected(row);
                     return this.selectionLoaderService.select(row, selected).pipe(
                         map((response) => {
@@ -354,6 +358,11 @@ export class SelectionService<T> extends AbstractSelectionService<T> {
             .subscribe(({ row, selected, previousSelected, response }) => {
                 if (response.loading) {
                     this.startRowSelection(row);
+                    return;
+                }
+
+                if (!this.fm.rows.includes(row)) {
+                    this.stabilizeRowSelection(row, previousSelected);
                     return;
                 }
 
@@ -417,23 +426,26 @@ export class SelectionService<T> extends AbstractSelectionService<T> {
             });
     }
 
-    private updateHeader() {
-        if (this.selectionModel.hasValue()) {
-            if (
-                this.datasourceService.datasource.filteredData
-                    .filter((group) => group.controls[this.selectionLoaderService.key]?.enabled)
-                    .every((group) => this.selectionModel.isSelected(group))
-            ) {
-                this.fm.getUiHeader().get(this.selectionLoaderService.key)?.patchValue({ indeterminate: false });
-                this.fm.getHeader().controls[this.selectionLoaderService.key]?.patchValue(true, { emitEvent: false });
-            } else {
-                this.fm.getUiHeader().get(this.selectionLoaderService.key)?.patchValue({ indeterminate: true });
-                this.fm.getHeader().controls[this.selectionLoaderService.key]?.patchValue(false, { emitEvent: false });
+    private listenRowsStructure(): void {
+        this.fm.rowsStructureChanged$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+            const selected = this.selectionModel.selected.items;
+            if (selected.length === 0) return;
+
+            const rows = new Set(this.fm.rows);
+            const remaining = selected.filter((row) => rows.has(row));
+            if (remaining.length !== selected.length) {
+                this.selectionModel.reset(remaining, { emitEvent: false });
+                this.updateHeader();
             }
-        } else {
-            this.fm.getUiHeader().get(this.selectionLoaderService.key)?.patchValue({ indeterminate: false });
-            this.fm.getHeader().controls[this.selectionLoaderService.key]?.patchValue(false, { emitEvent: false });
-        }
+        });
+    }
+
+    private updateHeader() {
+        const selectable = this.datasourceService.datasource.filteredData.filter((row) => row.controls[this.key]?.enabled);
+        const count = selectable.filter((row) => this.selectionModel.isSelected(row)).length;
+        const checked = count > 0 && count === selectable.length;
+        this.fm.getUiHeader().get(this.key)?.patchValue({ indeterminate: count > 0 && !checked });
+        this.fm.getHeader().controls[this.key]?.patchValue(checked, { emitEvent: false });
     }
 }
 
@@ -487,23 +499,24 @@ export class SelectionLazyService<T> extends AbstractSelectionService<T> {
         this.fm
             .getHeader()
             .controls[this.key]?.valueChanges.pipe(
-                takeUntilDestroyed(this.destroyRef),
                 switchMap((value) => {
                     const requestedSelected = !!value;
                     const previousSelected = this._count() > 0 && this._count() === this.linesService.total();
-                    return this.selectionLoaderService
-                        .selectAll(requestedSelected, this.fm.getHeader().getRawValue())
-                        .pipe(map((response) => ({ response, requestedSelected, previousSelected })));
+                    return this.selectionLoaderService.selectAll(requestedSelected, this.fm.getHeader().getRawValue()).pipe(
+                        map((response) => ({ response, requestedSelected, previousSelected })),
+                        finalize(() => this.loadingService.setSelectionLoading(false)),
+                    );
                 }),
+                takeUntilDestroyed(this.destroyRef),
             )
             .subscribe(({ response, requestedSelected, previousSelected }) => {
                 if (response.loading) {
                     this.scrollbarService.toTop('instant');
-                    this.loadingService.start();
+                    this.loadingService.setSelectionLoading(true);
                     return;
                 }
 
-                this.loadingService.stop();
+                this.loadingService.setSelectionLoading(false);
                 if (!response.success || response.selected === undefined) {
                     this.updateHeader();
                     this.emitSelectionError(
@@ -534,6 +547,9 @@ export class SelectionLazyService<T> extends AbstractSelectionService<T> {
                 this.fm.getRows().updateValueAndValidity({
                     emitEvent: false,
                 });
+                if (response.count !== undefined) {
+                    this.updateHeader();
+                }
                 this.emitBulkSelectionEvent(response.selected, this._count());
             });
     }

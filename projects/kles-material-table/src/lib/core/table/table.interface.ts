@@ -12,6 +12,7 @@ import { EmptyStateApi } from '../api/empty-state';
 import { RenderApi } from '../api/render';
 import { TreeApi } from '../api/tree';
 import { CursorApi } from '../api/cursor';
+import { RefreshOptions } from '../api/table';
 
 export interface ITable {
     scrollbar: ScrollbarApi;
@@ -33,5 +34,5 @@ export interface ITable {
         footer: GroupUiState;
     }>;
 
-    refresh(): void;
+    refresh(options?: RefreshOptions): void;
 }

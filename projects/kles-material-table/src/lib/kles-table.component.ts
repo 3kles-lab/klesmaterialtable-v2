@@ -2,7 +2,7 @@ import { Component, computed, contentChild, DestroyRef, EventEmitter, HostBindin
 import { DynamicTableLoaderDirective } from './directives/dynamic-table-loader.directive';
 import { KlesTableConfig } from './core/table/config.interface';
 import { KlesTableConnectorService } from './kles-table-connector.service';
-import { KlesTableApi } from './core/api/table';
+import { KlesTableApi, RefreshOptions } from './core/api/table';
 import { ScrollbarApi } from './core/api/scrollbar';
 import { ColumnApi } from './core/api/column';
 import { PaginationApi } from './core/api/pagination';
@@ -103,8 +103,8 @@ export class KlesTableComponent<TParams = unknown, TValue = unknown> implements 
         return this.tableConfig()?.id ?? undefined;
     }
 
-    refresh(): void {
-        this.connectorService.refresh();
+    refresh(options?: RefreshOptions): void {
+        this.connectorService.refresh(options);
     }
 
     get scrollbar(): ScrollbarApi {

@@ -91,6 +91,7 @@ import { RowContextStore } from '../services/store/row-context-store.service';
 import { InfiniteScrollService } from '../services/features/scrollbar/infinite-scroll.service';
 import { KlesTableFooterStartDirective } from './table-footer-start.directive';
 import { ColumnDragDropService } from '../services/features/dragdrop/column-dragdrop.service';
+import { LIVE_UPDATES_CONFIG, LiveUpdatesService } from '../services/features/live-updates/live-updates.service';
 
 @Directive({
     selector: '[appDynamicTableLoader]',
@@ -424,6 +425,9 @@ export class DynamicTableLoaderDirective<TParams = unknown, TValue = unknown> im
             datasourceProvider,
             featureProviders,
             orchestratorProviders,
+            ...(this.tableConfig().liveUpdates
+                ? [LiveUpdatesService, { provide: LIVE_UPDATES_CONFIG, useValue: this.tableConfig().liveUpdates }]
+                : [{ provide: LiveUpdatesService, useValue: null }]),
         ];
 
         return Injector.create({

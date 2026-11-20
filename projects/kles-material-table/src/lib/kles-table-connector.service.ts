@@ -14,6 +14,7 @@ import { EmptyStateApi } from './core/api/empty-state';
 import { RenderApi } from './core/api/render';
 import { TreeApi } from './core/api/tree';
 import { CursorApi } from './core/api/cursor';
+import { RefreshOptions } from './core/api/table';
 
 @Injectable()
 export class KlesTableConnectorService {
@@ -103,7 +104,7 @@ export class KlesTableConnectorService {
         return this.table.tree;
     }
 
-    public refresh() {
-        this.table?.refresh();
+    public refresh(options?: RefreshOptions): void {
+        this.table?.refresh(options);
     }
 }

@@ -1,28 +1,32 @@
-import { Injectable, signal } from '@angular/core';
+import { computed, Injectable, signal, WritableSignal } from '@angular/core';
 import { EventsService } from '../events/events.service';
 
 @Injectable()
 export class LoadingService {
-    private _loading = signal(false);
+    private readonly tableLoading = signal(false);
+    private readonly selectionLoading = signal(false);
+    readonly loading = computed(() => this.tableLoading() || this.selectionLoading());
 
     constructor(private readonly eventsService: EventsService) {}
 
-    get loading() {
-        return this._loading.asReadonly();
+    start(): void {
+        this.setLoading(this.tableLoading, true);
     }
 
-    start() {
-        if (this._loading()) {
-            return;
-        }
-        this._loading.set(true);
-        this.eventsService.emit('loadingChange', { loading: true });
+    stop(): void {
+        this.setLoading(this.tableLoading, false);
     }
-    stop() {
-        if (!this._loading()) {
-            return;
+
+    setSelectionLoading(loading: boolean): void {
+        this.setLoading(this.selectionLoading, loading);
+    }
+
+    private setLoading(source: WritableSignal<boolean>, active: boolean): void {
+        const wasLoading = this.loading();
+        source.set(active);
+        const loading = this.loading();
+        if (loading !== wasLoading) {
+            this.eventsService.emit('loadingChange', { loading });
         }
-        this._loading.set(false);
-        this.eventsService.emit('loadingChange', { loading: false });
     }
 }

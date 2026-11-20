@@ -1,13 +1,15 @@
 import { CdkDrag, CdkDropList } from '@angular/cdk/drag-drop';
 import { Component, signal } from '@angular/core';
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { MatPaginator } from '@angular/material/paginator';
 import { By } from '@angular/platform-browser';
-import { delay, of } from 'rxjs';
+import { KlesFormCheckboxComponent } from '@3kles/kles-material-dynamicforms';
+import { delay, of, Subject } from 'rxjs';
 import { KlesTableConfig } from './core/table/config.interface';
-import { linesLoader } from './core/table/loader.interface';
+import { linesLazyLoader, linesLoader } from './core/table/loader.interface';
 import { KlesTableFooterStartDirective } from './directives/table-footer-start.directive';
 import { KlesTableComponent } from './kles-table.component';
-import { selectionConfig } from './core/table/selection-config.interface';
+import { selectionConfig, SelectionAllResponse } from './core/table/selection-config.interface';
 import { KlesTableEmptyStateComponent } from './components/empty-state/empty-state.component';
 
 const tableConfig: KlesTableConfig = {
@@ -50,6 +52,57 @@ class EmptyStateRefreshHostComponent {
         columns: [{ columnDef: 'name' }],
         lines: linesLoader({ loader: () => this.loader() }),
     };
+}
+
+@Component({
+    standalone: true,
+    imports: [KlesTableComponent],
+    template: '<kles-dynamic-table [tableConfig]="tableConfig"></kles-dynamic-table>',
+})
+class LazyRefreshHostComponent {
+    items = [1, 2, 3, 4, 5].map((_id) => ({ _id, name: `Row ${_id}` }));
+    readonly requestedPages: number[] = [];
+    readonly tableConfig: KlesTableConfig = {
+        columns: [{ columnDef: 'name' }],
+        paginator: true,
+        pageSize: 2,
+        lazy: true,
+        lines: linesLazyLoader({
+            loader: (_params, query) => {
+                const { page, perPage } = query!.pagination!;
+                this.requestedPages.push(page);
+                return of({ total: this.items.length, items: this.items.slice(page * perPage, (page + 1) * perPage) }).pipe(delay(20));
+            },
+        }),
+    };
+}
+
+@Component({
+    imports: [KlesTableComponent],
+    template: '<kles-dynamic-table [tableConfig]="tableConfig"></kles-dynamic-table>',
+})
+class BulkSelectionHostComponent {
+    tableConfig!: KlesTableConfig;
+    readonly bulkSelection = new Subject<SelectionAllResponse>();
+
+    configure(lazy: boolean): void {
+        const items = Array.from({ length: 20 }, (_, _id) => ({ _id, name: `Row ${_id}` }));
+        const loader = () => of({ items, total: items.length }).pipe(delay(20));
+        this.tableConfig = {
+            paginator: true,
+            pageSize: 20,
+            columns: [
+                {
+                    columnDef: '#select',
+                    headerCell: { field: { component: KlesFormCheckboxComponent } },
+                    cell: { field: { component: KlesFormCheckboxComponent } },
+                },
+                { columnDef: 'name' },
+            ],
+            selection: selectionConfig({ selectionMode: true, selectAll: () => this.bulkSelection }),
+            ...(lazy ? { lazy: true, lines: linesLazyLoader({ loader }) } : { lines: linesLoader({ loader }) }),
+        };
+    }
 }
 
 @Component({
@@ -198,6 +251,56 @@ describe('KlesTableComponent', () => {
         expect(fixture.debugElement.query(By.css('mat-paginator'))).not.toBeNull();
     });
 
+    for (const lazy of [false, true]) {
+        it(`keeps the loaded table height and hides the scrollbar during ${lazy ? 'lazy' : 'local'} bulk selection`, fakeAsync(() => {
+            const fixture = TestBed.createComponent(BulkSelectionHostComponent);
+            const host = fixture.componentInstance;
+            const container: HTMLElement = fixture.nativeElement;
+            Object.assign(container.style, { display: 'block', width: '700px', height: '620px' });
+            host.configure(lazy);
+            fixture.detectChanges();
+            tick(20);
+            fixture.detectChanges();
+
+            const table: KlesTableComponent = fixture.debugElement.query(By.directive(KlesTableComponent)).componentInstance;
+            const innerTable = container.querySelector('kles-table')!;
+            const form = innerTable.querySelector('form')!;
+            const paginator = container.querySelector('mat-paginator')!;
+            const checkbox = innerTable.querySelector<HTMLInputElement>('thead input[type="checkbox"]')!;
+            const height = form.getBoundingClientRect().height;
+            const paginatorTop = paginator.getBoundingClientRect().top;
+            expect(form.scrollHeight).toBeGreaterThan(form.clientHeight);
+            expect(getComputedStyle(form).overflowY).toBe('auto');
+
+            checkbox.click();
+            tick(0);
+            fixture.detectChanges();
+            expect(innerTable.querySelector('.table-overlay')).not.toBeNull();
+            expect(form.getBoundingClientRect().height).toBeCloseTo(height, 1);
+            expect(paginator.getBoundingClientRect().top).toBeCloseTo(paginatorTop, 1);
+            expect(getComputedStyle(form).overflowY).toBe('hidden');
+
+            table.refresh({ showLoading: false });
+            tick(20);
+            fixture.detectChanges();
+            expect(innerTable.querySelector('.table-overlay')).not.toBeNull();
+            expect(getComputedStyle(form).overflowY).toBe('hidden');
+
+            if (lazy) {
+                host.bulkSelection.next({ selected: true, count: 20 });
+                host.bulkSelection.complete();
+            } else {
+                host.bulkSelection.error(new Error('Selection failed'));
+            }
+            fixture.detectChanges();
+            expect(innerTable.querySelector('.table-overlay')).toBeNull();
+            expect(form.getBoundingClientRect().height).toBeCloseTo(height, 1);
+            expect(getComputedStyle(form).overflowY).toBe('auto');
+            expect(checkbox.checked).toBe(lazy);
+            fixture.destroy();
+        }));
+    }
+
     it('keeps the paginator visible from the empty state through loading the rows', fakeAsync(() => {
         const fixture = TestBed.createComponent(EmptyStateRefreshHostComponent);
         const container = fixture.nativeElement as HTMLElement;
@@ -279,6 +382,76 @@ describe('KlesTableComponent', () => {
         expect(table.form.rows.list().at(0).get('name')!.value).toBe('Loaded');
         expect(fixture.nativeElement.querySelector('.table-empty-state-overlay')).toBeNull();
         subscription.unsubscribe();
+        fixture.destroy();
+    }));
+
+    it('refreshes lazy rows without a spinner and keeps the spinner for subsequent navigation and default refreshes', fakeAsync(() => {
+        const fixture = TestBed.createComponent(LazyRefreshHostComponent);
+        fixture.detectChanges();
+        const table = fixture.debugElement.query(By.directive(KlesTableComponent)).componentInstance as KlesTableComponent;
+        const spinner = () => fixture.nativeElement.querySelector('.table-overlay mat-spinner');
+
+        tick(0);
+        fixture.detectChanges();
+        expect(spinner()).not.toBeNull();
+        tick(20);
+        fixture.detectChanges();
+
+        fixture.componentInstance.items[0] = { _id: 1, name: 'Updated row' };
+        table.refresh({ showLoading: false });
+        tick(0);
+        fixture.detectChanges();
+        expect(spinner()).toBeNull();
+        expect(table.form.rows.get(1)?.get('name')?.value).toBe('Row 1');
+        tick(20);
+        expect(table.form.rows.get(1)?.get('name')?.value).toBe('Updated row');
+
+        table.pagination!.setPageIndex(1);
+        tick(0);
+        fixture.detectChanges();
+        expect(spinner()).not.toBeNull();
+        tick(20);
+
+        table.refresh();
+        tick(0);
+        fixture.detectChanges();
+        expect(spinner()).not.toBeNull();
+        tick(20);
+        fixture.destroy();
+    }));
+
+    it('reloads the last valid lazy page silently and uses the corrected index on the next refresh', fakeAsync(() => {
+        const fixture = TestBed.createComponent(LazyRefreshHostComponent);
+        fixture.detectChanges();
+        const host = fixture.componentInstance;
+        const table = fixture.debugElement.query(By.directive(KlesTableComponent)).componentInstance as KlesTableComponent;
+        const paginator = fixture.debugElement.query(By.directive(MatPaginator)).componentInstance as MatPaginator;
+        tick(20);
+        table.pagination!.setPageIndex(2);
+        tick(20);
+        expect(table.form.rows.get(5)).toBeDefined();
+
+        host.items.pop();
+        table.refresh({ showLoading: false });
+        tick(20);
+        fixture.detectChanges();
+        expect(table.loading.active()).toBeFalse();
+        expect(table.form.rows.get(5)).toBeDefined();
+        expect(host.requestedPages).toEqual([0, 2, 2, 1]);
+
+        tick(20);
+        expect(paginator.pageIndex).toBe(1);
+        expect(paginator.length).toBe(4);
+        expect(table.form.rows.list().getRawValue().map(({ _id }) => _id)).toEqual([3, 4]);
+        expect(host.requestedPages).toEqual([0, 2, 2, 1]);
+
+        host.items = [];
+        table.refresh();
+        tick(40);
+        expect(host.requestedPages).toEqual([0, 2, 2, 1, 1, 0]);
+        expect(paginator.pageIndex).toBe(0);
+        expect(paginator.length).toBe(0);
+        expect(table.form.rows.list().length).toBe(0);
         fixture.destroy();
     }));
 

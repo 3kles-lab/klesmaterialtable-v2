@@ -25,7 +25,7 @@ export class LoadingOrchestratorService {
             .load()
             .pipe(
                 takeUntilDestroyed(this.destroyRef),
-                map((response) => response.loading ?? false),
+                map((response) => response.loading && response.showLoading !== false),
             )
             .subscribe((loading) => {
                 if (loading) {
@@ -52,7 +52,7 @@ export class InfiniteLoadingOrchestratorService {
             .load()
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((response) => {
-                if (response.loading && this.form.getRows().length === 0) {
+                if (response.loading && response.showLoading !== false && this.form.getRows().length === 0) {
                     this.loadingService.start();
                 } else {
                     this.loadingService.stop();

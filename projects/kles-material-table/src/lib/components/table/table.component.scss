@@ -30,7 +30,7 @@ $state-block-size: 280px;
     );
 }
 
-:host(.loading),
+:host(.loading-empty),
 :host(.empty) {
     min-block-size: $state-block-size;
 }
@@ -40,7 +40,7 @@ $state-block-size: 280px;
     overflow: clip;
 }
 
-:host(.paginated.loading),
+:host(.paginated.loading-empty),
 :host(.paginated.empty) {
     flex: 1 1 $state-block-size;
 }
@@ -433,6 +433,7 @@ tr.mat-mdc-row.cdk-drag-preview {
     }
 }
 
+:host(.loading) > form,
 .scrollbar-hidden {
     // Firefox
     scrollbar-width: none;
@@ -442,6 +443,7 @@ tr.mat-mdc-row.cdk-drag-preview {
     overflow-y: hidden;
 }
 
+:host(.loading) > form::-webkit-scrollbar,
 .scrollbar-hidden::-webkit-scrollbar {
     // Chrome, Edge et Safari
     display: none;

@@ -9,6 +9,7 @@ import { KlesExtraCellFieldConfig, KlesStyleMap } from './cell.interface';
 import { KlesTableIntl } from '../../components/table/table-intl';
 import { Observable } from 'rxjs';
 import { KlesRowContext } from './row-context.interface';
+import { LiveUpdatesConfig } from './live-updates.interface';
 
 export type TableElevationLevel = 0 | 1 | 2 | 3 | 4 | 5;
 
@@ -53,6 +54,7 @@ export interface DefaultTableConfig<TSource = unknown> extends RowAppearanceConf
     columnSeparator?: boolean | ColumnSeparatorConfig;
     elevation?: TableElevationLevel;
     emptyState?: boolean | EmptyStateConfig;
+    liveUpdates?: LiveUpdatesConfig<TSource>;
     /**
      * Optional data-cell navigation: arrows, Home/End, Enter/F2 to enter a field,
      * Escape to return to the cell, Space to select an eligible row.

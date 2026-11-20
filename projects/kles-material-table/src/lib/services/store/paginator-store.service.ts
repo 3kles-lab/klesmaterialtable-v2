@@ -1,29 +1,39 @@
 import { Inject, Injectable, Optional } from '@angular/core';
-import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import { BehaviorSubject, filter, map, Observable } from 'rxjs';
 import { Pagination } from '../../core/query/query.interface';
 import { ITableStore } from './store';
 import { PAGINATOR_CONFIG } from '../../token';
 import { PaginatorConfig } from '../../core/table/config.interface';
 
+interface PageState {
+    pagination: Pagination;
+    requestPage: boolean;
+}
+
 @Injectable()
 export class PaginatorStore implements ITableStore {
-    private s: BehaviorSubject<Pagination>;
-    public page$: Observable<Pagination>;
+    private readonly state: BehaviorSubject<PageState>;
+    readonly page$: Observable<Pagination>;
+    readonly pageRequests$: Observable<Pagination>;
 
     constructor(@Optional() @Inject(PAGINATOR_CONFIG) protected config: PaginatorConfig) {
-        this.s = new BehaviorSubject<Pagination>({ page: 0, perPage: config?.pageSize ?? 10 });
-        this.page$ = this.s.asObservable();
+        this.state = new BehaviorSubject<PageState>({ pagination: { page: 0, perPage: config?.pageSize ?? 10 }, requestPage: true });
+        this.page$ = this.state.pipe(map(({ pagination }) => pagination));
+        this.pageRequests$ = this.state.pipe(
+            filter(({ requestPage }, index) => requestPage || index === 0),
+            map(({ pagination }) => pagination),
+        );
     }
 
-    setPage(v: Pagination) {
-        this.s.next(v);
+    setPage(pagination: Pagination, requestPage = true) {
+        this.state.next({ pagination, requestPage });
     }
 
     snapshot() {
-        return this.s.value;
+        return this.state.value.pagination;
     }
 
     reset(): void {
-        this.s.next({ page: 0, perPage: this.config?.pageSize ?? 10 });
+        this.setPage({ page: 0, perPage: this.config?.pageSize ?? 10 });
     }
 }
