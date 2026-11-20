@@ -1,25 +1,99 @@
-<button matButton (click)="add()">add</button>
-
-<p class="selection-demo-hint">Selection is saved remotely. Rows 0, 10, 20… simulate a backend error.</p>
-@if (selectionErrorMessage(); as message) {
-    <p class="selection-demo-error" role="alert">{{ message }}</p>
-}
-
-<div style="height: 800px">
-    <kles-dynamic-table #table [tableConfig]="config" (selectionError)="onSelectionError($event)">
-        <div klesTableFooterStart>
-            <mat-icon>warning</mat-icon>
-            Événement déprécié
-
-            <mat-divider class="footer-divider" vertical></mat-divider>
-
-            <mat-icon>warning</mat-icon>
-            Connexion invalide ou manquante
+<main class="demo-layout">
+    <section class="live-demo" aria-labelledby="live-demo-title">
+        <div class="live-demo-header">
+            <div>
+                <h1 id="live-demo-title">Mises à jour en direct</h1>
+                <p>Les deux tableaux reçoivent les mêmes événements. Le serveur simulé trie les lignes par libellé par défaut.</p>
+            </div>
+            <nav class="live-demo-metrics" aria-label="Chargements serveur par tableau">
+                <a href="#non-lazy">
+                    <span>Non-lazy</span>
+                    <strong>{{ localLoads() }}</strong>
+                    <span>chargements</span>
+                </a>
+                <a href="#lazy">
+                    <span>Lazy</span>
+                    <strong>{{ lazyLoads() }}</strong>
+                    <span>chargements</span>
+                </a>
+            </nav>
         </div>
-    </kles-dynamic-table>
-</div>
 
-<div>Lazy</div>
-<div style="height: 800px">
-    <kles-dynamic-table #lazyTable [tableConfig]="lazyConfig"></kles-dynamic-table>
-</div>
+        <div class="live-demo-target">
+            <div class="live-demo-target-picker">
+                <label for="live-target">Ligne ciblée</label>
+                <select id="live-target" #targetChoice [value]="targetMode()" (change)="setTarget(targetChoice.value)">
+                    <option value="selectable">Première sélectionnable</option>
+                    <option value="first">Première par libellé</option>
+                    <option value="last">Dernière par libellé</option>
+                </select>
+            </div>
+            @if (targetRow(); as target) {
+                <div class="live-demo-target-summary">
+                    <strong>{{ target.liveLabel }}</strong>
+                    <span>ID {{ target._id }} · D {{ target.d }}</span>
+                </div>
+                <button matButton="tonal" type="button" [disabled]="selectingTarget()" (click)="toggleTargetSelection()">
+                    {{ target['#select'] ? 'Désélectionner la cible' : 'Sélectionner la cible' }}
+                </button>
+            } @else {
+                <p>Aucune ligne pour cette cible.</p>
+            }
+        </div>
+        <p class="live-demo-hint">Sélectionne la cible, puis supprime-la pour tester la case globale du tableau non-lazy.</p>
+
+        <div class="live-demo-controls">
+            <fieldset>
+                <legend>Événements de ligne</legend>
+                <div class="live-demo-actions">
+                    <button matButton="outlined" type="button" [disabled]="!targetRow()" (click)="simulateDetailUpdate()">Modifier D</button>
+                    <button matButton="outlined" type="button" [disabled]="!targetRow()" (click)="simulateRename()">Renommer</button>
+                    <button matButton="outlined" type="button" (click)="simulateCreate()">Ajouter une ligne</button>
+                    <button matButton="outlined" type="button" [disabled]="!targetRow()" (click)="simulateDelete()">Supprimer la cible</button>
+                </div>
+            </fieldset>
+            <fieldset>
+                <legend>Synchronisation</legend>
+                <div class="live-demo-actions">
+                    <button matButton="outlined" type="button" (click)="simulateInvalidation()">Invalider</button>
+                    <button matButton="filled" type="button" [disabled]="burstRunning()" (click)="simulateBurst()">Envoyer une rafale</button>
+                </div>
+            </fieldset>
+        </div>
+        <p class="live-demo-status" role="status">{{ liveStatus() }}</p>
+        @if (selectionErrorMessage(); as message) {
+            <p class="selection-demo-error" role="alert">{{ message }}</p>
+        }
+    </section>
+
+    <section class="demo-table-panel" id="non-lazy" aria-labelledby="non-lazy-title">
+        <div class="demo-table-heading">
+            <h2 id="non-lazy-title">Non-lazy</h2>
+            <p>{{ selectedCount() }} en sélection</p>
+        </div>
+        <p class="selection-demo-hint">Les lignes 0, 10, 20… simulent une erreur lors de la sélection individuelle.</p>
+        <div class="demo-table">
+            <kles-dynamic-table #table [tableConfig]="config" (selectionError)="onSelectionError($event)">
+                <div klesTableFooterStart>
+                    <mat-icon>warning</mat-icon>
+                    Événement déprécié
+
+                    <mat-divider class="footer-divider" vertical></mat-divider>
+
+                    <mat-icon>warning</mat-icon>
+                    Connexion invalide ou manquante
+                </div>
+            </kles-dynamic-table>
+        </div>
+    </section>
+
+    <section class="demo-table-panel" id="lazy" aria-labelledby="lazy-title">
+        <div class="demo-table-heading">
+            <h2 id="lazy-title">Lazy</h2>
+            <p>Le serveur charge une page à la fois.</p>
+        </div>
+        <div class="demo-table">
+            <kles-dynamic-table [tableConfig]="lazyConfig"></kles-dynamic-table>
+        </div>
+    </section>
+</main>

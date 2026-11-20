@@ -1,17 +1,22 @@
-import { AfterViewInit, Component, ElementRef, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, inject, signal, ViewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MaterialModule } from './modules/material.module';
 import {
     AlignCell,
+    KlesColumnConfig,
     KlesMaterialTableModule,
     KlesTableApi,
     KlesTableConfig,
+    LiveUpdatesConfig,
+    Query,
+    TableDataChange,
     linesLazyLoader,
     linesLoader,
     selectionConfig,
     SelectionErrorPayload,
     Span,
 } from 'kles-material-table';
-import { BehaviorSubject, delay, of, switchMap, throwError, timer } from 'rxjs';
+import { BehaviorSubject, defer, delay, finalize, map, of, Subject, switchMap, take, throwError, timer } from 'rxjs';
 import {
     IKlesFieldActionEvent,
     KlesFormActionMenuComponent,
@@ -29,6 +34,19 @@ import { CommonModule } from '@angular/common';
 import { CustomTableIntl } from './table-intl';
 import { NestedTableFieldComponent } from './nested-table-field.component';
 
+type DemoRow = ReturnType<AppComponent['data']>[number];
+type DemoTarget = 'selectable' | 'first' | 'last';
+
+function liveLabelColumn(): KlesColumnConfig {
+    return {
+        columnDef: 'liveLabel',
+        sortable: true,
+        filterable: true,
+        headerCell: { label: 'Libellé', field: { component: KlesFormInputComponent, clearable: true } },
+        cell: { field: { component: KlesFormTextComponent } },
+    };
+}
+
 @Component({
     selector: 'app-root',
     templateUrl: './app.component.html',
@@ -37,15 +55,45 @@ import { NestedTableFieldComponent } from './nested-table-field.component';
     standalone: true,
     imports: [MaterialModule, KlesMaterialTableModule, CommonModule],
 })
-export class AppComponent implements AfterViewInit {
+export class AppComponent {
     toto = new BehaviorSubject({ foo: 123, toto: 'aaaa' });
     readonly selectionErrorMessage = signal<string | null>(null);
+    readonly localLoads = signal(0);
+    readonly lazyLoads = signal(0);
+    readonly liveStatus = signal('Aucun événement envoyé.');
+    readonly burstRunning = signal(false);
+    readonly selectingTarget = signal(false);
+    readonly targetMode = signal<DemoTarget>('selectable');
 
-    data = Array.from(Array(500).keys()).map((key) => {
+    private readonly destroyRef = inject(DestroyRef);
+    private readonly liveEvents = new Subject<TableDataChange<DemoRow>>();
+    private readonly collator = new Intl.Collator('fr', { numeric: true, sensitivity: 'base' });
+    private readonly liveUpdates: LiveUpdatesConfig<unknown> = {
+        events: () => this.liveEvents,
+        shouldRefresh: ({ changes }, { sort, filters }) => Object.keys(changes).some((field) =>
+            field === 'liveLabel' || (sort?.active === field && !!sort.direction) || !!filters?.[field],
+        ),
+    };
+    readonly data = signal(Array.from({ length: 500 }, (_, key) => this.createDemoRow(key)));
+    readonly selectedCount = computed(() => this.data().filter((row) => row['#select']).length);
+    readonly targetRow = computed(() => {
+        const rows = this.rowsForQuery();
+        switch (this.targetMode()) {
+            case 'first': return rows[0];
+            case 'last': return rows.at(-1);
+            case 'selectable': return rows.find((row) => !this.selectionFails(row._id));
+        }
+    });
+
+    private nextId = this.data().length;
+    private nextDetail = 90000;
+
+    private createDemoRow(key: number) {
         return {
             '#select': false,
             _id: `${key}`,
             name: key,
+            liveLabel: `Ligne ${String(key).padStart(3, '0')}`,
             test: { a: `test ${key}` },
             aa: 'ligne 1 expand key:' + key,
             c: '1565',
@@ -70,10 +118,11 @@ export class AppComponent implements AfterViewInit {
                 tooltip: key % 3 ? 'Configurer Google Workspace' : 'Configurer Microsoft EntraId',
             },
         };
-    });
+    }
 
     config: KlesTableConfig = {
         keyboardNavigation: { enabled: true, ariaLabel: 'Tableau de démonstration' },
+        liveUpdates: this.liveUpdates,
         columnSeparator: false,
         // rowStyle: (_row, _status, _index, context) => {
         //     const provider = (context.source as { provider?: { enabled?: boolean | number } }).provider;
@@ -118,6 +167,7 @@ export class AppComponent implements AfterViewInit {
                     field: { component: KlesFormTextComponent, value: 'ceci est un footer' },
                 },
             },
+            liveLabelColumn(),
             {
                 columnDef: 'name',
                 sortable: true,
@@ -349,10 +399,8 @@ export class AppComponent implements AfterViewInit {
         lines: linesLoader({
             params: () => this.toto,
             loader: (_params) => {
-                console.log('normal load');
-                return of({
-                    items: this.data,
-                }).pipe(delay(500));
+                this.localLoads.update((count) => count + 1);
+                return of({ items: this.rowsForQuery() }).pipe(delay(500));
             },
         }),
         dragDropRows: {
@@ -370,22 +418,13 @@ export class AppComponent implements AfterViewInit {
         selection: selectionConfig({
             selectionMode: true,
             selectOnRowClick: true,
-            // isDisabled: (row) => {
-            //     return +row.value._id % 2 !== 0;
-            // },
-            select: (_params, row, selected) => {
-                const rowId = Number(row.getRawValue()._id);
-
-                // Demo: rows 0, 10, 20, etc. simulate a backend failure after 800 ms.
-                if (rowId % 10 === 0) {
-                    return timer(800).pipe(switchMap(() => throwError(() => new Error(`Demo backend error for row ${rowId}.`))));
-                }
-
-                return of({ selected })/*.pipe(delay(400))*/;
-            },
-            selectAll: (_params, selected) => {
-                return of({ selected }).pipe(delay(400));
-            },
+            select: (_params, row, selected) => this.selectDemoRow(row.getRawValue()._id, selected),
+            selectAll: (_params, selected, filters) => timer(400).pipe(map(() => {
+                const { '#select': _checkbox, ...activeFilters } = filters ?? {};
+                const matchingIds = new Set(this.rowsForQuery({ filters: activeFilters }).map((row) => row._id));
+                this.saveSelection(matchingIds, selected);
+                return { selected };
+            })),
         }),
         extraRows: [
             {
@@ -405,6 +444,7 @@ export class AppComponent implements AfterViewInit {
     };
 
     lazyConfig: KlesTableConfig = {
+        liveUpdates: this.liveUpdates,
         columns: [
             {
                 columnDef: 'bb',
@@ -420,6 +460,7 @@ export class AppComponent implements AfterViewInit {
                     },
                 },
             },
+            liveLabelColumn(),
             {
                 columnDef: 'name',
                 sortable: true,
@@ -534,15 +575,13 @@ export class AppComponent implements AfterViewInit {
         // scrollThreshold: 160,
         lines: linesLazyLoader({
             params: () => this.toto,
-            loader: (params, query) => {
-                console.log('lazy load', query);
-                return of({
-                    items: this.data.slice(
-                        (query?.pagination?.page ?? 0) * (query?.pagination?.perPage ?? 0),
-                        (query?.pagination?.page ?? 0) * (query?.pagination?.perPage ?? 50) + (query?.pagination?.perPage ?? 50),
-                    ),
-                    total: this.data.length,
-                }).pipe(delay(400));
+            loader: (_params, query) => {
+                this.lazyLoads.update((count) => count + 1);
+                const rows = this.rowsForQuery(query);
+                const pagination = query?.pagination;
+                const start = pagination ? pagination.page * pagination.perPage : 0;
+                const items = pagination ? rows.slice(start, start + pagination.perPage) : rows;
+                return of({ items, total: rows.length }).pipe(delay(400));
             },
             hasChildren: (parent, depth) => {
                 return depth < 2;
@@ -555,7 +594,8 @@ export class AppComponent implements AfterViewInit {
                         bb: false,
                         _id: childId,
                         name: `Niveau ${depth + 1} — ${childId}`,
-                        test: `Enfant de ${parentId}`,
+                        liveLabel: `Enfant de ${parentId}`,
+                        test: { a: `Enfant de ${parentId}` },
                         c: `${1565 + index}`,
                         d: `${87887 + index}`,
                         e: `Ligne enfant ${index + 1}`,
@@ -585,25 +625,140 @@ export class AppComponent implements AfterViewInit {
     };
 
     @ViewChild('table') klesTable!: KlesTableApi;
-    @ViewChild('lazyTable') klesLazyTable!: KlesTableApi;
-
-    constructor() {}
 
     onSelectionError(event: SelectionErrorPayload): void {
         const errorMessage = event.error instanceof Error ? event.error.message : String(event.error);
         const rawValue = event.rawValue as { _id?: unknown } | undefined;
-        const target = event.row ? `row ${rawValue?._id ?? event.rowIndex}` : 'all rows';
+        const target = event.row ? `la ligne ${rawValue?._id ?? event.rowIndex}` : 'toutes les lignes';
 
-        this.selectionErrorMessage.set(`Remote selection failed for ${target}: ${errorMessage} The checkbox was rolled back.`);
+        this.selectionErrorMessage.set(`Échec de la sélection pour ${target}. ${errorMessage}`);
         console.error('Remote selection error', event);
     }
 
-    ngAfterViewInit(): void {
-        console.log(this.klesLazyTable.selection.selectionModel);
+    setTarget(value: string): void {
+        if (value === 'selectable' || value === 'first' || value === 'last') {
+            this.targetMode.set(value);
+        }
     }
 
-    add() {
-        console.log(this.klesLazyTable.selection.count());
-        this.klesTable.form.rows.list().disable();
+    toggleTargetSelection(): void {
+        const target = this.targetRow();
+        if (!target) return;
+        if (!this.klesTable.form.rows.get(target._id)) {
+            this.liveStatus.set('Le tableau non-lazy charge encore cette ligne.');
+            return;
+        }
+
+        this.selectionErrorMessage.set(null);
+        this.selectingTarget.set(true);
+        this.selectDemoRow(target._id, !target['#select'])
+            .pipe(takeUntilDestroyed(this.destroyRef), finalize(() => this.selectingTarget.set(false)))
+            .subscribe({
+                next: ({ selected }) => {
+                    const row = this.klesTable.form.rows.get(target._id);
+                    if (!row) return;
+                    const selection = this.klesTable.selection.selectionModel;
+                    if (selected) {
+                        selection?.select(row);
+                    } else {
+                        selection?.deselect(row);
+                    }
+                    this.liveStatus.set(`« ${target.liveLabel} » ${selected ? 'sélectionnée' : 'désélectionnée'} dans le tableau non-lazy.`);
+                },
+                error: (error: Error) => this.selectionErrorMessage.set(error.message),
+            });
+    }
+
+    simulateDetailUpdate(): void {
+        const row = this.targetRow();
+        if (row) {
+            const d = String(this.nextDetail++);
+            this.updateDemoRow(row, { d });
+            this.liveStatus.set(`Mise à jour de D sur « ${row.liveLabel} » (${d}).`);
+        }
+    }
+
+    simulateRename(): void {
+        const row = this.targetRow();
+        if (row) {
+            const liveLabel = row.liveLabel.startsWith('Renommée') ? `Déplacée ${row._id}` : `Renommée ${row._id}`;
+            this.updateDemoRow(row, { liveLabel });
+            this.liveStatus.set(`« ${row.liveLabel} » devient « ${liveLabel} ». Le serveur recalcule l’ordre.`);
+        }
+    }
+
+    simulateCreate(): void {
+        const row = this.createDemoRow(this.nextId++);
+        row.liveLabel = `Ajout ${row._id}`;
+        this.data.update((rows) => [...rows, row]);
+        this.liveEvents.next({ type: 'created', row });
+        this.liveStatus.set(`« ${row.liveLabel} » ajoutée au serveur simulé.`);
+    }
+
+    simulateDelete(): void {
+        const row = this.targetRow();
+        if (row) {
+            this.data.update((rows) => rows.filter(({ _id }) => _id !== row._id));
+            this.liveEvents.next({ type: 'deleted', id: row._id });
+            this.liveStatus.set(`« ${row.liveLabel} » supprimée du serveur simulé.`);
+        }
+    }
+
+    simulateInvalidation(): void {
+        this.liveEvents.next({ type: 'invalidate' });
+        this.liveStatus.set('Invalidation envoyée, comme après une reconnexion.');
+    }
+
+    simulateBurst(): void {
+        this.burstRunning.set(true);
+        this.liveStatus.set('Rafale de six invalidations à 50 ms d’intervalle.');
+        timer(0, 50)
+            .pipe(take(6), takeUntilDestroyed(this.destroyRef), finalize(() => this.burstRunning.set(false)))
+            .subscribe(() => this.liveEvents.next({ type: 'invalidate' }));
+    }
+
+    private updateDemoRow(row: DemoRow, changes: Partial<DemoRow>): void {
+        this.data.update((rows) => rows.map((item) => item._id === row._id ? { ...item, ...changes } : item));
+        this.liveEvents.next({ type: 'updated', id: row._id, changes });
+    }
+
+    private selectDemoRow(id: string, selected: boolean) {
+        return defer(() => {
+            if (this.selectionFails(id)) {
+                return timer(800).pipe(switchMap(() => throwError(() => new Error(`Erreur simulée pour la ligne ${id}.`))));
+            }
+
+            this.saveSelection(new Set([id]), selected);
+            return of({ selected });
+        });
+    }
+
+    private saveSelection(ids: ReadonlySet<string>, selected: boolean): void {
+        this.data.update((rows) => rows.map((row) => ids.has(row._id) && row['#select'] !== selected ? { ...row, '#select': selected } : row));
+    }
+
+    private selectionFails(id: string): boolean {
+        return Number(id) % 10 === 0;
+    }
+
+    private rowsForQuery(query?: Query): DemoRow[] {
+        const filters = Object.entries(query?.filters ?? {});
+        const sort = query?.sort;
+        const sortField = sort?.direction ? sort.active : 'liveLabel';
+        const direction = sort?.direction === 'desc' ? -1 : 1;
+
+        return this.data()
+            .filter((row) => filters.every(([field, value]) => {
+                const search = String(value ?? '').trim().toLocaleLowerCase('fr');
+                return this.queryValue(row, field).toLocaleLowerCase('fr').includes(search);
+            }))
+            .sort((left, right) => {
+                const comparison = this.collator.compare(this.queryValue(left, sortField), this.queryValue(right, sortField));
+                return comparison * direction || this.collator.compare(left._id, right._id);
+            });
+    }
+
+    private queryValue(row: DemoRow, field: string): string {
+        return String((field === 'test' ? row.test.a : row[field as keyof DemoRow]) ?? '');
     }
 }
