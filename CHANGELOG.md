@@ -1,3 +1,10 @@
+# [22.2.0](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v22.1.5...v22.2.0) (2026-11-20)
+
+
+### Features
+
+* add liveUpdates properties and fix minor bugs ([f2e2977](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/f2e29776858c998cda6b1bdbdedcfe10b004b177))
+
 ## [22.1.5](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v22.1.4...v22.1.5) (2026-11-18)
 
 
