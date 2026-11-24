@@ -1,3 +1,10 @@
+## [22.2.1](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v22.2.0...v22.2.1) (2026-11-24)
+
+
+### Bug Fixes
+
+* refresh reused table cells after silent reloads ([d28fc9d](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/d28fc9daf73957b96441689a9087707e3a661974))
+
 # [22.2.0](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v22.1.5...v22.2.0) (2026-11-20)
 
 
