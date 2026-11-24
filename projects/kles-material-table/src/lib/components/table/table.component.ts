@@ -26,6 +26,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatTable, MatTableModule } from '@angular/material/table';
+import { merge } from 'rxjs';
 
 import { ITable } from '../../core/table/table.interface';
 import { RefreshOptions } from '../../core/api/table';
@@ -237,9 +238,9 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
         this.multiTemplateDataRows = this.extraRowService.multiTemplateDataRows;
         this.extraRows = this.extraRowService.rows;
 
-        this.tableService.form.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
-            this.changeDetectorRef.markForCheck();
-        });
+        merge(this.tableService.form.events, this.tableService.klesForm.rowsReplaced$)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(() => this.changeDetectorRef.markForCheck());
 
         this.connectorService.connect(this);
         this.filterService?.register();

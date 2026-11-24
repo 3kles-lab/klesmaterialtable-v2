@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, provideZoneChangeDetection } from '@angular/core';
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { KlesFormCheckboxComponent, KlesFormTextComponent } from '@3kles/kles-material-dynamicforms';
@@ -36,7 +36,7 @@ class LiveUpdatesHost {
                     headerCell: { field: { component: KlesFormCheckboxComponent } },
                     cell: { field: { component: KlesFormCheckboxComponent } },
                 },
-                { columnDef: 'name' },
+                { columnDef: 'name', cell: { field: { component: KlesFormTextComponent } } },
                 { columnDef: 'comment', cell: { field: { component: KlesFormTextComponent } } },
             ],
             paginator: true,
@@ -74,6 +74,40 @@ describe('live updates in a dynamic material table', () => {
     }
 
     afterEach(() => fixture?.destroy());
+
+    it('updates the reused cell when a silent lazy refresh returns a new name for the same row ID', async () => {
+        TestBed.configureTestingModule({
+            providers: [provideZoneChangeDetection({ eventCoalescing: true })],
+        });
+        fixture = TestBed.createComponent(LiveUpdatesHost);
+        host = fixture.componentInstance;
+        host.configure(true);
+        fixture.autoDetectChanges();
+        await fixture.whenStable();
+        expect(host.requests.length).toBe(1);
+
+        fixture.ngZone!.run(() => host.respond([alice, bruno]));
+        await fixture.whenStable();
+
+        table = fixture.debugElement.query(By.directive(KlesTableComponent)).componentInstance;
+        const container: HTMLElement = fixture.nativeElement;
+        const nameCell = () => container.querySelector<HTMLTableCellElement>('tbody td.cdk-column-name');
+        const initialCell = nameCell();
+        expect(initialCell?.textContent?.trim()).toBe('Alice');
+
+        fixture.ngZone!.run(() => host.changes.next({ type: 'invalidate' }));
+        await fixture.whenStable();
+        expect(host.requests.length).toBe(2);
+        expect(table.loading.active()).toBeFalse();
+
+        fixture.ngZone!.run(() => host.respond([{ ...alice, name: 'Alix' }, bruno]));
+        await fixture.whenStable();
+
+        expect(table.form.rows.get(alice._id)?.get('name')?.value).toBe('Alix');
+        expect(nameCell()).toBe(initialCell);
+        expect(initialCell?.textContent?.trim()).toBe('Alix');
+        expect(host.requests.length).toBe(2);
+    });
 
     it('keeps one silent lazy request in flight and groups subsequent events into one refresh', fakeAsync(() => {
         setup(true);
