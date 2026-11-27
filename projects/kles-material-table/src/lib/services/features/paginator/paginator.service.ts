@@ -31,6 +31,7 @@ export class PaginatorService {
             this._paginator.pageSize = this.paginatorStore?.snapshot().perPage ?? this._paginator.pageSize;
             this._paginator.pageSizeOptions = this.config?.pageSizeOptions ?? [5, 10, 20, 25, 50];
             this._paginator.selectConfig = this.config?.selectConfig ?? {};
+            this._paginator.hidePageSize = this.config?.hidePageSize ?? this._paginator.hidePageSize;
             this._paginator.showFirstLastButtons = this.config?.showFirstLastButtons ?? true;
 
             this._paginator.page.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {

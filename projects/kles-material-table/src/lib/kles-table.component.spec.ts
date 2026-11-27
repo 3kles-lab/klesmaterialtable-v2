@@ -39,7 +39,7 @@ class WithFooterStartHostComponent {
     template: '<kles-dynamic-table [tableConfig]="tableConfig"></kles-dynamic-table>',
 })
 class WithoutFooterStartHostComponent {
-    readonly tableConfig = tableConfig;
+    tableConfig = tableConfig;
 }
 
 @Component({
@@ -332,6 +332,20 @@ describe('KlesTableComponent', () => {
 
         expect(fixture.debugElement.query(By.css('[klesTableFooterStart]'))).toBeNull();
         expect(fixture.debugElement.query(By.css('mat-paginator'))).not.toBeNull();
+    });
+
+    it('renders only the range and adjacent page buttons with compact pagination options', () => {
+        const fixture = TestBed.createComponent(WithoutFooterStartHostComponent);
+        fixture.componentInstance.tableConfig = { ...tableConfig, hidePageSize: true, showFirstLastButtons: false };
+        fixture.detectChanges();
+
+        const paginator = fixture.debugElement.query(By.directive(MatPaginator));
+        expect(paginator.query(By.css('.mat-mdc-paginator-page-size'))).toBeNull();
+        expect(paginator.query(By.css('.mat-mdc-paginator-range-label'))).not.toBeNull();
+        expect(paginator.query(By.css('.mat-mdc-paginator-navigation-previous'))).not.toBeNull();
+        expect(paginator.query(By.css('.mat-mdc-paginator-navigation-next'))).not.toBeNull();
+        expect(paginator.query(By.css('.mat-mdc-paginator-navigation-first'))).toBeNull();
+        expect(paginator.query(By.css('.mat-mdc-paginator-navigation-last'))).toBeNull();
     });
 
     for (const lazy of [false, true]) {

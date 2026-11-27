@@ -241,6 +241,8 @@ export class DynamicTableLoaderDirective<TParams = unknown, TValue = unknown> im
                     customMatPaginatorIntl: this.tableConfig().customMatPaginatorIntl,
                     pageSize: this.tableConfig().pageSize,
                     pageSizeOptions: this.tableConfig().pageSizeOptions,
+                    hidePageSize: this.tableConfig().hidePageSize,
+                    showFirstLastButtons: this.tableConfig().showFirstLastButtons,
                 },
             },
             {

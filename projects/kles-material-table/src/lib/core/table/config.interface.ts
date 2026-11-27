@@ -76,6 +76,7 @@ export interface PaginatorConfig {
     customMatPaginatorIntl?: Type<MatPaginatorIntl>;
     pageSize?: number;
     pageSizeOptions?: number[];
+    hidePageSize?: boolean;
     showFirstLastButtons?: boolean;
     selectConfig?: MatPaginatorSelectConfig;
 }
