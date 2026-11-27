@@ -1,3 +1,11 @@
+# [22.3.0](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v22.2.2...v22.3.0) (2026-11-27)
+
+
+### Features
+
+* add compact table pagination ([835e746](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/835e746ed423ee812cbacf8c4b31139dac15e420))
+* add delegated table scrolling and dialog footer pagination ([e9eef97](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/e9eef97fef977dd85a41882bd5dded56e38a1d47))
+
 ## [22.2.2](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v22.2.1...v22.2.2) (2026-11-27)
 
 
