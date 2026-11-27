@@ -45,6 +45,16 @@ $state-block-size: 280px;
     flex: 1 1 $state-block-size;
 }
 
+:host(.paginated.scroll-delegated) {
+    flex: none;
+    height: auto;
+}
+
+:host(.paginated.scroll-delegated.loading-empty),
+:host(.paginated.scroll-delegated.empty) {
+    min-block-size: $state-block-size;
+}
+
 form {
     display: flex;
     flex-direction: column;
@@ -57,7 +67,8 @@ form {
     scroll-timeline-axis: inline;
 }
 
-:host(.paginated.empty) > form {
+:host(.paginated.empty) > form,
+:host(.paginated.scroll-delegated) > form {
     overflow-y: hidden;
 }
 

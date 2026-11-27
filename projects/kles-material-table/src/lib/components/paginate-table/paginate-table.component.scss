@@ -7,6 +7,10 @@
     container-type: inline-size;
 }
 
+:host(.scroll-delegated) {
+    height: auto;
+}
+
 .table-footer {
     display: flex;
     flex: 0 0 auto;
@@ -35,6 +39,14 @@
     flex: 0 0 auto;
     margin-inline-start: auto;
     padding-bottom: 4px;
+}
+
+.paginator.paginator-external {
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    margin-inline-start: 0;
+    padding-bottom: 0;
 }
 
 @container (max-width: 760px) {

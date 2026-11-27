@@ -35,6 +35,7 @@ import { RenderApi } from './core/api/render';
 import { EventsApi } from './core/api/events';
 import { TreeApi } from './core/api/tree';
 import { KlesTableFooterStartDirective } from './directives/table-footer-start.directive';
+import { KlesTablePaginatorOutletDirective } from './directives/table-paginator-outlet.directive';
 
 @Component({
     selector: 'kles-dynamic-table',
@@ -43,9 +44,14 @@ import { KlesTableFooterStartDirective } from './directives/table-footer-start.d
     imports: [DynamicTableLoaderDirective],
     providers: [KlesTableConnectorService],
     styleUrl: './kles-table.component.scss',
+    host: {
+        '[class.scroll-delegated]': "tableConfig().paginator && tableConfig().scrollMode === 'delegated'",
+    },
 })
 export class KlesTableComponent<TParams = unknown, TValue = unknown> implements OnInit, KlesTableApi<TValue> {
     tableConfig = input.required<KlesTableConfig<TParams, TValue>>();
+    /** Optional destination for the paginator, for example inside `mat-dialog-actions`. */
+    readonly paginatorOutlet = input<KlesTablePaginatorOutletDirective>();
     readonly footerStart = contentChild(KlesTableFooterStartDirective);
     private readonly destroyRef = inject(DestroyRef);
 

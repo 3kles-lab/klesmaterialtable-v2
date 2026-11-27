@@ -78,6 +78,8 @@ export interface PaginatorConfig {
     pageSizeOptions?: number[];
     hidePageSize?: boolean;
     showFirstLastButtons?: boolean;
+    /** Lets an ancestor such as `mat-dialog-content` scroll the rows and paginator together. Defaults to `internal`. */
+    scrollMode?: 'internal' | 'delegated';
     selectConfig?: MatPaginatorSelectConfig;
 }
 

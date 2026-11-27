@@ -20,6 +20,7 @@ export * from './lib/components/empty-state/empty-state.component';
 
 export * from './lib/kles-table.component';
 export * from './lib/directives/table-footer-start.directive';
+export * from './lib/directives/table-paginator-outlet.directive';
 export * from './lib/directives/keyboard-navigation.directive';
 export * from './lib/token';
 

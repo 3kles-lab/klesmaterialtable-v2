@@ -1,3 +1,8 @@
 <div class="table-frame" [style.box-shadow]="elevationShadow()">
-    <ng-template appDynamicTableLoader [tableConfig]="tableConfig()" [footerStart]="footerStart()"></ng-template>
+    <ng-template
+        appDynamicTableLoader
+        [tableConfig]="tableConfig()"
+        [footerStart]="footerStart()"
+        [paginatorOutlet]="paginatorOutlet()"
+    ></ng-template>
 </div>

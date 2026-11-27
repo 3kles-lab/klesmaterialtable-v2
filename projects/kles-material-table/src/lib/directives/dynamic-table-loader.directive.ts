@@ -90,6 +90,7 @@ import { EmptyStateService } from '../services/features/empty-state/empty-state.
 import { RowContextStore } from '../services/store/row-context-store.service';
 import { InfiniteScrollService } from '../services/features/scrollbar/infinite-scroll.service';
 import { KlesTableFooterStartDirective } from './table-footer-start.directive';
+import { KlesTablePaginatorOutletDirective } from './table-paginator-outlet.directive';
 import { ColumnDragDropService } from '../services/features/dragdrop/column-dragdrop.service';
 import { LIVE_UPDATES_CONFIG, LiveUpdatesService } from '../services/features/live-updates/live-updates.service';
 
@@ -110,6 +111,7 @@ export class DynamicTableLoaderDirective<TParams = unknown, TValue = unknown> im
         },
     });
     footerStart = input<KlesTableFooterStartDirective>();
+    paginatorOutlet = input<KlesTablePaginatorOutletDirective>();
     private componentRef: ComponentRef<any> | null = null;
 
     constructor(private viewContainerRef: ViewContainerRef) {
@@ -155,6 +157,10 @@ export class DynamicTableLoaderDirective<TParams = unknown, TValue = unknown> im
                 ? { projectableNodes: [[footerStart.elementRef.nativeElement]] }
                 : {}),
         });
+
+        if (component === PaginateTableComponent) {
+            this.componentRef.setInput('paginatorOutlet', this.paginatorOutlet());
+        }
 
         this.componentRef.onDestroy(() => {
             if (isDestroyable(injector)) {
@@ -243,6 +249,7 @@ export class DynamicTableLoaderDirective<TParams = unknown, TValue = unknown> im
                     pageSizeOptions: this.tableConfig().pageSizeOptions,
                     hidePageSize: this.tableConfig().hidePageSize,
                     showFirstLastButtons: this.tableConfig().showFirstLastButtons,
+                    scrollMode: this.tableConfig().scrollMode,
                 },
             },
             {

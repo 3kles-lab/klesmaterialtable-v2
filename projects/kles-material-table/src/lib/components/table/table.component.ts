@@ -44,6 +44,7 @@ import {
     COLUMN_DRAG_DROP,
     DATASOURCE_SERVICE,
     LOADER_SERVICE,
+    PAGINATOR_CONFIG,
     ROW_APPEARANCE_CONFIG,
     ROW_DRAG_DROP,
     SELECTION_SERVICE,
@@ -154,6 +155,7 @@ const MIN_SCROLLABLE_COLUMNS_WIDTH_PX = 52;
         TableCellChangeDetectionDirective,
         KlesTableEmptyStateComponent,
     ],
+    host: { '[class.scroll-delegated]': 'delegatedScroll' },
 })
 export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy {
     @ViewChild(MatTable) table!: MatTable<FormGroup>;
@@ -167,7 +169,9 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
     footerHeightPx = signal(0);
     viewportWidthPx = signal(0);
     viewportScrollRangePx = signal(0);
-    protected readonly stickyRows = signal(true);
+    private readonly paginatorConfig = inject(PAGINATOR_CONFIG, { optional: true });
+    protected readonly delegatedScroll = this.paginatorConfig?.paginator === true && this.paginatorConfig.scrollMode === 'delegated';
+    protected readonly stickyRows = signal(!this.delegatedScroll);
     protected readonly stickyStart = signal(true);
     protected readonly stickyEnd = signal(true);
     protected readonly rowDragPreviewContainer = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
@@ -642,7 +646,7 @@ export class TableComponent implements ITable, OnInit, AfterViewInit, OnDestroy 
             this.footerHeightPx.set(footerHeight);
             this.viewportWidthPx.set(viewportWidth);
             this.viewportScrollRangePx.set(horizontalScrollRange);
-            this.stickyRows.set(viewportHeight - headerHeight - footerHeight >= MIN_SCROLLABLE_BODY_HEIGHT_PX);
+            this.stickyRows.set(!this.delegatedScroll && viewportHeight - headerHeight - footerHeight >= MIN_SCROLLABLE_BODY_HEIGHT_PX);
 
             let startWidth = 0;
             let endWidth = 0;

@@ -18,3 +18,14 @@
     border-radius: var(--mat-sys-corner-small);
     overflow: hidden;
 }
+
+:host(.scroll-delegated) {
+    flex: none;
+    max-height: none;
+    overflow: visible;
+}
+
+:host(.scroll-delegated) .table-frame {
+    flex: none;
+    overflow: clip;
+}

@@ -3,5 +3,13 @@
     <div class="table-footer-start">
         <ng-content select="[klesTableFooterStart]"></ng-content>
     </div>
-    <mat-paginator [disabled]="disabled()" class="paginator"></mat-paginator>
+    <ng-template #inlinePaginator></ng-template>
 </div>
+<ng-template #paginatorTemplate>
+    <mat-paginator
+        klesRegisterPaginator
+        class="paginator"
+        [class.paginator-external]="paginatorOutlet()"
+        [disabled]="disabled()"
+    ></mat-paginator>
+</ng-template>
