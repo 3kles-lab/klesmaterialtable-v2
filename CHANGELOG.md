@@ -1,3 +1,10 @@
+## [22.2.2](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v22.2.1...v22.2.2) (2026-11-27)
+
+
+### Bug Fixes
+
+* make table accessibility labels translatable ([165fe96](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/commit/165fe96f98daf95a3030738e3b6fb547452d797b))
+
 ## [22.2.1](http://gitlab.3kles.local/3kles/lib/angular/material/klesmaterialtable-dev/compare/v22.2.0...v22.2.1) (2026-11-24)
 
 
