@@ -1,4 +1,4 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
@@ -8,7 +8,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSortModule, SortHeaderArrowPosition } from '@angular/material/sort';
 import { IKlesHeaderFieldConfig } from '../../core/table/cell.interface';
 import { DragDropModule } from '@angular/cdk/drag-drop';
-import { of, startWith, switchMap } from 'rxjs';
+import { map, of, startWith, switchMap } from 'rxjs';
+import { KlesTableIntl } from '../table/table-intl';
 
 @Component({
     selector: 'kles-header',
@@ -27,7 +28,7 @@ import { of, startWith, switchMap } from 'rxjs';
                     cdkDragHandle
                     type="button"
                     class="column-drag-handle"
-                    [attr.aria-label]="'Move column ' + header().label"
+                    [attr.aria-label]="labels().moveColumn(header().label ?? header().columnDef)"
                     (click)="$event.stopPropagation()"
                 >
                     <mat-icon>drag_indicator</mat-icon>
@@ -48,7 +49,7 @@ import { of, startWith, switchMap } from 'rxjs';
                 <div class="icon-button">
                     <button
                         mat-icon-button
-                        aria-label="Clear"
+                        [attr.aria-label]="labels().clearFilter"
                         type="button"
                         class="icon-button-small"
                         (click)="group().controls[header().columnDef].reset()"
@@ -145,10 +146,23 @@ import { of, startWith, switchMap } from 'rxjs';
     imports: [CommonModule, ReactiveFormsModule, MatIconModule, MatButtonModule, MatTooltipModule, MatSortModule, DragDropModule],
 })
 export class KlesHeaderComponent {
+    private readonly intl = inject(KlesTableIntl);
+
     header = input.required<IKlesHeaderFieldConfig & { columnDef: string; sortable?: boolean; sortArrowPosition?: SortHeaderArrowPosition }>();
     group = input.required<FormGroup<any>>();
     dragHandleSpacer = input(false);
     columnDragHandle = input(false);
+
+    protected readonly labels = toSignal(
+        this.intl.changes.pipe(
+            startWith(undefined),
+            map(() => ({
+                clearFilter: this.intl.clearFilterLabel,
+                moveColumn: this.intl.moveColumnLabel.bind(this.intl),
+            })),
+        ),
+        { requireSync: true },
+    );
 
     readonly filterValue = toSignal(
         toObservable(computed(() => this.group().get(this.header().columnDef))).pipe(

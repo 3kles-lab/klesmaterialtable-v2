@@ -1,9 +1,9 @@
 import { CdkDrag, CdkDropList } from '@angular/cdk/drag-drop';
-import { Component, signal } from '@angular/core';
+import { Component, Injectable, signal } from '@angular/core';
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { MatPaginator } from '@angular/material/paginator';
 import { By } from '@angular/platform-browser';
-import { KlesFormCheckboxComponent } from '@3kles/kles-material-dynamicforms';
+import { KlesFormCheckboxComponent, KlesFormTextComponent } from '@3kles/kles-material-dynamicforms';
 import { delay, of, Subject } from 'rxjs';
 import { KlesTableConfig } from './core/table/config.interface';
 import { linesLazyLoader, linesLoader } from './core/table/loader.interface';
@@ -11,6 +11,8 @@ import { KlesTableFooterStartDirective } from './directives/table-footer-start.d
 import { KlesTableComponent } from './kles-table.component';
 import { selectionConfig, SelectionAllResponse } from './core/table/selection-config.interface';
 import { KlesTableEmptyStateComponent } from './components/empty-state/empty-state.component';
+import { KlesTableIntl } from './components/table/table-intl';
+import { InfiniteScrollTableComponent } from './components/infinite-scroll-table/infinite-scroll-table.component';
 
 const tableConfig: KlesTableConfig = {
     columns: [],
@@ -133,6 +135,45 @@ class ColumnDragDropHostComponent {
     };
 }
 
+@Injectable()
+class CustomTableIntl extends KlesTableIntl {
+    override clearFilterLabel = 'Effacer le filtre';
+    override moveColumnLabel = (label: string) => `Déplacer la colonne ${label}`;
+    override resizeColumnLabel = (columnDef: string) => `Ajuster la largeur de ${columnDef}`;
+    override loadingMoreRowsLabel = 'Chargement des lignes suivantes';
+}
+
+@Component({
+    imports: [KlesTableComponent],
+    template: '<kles-dynamic-table [tableConfig]="tableConfig"></kles-dynamic-table>',
+})
+class LocalizedInfiniteTableHostComponent {
+    readonly nextPage = new Subject<{ items: { _id: number; name: string }[]; total: number }>();
+    readonly tableConfig: KlesTableConfig = {
+        columns: [
+            {
+                columnDef: 'name',
+                filterable: true,
+                resizable: true,
+                headerCell: {
+                    label: 'Nom',
+                    filterClearable: true,
+                    field: { component: KlesFormTextComponent, value: 'A' },
+                },
+            },
+        ],
+        dragDropColumns: { enable: true },
+        emptyState: { intl: CustomTableIntl },
+        infinite: true,
+        lazy: true,
+        pageSize: 1,
+        lines: linesLazyLoader({
+            loader: (_params, query) =>
+                (query?.pagination?.page ?? 0) > 0 ? this.nextPage : of({ items: [{ _id: 1, name: 'Alice' }], total: 2 }),
+        }),
+    };
+}
+
 @Component({
     selector: 'test-column-visibility-host',
     standalone: true,
@@ -185,6 +226,48 @@ describe('KlesTableComponent', () => {
             ],
         }).compileComponents();
     });
+
+    it('uses and updates the four accessible labels from the table-specific intl provider', fakeAsync(() => {
+        const fixture = TestBed.createComponent(LocalizedInfiniteTableHostComponent);
+        fixture.autoDetectChanges();
+        tick(50);
+
+        const root: HTMLElement = fixture.nativeElement;
+        const clear = root.querySelector('.icon-button-small');
+        const move = root.querySelector('.column-drag-handle');
+        const resize = root.querySelector('.resize-handle');
+        const loading = root.querySelector('.loading-more-indicator');
+        expect(clear?.getAttribute('aria-label')).toBe('Effacer le filtre');
+        expect(move?.getAttribute('aria-label')).toBe('Déplacer la colonne Nom');
+        expect(resize?.getAttribute('aria-label')).toBe('Ajuster la largeur de name');
+        expect(loading?.getAttribute('aria-label')).toBe('Chargement des lignes suivantes');
+        expect(loading?.getAttribute('role')).toBe('status');
+
+        const intl = fixture.debugElement.query(By.directive(InfiniteScrollTableComponent)).injector.get(KlesTableIntl);
+        intl.clearFilterLabel = 'Clear the filter';
+        intl.moveColumnLabel = (label) => `Reorder ${label}`;
+        intl.resizeColumnLabel = (columnDef) => `Change width of ${columnDef}`;
+        intl.loadingMoreRowsLabel = 'Fetching the next page';
+        intl.changes.next();
+        tick();
+
+        expect(clear?.getAttribute('aria-label')).toBe('Clear the filter');
+        expect(move?.getAttribute('aria-label')).toBe('Reorder Nom');
+        expect(resize?.getAttribute('aria-label')).toBe('Change width of name');
+        expect(loading?.getAttribute('aria-label')).toBe('Fetching the next page');
+
+        const table: KlesTableComponent = fixture.debugElement.query(By.directive(KlesTableComponent)).componentInstance;
+        table.column.setResizable('name', false);
+        tick();
+        expect(root.querySelector('.resize-handle')).toBeNull();
+
+        intl.resizeColumnLabel = (columnDef) => `Resize ${columnDef}`;
+        intl.changes.next();
+        table.column.setResizable('name', true);
+        tick();
+        expect(root.querySelector('.resize-handle')?.getAttribute('aria-label')).toBe('Resize name');
+        fixture.destroy();
+    }));
 
     it('keeps a horizontal scrollable area and restores sticky columns after widening', async () => {
         const fixture = TestBed.createComponent(StickyColumnsHostComponent);

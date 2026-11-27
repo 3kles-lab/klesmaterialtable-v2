@@ -1,7 +1,7 @@
 <kles-table></kles-table>
 
 @if (loadingMore()) {
-    <div class="loading-more-indicator" role="status" aria-label="Loading more rows">
+    <div class="loading-more-indicator" role="status" [attr.aria-label]="loadingMoreRowsLabel()">
         <mat-spinner [diameter]="24"></mat-spinner>
     </div>
 }

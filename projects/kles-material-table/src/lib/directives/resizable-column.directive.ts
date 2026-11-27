@@ -1,4 +1,22 @@
-import { Directive, ElementRef, HostBinding, input, NgZone, OnChanges, OnDestroy, OnInit, Renderer2, SimpleChanges } from '@angular/core';
+import {
+    computed,
+    Directive,
+    effect,
+    ElementRef,
+    HostBinding,
+    inject,
+    input,
+    NgZone,
+    OnChanges,
+    OnDestroy,
+    OnInit,
+    Renderer2,
+    signal,
+    SimpleChanges,
+} from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { map, startWith } from 'rxjs';
+import { KlesTableIntl } from '../components/table/table-intl';
 import { KlesColumnConfig } from '../core/table/column.interface';
 import { EventsService } from '../services/features/events/events.service';
 import { ColumnsService } from '../services/features/columns/columns.service';
@@ -7,6 +25,16 @@ import { ColumnsService } from '../services/features/columns/columns.service';
 export class ResizableColumnDirective implements OnInit, OnChanges, OnDestroy {
     column = input.required<KlesColumnConfig>({ alias: 'appResizableColumn' });
 
+    private readonly intl = inject(KlesTableIntl);
+    private readonly formatResizeLabel = toSignal(
+        this.intl.changes.pipe(
+            startWith(undefined),
+            map(() => this.intl.resizeColumnLabel.bind(this.intl)),
+        ),
+        { requireSync: true },
+    );
+    private readonly resizeLabel = computed(() => this.formatResizeLabel()(this.column().columnDef));
+    private readonly handle = signal<HTMLElement | undefined>(undefined);
     private readonly defaultMinWidth = 60;
     private readonly defaultMaxWidth = 1200;
     private readonly keyboardStep = 4;
@@ -14,7 +42,6 @@ export class ResizableColumnDirective implements OnInit, OnChanges, OnDestroy {
     private startWidth = 0;
     private currentWidth = 0;
     private resizing = false;
-    private handle?: HTMLElement;
     private widthLabel?: HTMLElement;
     private activeCells: HTMLElement[] = [];
     private resizeCells: HTMLElement[] = [];
@@ -40,7 +67,12 @@ export class ResizableColumnDirective implements OnInit, OnChanges, OnDestroy {
         private readonly zone: NgZone,
         private readonly eventsService: EventsService,
         private readonly columnsService: ColumnsService,
-    ) {}
+    ) {
+        effect(() => {
+            const handle = this.handle();
+            if (handle) this.renderer.setAttribute(handle, 'aria-label', this.resizeLabel());
+        });
+    }
 
     ngOnInit(): void {
         if (this.column().resizable) this.apply();
@@ -191,7 +223,7 @@ export class ResizableColumnDirective implements OnInit, OnChanges, OnDestroy {
             cell.style.maxWidth = `${px}px`;
             cell.style.flex = `0 0 ${px}px`;
         }
-        this.handle?.setAttribute('aria-valuenow', `${Math.round(px)}`);
+        this.handle()?.setAttribute('aria-valuenow', `${Math.round(px)}`);
     }
 
     private applyPreviewWidth(px: number): void {
@@ -202,7 +234,7 @@ export class ResizableColumnDirective implements OnInit, OnChanges, OnDestroy {
             // Fallback for consumers rendering without the table colgroup.
             for (const cell of this.resizeCells) cell.style.width = `${px}px`;
         }
-        this.handle?.setAttribute('aria-valuenow', `${Math.round(px)}`);
+        this.handle()?.setAttribute('aria-valuenow', `${Math.round(px)}`);
     }
 
     private scheduleResizeFrame(): void {
@@ -243,7 +275,7 @@ export class ResizableColumnDirective implements OnInit, OnChanges, OnDestroy {
             : undefined;
         this.resizeMinWidth = Math.max(this.getMinWidth(), this.contentMinWidth);
         this.resizeMaxWidth = Math.max(this.resizeMinWidth, this.getMaxWidth());
-        this.handle?.setAttribute('aria-valuemin', `${Math.round(this.resizeMinWidth)}`);
+        this.handle()?.setAttribute('aria-valuemin', `${Math.round(this.resizeMinWidth)}`);
     }
 
     private clearResizeCache(): void {
@@ -262,9 +294,10 @@ export class ResizableColumnDirective implements OnInit, OnChanges, OnDestroy {
         if (!view) return;
         this.contentMeasurementFrameId = view.requestAnimationFrame(() => {
             this.contentMeasurementFrameId = undefined;
-            if (this.resizing || !this.handle) return;
+            const handle = this.handle();
+            if (this.resizing || !handle) return;
             this.contentMinWidth = this.measureContentWidth();
-            this.handle.setAttribute('aria-valuemin', `${Math.round(Math.max(this.getMinWidth(), this.contentMinWidth))}`);
+            handle.setAttribute('aria-valuemin', `${Math.round(Math.max(this.getMinWidth(), this.contentMinWidth))}`);
         });
     }
 
@@ -370,29 +403,29 @@ export class ResizableColumnDirective implements OnInit, OnChanges, OnDestroy {
     private apply(): void {
         this.remove();
         const th = this.el.nativeElement;
-        this.handle = this.renderer.createElement('span');
+        const handle: HTMLElement = this.renderer.createElement('span');
         this.widthLabel = this.renderer.createElement('span');
         this.renderer.addClass(th, 'resizable-column');
-        this.renderer.addClass(this.handle, 'resize-handle');
+        this.renderer.addClass(handle, 'resize-handle');
         this.renderer.addClass(this.widthLabel, 'resize-width-label');
-        this.renderer.appendChild(this.handle, this.widthLabel);
-        this.renderer.appendChild(th, this.handle);
+        this.renderer.appendChild(handle, this.widthLabel);
+        this.renderer.appendChild(th, handle);
 
-        this.renderer.setAttribute(this.handle, 'role', 'separator');
-        this.renderer.setAttribute(this.handle, 'aria-orientation', 'vertical');
-        this.renderer.setAttribute(this.handle, 'aria-label', `Redimensionner la colonne ${this.column().columnDef}`);
-        this.renderer.setAttribute(this.handle, 'aria-valuemin', `${Math.round(this.getMinWidth())}`);
-        this.renderer.setAttribute(this.handle, 'aria-valuemax', `${Math.round(this.getMaxWidth())}`);
-        this.renderer.setAttribute(this.handle, 'aria-valuenow', `${Math.round(th.getBoundingClientRect().width)}`);
-        this.renderer.setAttribute(this.handle, 'tabindex', '0');
+        this.renderer.setAttribute(handle, 'role', 'separator');
+        this.renderer.setAttribute(handle, 'aria-orientation', 'vertical');
+        this.renderer.setAttribute(handle, 'aria-valuemin', `${Math.round(this.getMinWidth())}`);
+        this.renderer.setAttribute(handle, 'aria-valuemax', `${Math.round(this.getMaxWidth())}`);
+        this.renderer.setAttribute(handle, 'aria-valuenow', `${Math.round(th.getBoundingClientRect().width)}`);
+        this.renderer.setAttribute(handle, 'tabindex', '0');
 
         this.handleCleanups.push(
-            this.renderer.listen(this.handle, 'pointerdown', (event: PointerEvent) => this.startResize(event)),
-            this.renderer.listen(this.handle, 'pointerenter', () => this.scheduleContentMeasurement()),
-            this.renderer.listen(this.handle, 'dblclick', (event: MouseEvent) => this.autoFit(event)),
-            this.renderer.listen(this.handle, 'keydown', (event: KeyboardEvent) => this.onKeyDown(event)),
-            this.renderer.listen(this.handle, 'click', (event: MouseEvent) => event.stopPropagation()),
+            this.renderer.listen(handle, 'pointerdown', (event: PointerEvent) => this.startResize(event)),
+            this.renderer.listen(handle, 'pointerenter', () => this.scheduleContentMeasurement()),
+            this.renderer.listen(handle, 'dblclick', (event: MouseEvent) => this.autoFit(event)),
+            this.renderer.listen(handle, 'keydown', (event: KeyboardEvent) => this.onKeyDown(event)),
+            this.renderer.listen(handle, 'click', (event: MouseEvent) => event.stopPropagation()),
         );
+        this.handle.set(handle);
         this.scheduleContentMeasurement();
     }
 
@@ -403,9 +436,10 @@ export class ResizableColumnDirective implements OnInit, OnChanges, OnDestroy {
         this.clearResizeCache();
         this.clearDocumentListeners();
         this.handleCleanups.splice(0).forEach((cleanup) => cleanup());
-        if (this.handle) this.renderer.removeChild(this.el.nativeElement, this.handle);
+        const handle = this.handle();
+        if (handle) this.renderer.removeChild(this.el.nativeElement, handle);
         this.renderer.removeClass(this.el.nativeElement, 'resizable-column');
-        this.handle = undefined;
+        this.handle.set(undefined);
         this.widthLabel = undefined;
     }
 
